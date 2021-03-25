@@ -51,9 +51,28 @@ namespace Moteur3D {
         std::string absPathFS = absPath + "/shaders/triangle-fs.glsl";
 
         std::string strVS = readFile(absPathVS);
+        GLint lenVS[1] = { static_cast<GLint>(strVS.length()) };
         const GLchar* vsCode = strVS.c_str();
+
         std::string strFS = readFile(absPathFS);
+        GLint lenFS[1] = { static_cast<GLint>(strFS.length()) };
         const GLchar* fsCode = strFS.c_str();
+
+        GLuint shader_program = glCreateProgram();
+        GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+        GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
+
+        glShaderSource(vertex_shader, 1, &vsCode, lenVS);
+        glShaderSource(frag_shader, 1, &fsCode, lenFS);
+        glCompileShader(vertex_shader);
+        glCompileShader(frag_shader);
+
+        GLint compileStatus = 0;
+        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &compileStatus);
+        if(compileStatus != GL_TRUE)
+        {
+            std::cout << "Error compiling vertex shader" << std::endl;
+        }
 
         if (glGetError() != GL_NO_ERROR) {
             std::cerr << "OpenGL error" << std::endl;
@@ -67,9 +86,21 @@ namespace Moteur3D {
         vertices.push_back(glm::vec3(0.0f, 0.5f, 0.0f));
 
         // vertex buffer object
-        GLuint triangleVBO;
-        glCreateBuffers(1, &triangleVBO);
-        glNamedBufferData(triangleVBO, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+        GLuint verticesVBO;
+        glCreateBuffers(1, &verticesVBO);
+        glNamedBufferData(verticesVBO, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+
+        // vertex array object
+        GLuint triangleVAO;
+        glCreateVertexArrays(1, &triangleVAO); // initialize an empty array
+
+        // assign object from CPU to GPU
+        const unsigned int triangleVAOIndex = 0;
+        glEnableVertexArrayAttrib(triangleVAO, triangleVAOIndex);
+        glVertexArrayAttribFormat(triangleVAO, triangleVAOIndex, 3, GL_FLOAT, GL_FALSE, 0);
+        glVertexArrayVertexBuffer(triangleVAO, triangleVAOIndex, verticesVBO, 0, sizeof(float)*3);
+        glVertexArrayBindingDivisor(triangleVAO, 0, 0);
+        glVertexArrayAttribBinding(triangleVAO, triangleVAOIndex, 0);
 
         // ===============================
 
