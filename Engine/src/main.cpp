@@ -8,8 +8,9 @@
 #include <string>
 
 #include "utils.hpp"
+#include "shader.h"
 
-namespace Moteur3D {
+namespace Engine {
     int main(int argc, char* argv[])
     {
         // Init GLFW
@@ -47,8 +48,10 @@ namespace Moteur3D {
         std::string filePath(argv[0]);
         std::string absPath = extractPath(filePath);
         // use absolute path for VS and FS file
-        std::string absPathVS = absPath + "/shaders/triangle-vs.glsl";
-        std::string absPathFS = absPath + "/shaders/triangle-fs.glsl";
+        const std::string relPathVS = "shaders/triangle-vs.glsl";
+        const std::string relPathFS = "shaders/triangle-fs.glsl";
+        std::string absPathVS = absPath + relPathVS;
+        std::string absPathFS = absPath + relPathFS;
 
         std::string strVS = readFile(absPathVS);
         GLint lenVS[1] = { static_cast<GLint>(strVS.length()) };
@@ -58,50 +61,69 @@ namespace Moteur3D {
         GLint lenFS[1] = { static_cast<GLint>(strFS.length()) };
         const GLchar* fsCode = strFS.c_str();
 
-        GLuint shader_program = glCreateProgram();
-        GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-        GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
+        GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+        GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
 
-        glShaderSource(vertex_shader, 1, &vsCode, lenVS);
-        glShaderSource(frag_shader, 1, &fsCode, lenFS);
-        glCompileShader(vertex_shader);
-        glCompileShader(frag_shader);
+        glShaderSource(vertexShader, 1, &vsCode, lenVS);
+        glShaderSource(fragShader, 1, &fsCode, lenFS);
+        glCompileShader(vertexShader);
+        glCompileShader(fragShader);
 
-        GLint compileStatus = 0;
-        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &compileStatus);
-        if(compileStatus != GL_TRUE)
-        {
-            std::cout << "Error compiling vertex shader" << std::endl;
-        }
+        assertShaderCompilationSuccess(vertexShader, relPathVS);
+        assertShaderCompilationSuccess(fragShader, relPathFS);
 
-        if (glGetError() != GL_NO_ERROR) {
-            std::cerr << "OpenGL error" << std::endl;
-            return EXIT_FAILURE;
-        }
+        GLuint shaderProgram = glCreateProgram();
+        glAttachShader(shaderProgram, vertexShader);
+        glAttachShader(shaderProgram, fragShader);
+
+        glLinkProgram(shaderProgram);
+
+        assertProgramLinkingSuccess(shaderProgram);
 
         // table containing triangle vertices
         std::vector<glm::vec3> vertices;
-        vertices.push_back(glm::vec3(0.5f, -0.5f, 0.0f));
-        vertices.push_back(glm::vec3(-0.5f, -0.5f, 0.0f));
-        vertices.push_back(glm::vec3(0.0f, 0.5f, 0.0f));
+        vertices.push_back(glm::vec3(-1.0f, -1.0f, 0.0f));
+        vertices.push_back(glm::vec3(1.0f, -1.0f, 0.0f));
+        vertices.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
 
-        // vertex buffer object
+        std::vector<glm::vec3> colors;
+        colors.push_back(glm::vec3(1.0f, 0.0f, 1.0f));
+        colors.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
+        colors.push_back(glm::vec3(0.0f, 1.0f, 1.0f));
+
+        // vertices VBO
         GLuint verticesVBO;
         glCreateBuffers(1, &verticesVBO);
-        glNamedBufferData(verticesVBO, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+        glNamedBufferData(verticesVBO, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+
+        // colors VBO
+        GLuint colorsVBO;
+        glCreateBuffers(1, &colorsVBO);
+        glNamedBufferData(colorsVBO, colors.size() * sizeof(glm::vec3), &colors[0], GL_STATIC_DRAW);
 
         // vertex array object
         GLuint triangleVAO;
         glCreateVertexArrays(1, &triangleVAO); // initialize an empty array
 
         // assign object from CPU to GPU
-        const unsigned int triangleVAOIndex = 0;
+        const GLuint triangleVAOIndex = 0;
         glEnableVertexArrayAttrib(triangleVAO, triangleVAOIndex);
         glVertexArrayAttribFormat(triangleVAO, triangleVAOIndex, 3, GL_FLOAT, GL_FALSE, 0);
         glVertexArrayVertexBuffer(triangleVAO, triangleVAOIndex, verticesVBO, 0, sizeof(float)*3);
-        glVertexArrayBindingDivisor(triangleVAO, 0, 0);
+        glVertexArrayBindingDivisor(triangleVAO, triangleVAOIndex, 0);
         glVertexArrayAttribBinding(triangleVAO, triangleVAOIndex, 0);
 
+        const GLuint colorsVAOIndex = 1;
+        glEnableVertexArrayAttrib(triangleVAO, colorsVAOIndex);
+        glVertexArrayAttribFormat(triangleVAO, colorsVAOIndex, 3, GL_FLOAT, GL_FALSE, 0);
+        glVertexArrayVertexBuffer(triangleVAO, colorsVAOIndex, colorsVBO, 0, sizeof(float)*3);
+        glVertexArrayBindingDivisor(triangleVAO, colorsVAOIndex, 0);
+        glVertexArrayAttribBinding(triangleVAO, colorsVAOIndex, 1);
+
+        if (glGetError() != GL_NO_ERROR) {
+            std::cerr << "OpenGL error" << std::endl;
+            return EXIT_FAILURE;
+        }
         // ===============================
 
         // Rendering loop
@@ -113,7 +135,9 @@ namespace Moteur3D {
 
             // ===============================
             // TODO: render here !
-
+            glUseProgram(shaderProgram);
+            glBindVertexArray(triangleVAO);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
 
             // ===============================
 
@@ -129,5 +153,5 @@ namespace Moteur3D {
 
 int main(int argc, char** argv)
 {
-    return Moteur3D::main(argc, argv);
+    return Engine::main(argc, argv);
 }

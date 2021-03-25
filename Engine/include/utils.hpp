@@ -1,4 +1,5 @@
 #pragma once
+#include <glad/glad.h>
 
 #include <string>
 #include <fstream>
@@ -16,12 +17,32 @@ static inline std::string readFile(const std::string &filePath)
     return s.str();
 }
 
-static inline std::string extractPath(const std::string &filePath)
+static inline const std::string extractPath(const std::string &filePath)
 {
     std::size_t found = filePath.find_last_of("/\\");
     if(found != std::string::npos)
     {
-        return filePath.substr(0, found);
+        return filePath.substr(0, found+1);
     }
     return "";
+}
+
+static inline void assertShaderCompilationSuccess(const GLint shader, const std::string& shaderName)
+{
+    GLint compileStatus = 0;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compileStatus);
+    if(!compileStatus)
+    {
+        throw std::runtime_error("Error compiling shader: " + shaderName + ".");
+    }
+}
+
+static inline void assertProgramLinkingSuccess(const GLint program)
+{
+    GLint success = 0;
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if(!success)
+    {
+        throw std::runtime_error("Error linking shader program.");
+    }
 }
