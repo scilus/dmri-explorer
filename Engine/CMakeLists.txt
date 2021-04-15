@@ -2,7 +2,7 @@
 file(GLOB SOURCES "src/*.cpp")
 add_executable(main ${SOURCES})
 
-target_link_libraries(main PRIVATE glad::glad)
+target_link_libraries(main PRIVATE GLAD)
 target_link_libraries(main PRIVATE glm::glm)
 target_link_libraries(main PRIVATE glfw)
 

@@ -8,7 +8,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 find_package(glfw3 CONFIG REQUIRED)
-find_package(glad CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
+
+# glad include
+add_library(GLAD "glad/src/glad.c")
+include_directories("glad/include/")
 
 add_subdirectory("Engine")
