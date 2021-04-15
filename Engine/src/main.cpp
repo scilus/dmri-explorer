@@ -75,7 +75,7 @@ namespace Engine {
         colors.push_back(glm::vec3(0.0f, 1.0f, 1.0f));
         colors.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
 
-        std::vector<glm::vec3> data = {glm::vec3(1.0f, 0.0f, 1.0f)};
+        std::vector<glm::vec3> data = {glm::vec3(0.7f, 0.0f, 1.0f)};
         GL::ShaderData<glm::vec3> shaderData(data, GL::BindableProperty::MVP);
 
         // create a model containing vertices and colors
