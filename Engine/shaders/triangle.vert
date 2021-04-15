@@ -5,9 +5,9 @@ layout (location=1) in vec3 in_color;
 layout (location=2) in vec3 in_normal;
 
 // SSBO
-layout(std430, binding = 3) buffer MVP
+layout(std430, binding = 3) buffer transform
 {
-    vec3 data_SSBO[];
+    mat4 modelMat;
 };
 
 out gl_PerVertex{
@@ -17,6 +17,6 @@ out vec3 v_color;
 
 void main()
 {
-    gl_Position = vec4(in_pos, 1.0);
-    v_color = data_SSBO[0];
+    gl_Position = modelMat * vec4(in_pos, 1.0);
+    v_color = in_color;
 }

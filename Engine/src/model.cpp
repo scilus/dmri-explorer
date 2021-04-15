@@ -13,8 +13,8 @@ Model::Model(const std::vector<glm::vec3>& positions,
 
     // vertex array object
     glCreateVertexArrays(1, &this->mVAO); // initialize an empty array
-    assignToVAO(positions, BindableProperty::position);
-    assignToVAO(colors, BindableProperty::color);
+    genVBOAndAssignToVAO(positions, BindableProperty::position);
+    genVBOAndAssignToVAO(colors, BindableProperty::color);
     genIBOAndAssignToVAO(indices);
 }
 
@@ -23,8 +23,6 @@ void Model::genIBOAndAssignToVAO(const std::vector<GLuint>& indices)
     // Generate VBO
     glCreateBuffers(1, &this->mIBO);
     glNamedBufferData(this->mIBO, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
-
-    // uniforms glNamedBufferSubData
 
     // assign object from CPU to GPU
     const GLuint VAOIndex = static_cast<int>(BindableProperty::indices);
@@ -35,15 +33,13 @@ void Model::genIBOAndAssignToVAO(const std::vector<GLuint>& indices)
     glVertexArrayAttribBinding(this->mVAO, VAOIndex, VAOIndex);
 }
 
-void Model::assignToVAO(const std::vector<glm::vec3>& data,
-                        const BindableProperty& type) const
+void Model::genVBOAndAssignToVAO(const std::vector<glm::vec3>& data,
+                                 const BindableProperty& type) const
 {
     // Generate VBO
     GLuint VBO;
     glCreateBuffers(1, &VBO);
     glNamedBufferData(VBO, data.size() * sizeof(glm::vec3), &data[0], GL_STATIC_DRAW);
-
-    // uniforms glNamedBufferSubData
 
     // assign object from CPU to GPU
     const GLuint VAOIndex = static_cast<int>(type);

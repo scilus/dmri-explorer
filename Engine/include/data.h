@@ -21,6 +21,7 @@ public:
         this->mData = data;
         this->mBinding = binding;
         glCreateBuffers(1, &this->mSSBO);
+        // glNamedBufferSubData
         glNamedBufferData(this->mSSBO, data.size() * sizeof(T), data.data(), GL_STATIC_READ);
     };
 

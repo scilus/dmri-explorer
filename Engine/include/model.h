@@ -18,8 +18,8 @@ public:
           const std::vector<glm::vec3>& colors);
     void Draw() const;
 private:
-    void assignToVAO(const std::vector<glm::vec3>& data,
-                     const BindableProperty& type) const;
+    void genVBOAndAssignToVAO(const std::vector<glm::vec3>& data,
+                              const BindableProperty& type) const;
     void genIBOAndAssignToVAO(const std::vector<GLuint>& indices);
 
     size_t nbVertices = 0;

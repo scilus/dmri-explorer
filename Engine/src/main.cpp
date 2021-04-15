@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp> 
 #include <memory>
 #include <vector>
 #include <string>
@@ -51,8 +52,8 @@ namespace Engine {
         // shaders
         const std::string filePath(argv[0]);
         const std::string absPath = extractPath(filePath);
-        const std::string absPathVS = absPath + "shaders/triangle-vs.glsl";
-        const std::string absPathFS = absPath + "shaders/triangle-fs.glsl";
+        const std::string absPathVS = absPath + "shaders/triangle.vert";
+        const std::string absPathFS = absPath + "shaders/triangle.frag";
 
         std::vector<GL::ShaderProgram> shaders;
         shaders.push_back(GL::ShaderProgram(absPathVS, GL_VERTEX_SHADER));
@@ -75,8 +76,9 @@ namespace Engine {
         colors.push_back(glm::vec3(0.0f, 1.0f, 1.0f));
         colors.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
 
-        std::vector<glm::vec3> data = {glm::vec3(0.7f, 0.0f, 1.0f)};
-        GL::ShaderData<glm::vec3> shaderData(data, GL::BindableProperty::MVP);
+        std::vector<glm::mat4> data = {glm::translate(glm::mat4(1.0f),
+                                                      glm::vec3(1.0f, 1.0f, 0.0f))};
+        GL::ShaderData<glm::mat4> shaderData(data, GL::BindableProperty::MVP);
 
         // create a model containing vertices and colors
         GL::Model model(vertices, indices, colors);
