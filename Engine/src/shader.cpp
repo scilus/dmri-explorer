@@ -17,12 +17,12 @@ ShaderProgram::ShaderProgram(const std::string& filePath, const GLenum shaderTyp
     glCompileShader(shaderID);
 
     assertShaderCompilationSuccess(shaderID, filePath);
-    ShaderProgram::mProgramID = glCreateProgram();
-    glProgramParameteri(ShaderProgram::mProgramID, GL_PROGRAM_SEPARABLE, GL_TRUE);
-    glAttachShader(mProgramID, shaderID);
-    glLinkProgram(ShaderProgram::mProgramID);
-    assertProgramLinkingSuccess(ShaderProgram::mProgramID);
-    ShaderProgram::mShaderType = shaderType;
+    this->mProgramID = glCreateProgram();
+    glProgramParameteri(this->mProgramID, GL_PROGRAM_SEPARABLE, GL_TRUE);
+    glAttachShader(this->mProgramID, shaderID);
+    glLinkProgram(this->mProgramID);
+    assertProgramLinkingSuccess(this->mProgramID);
+    this->mShaderType = shaderType;
 
     // TO INCLUDE FILES FROM SHADERS
     // glNamedStringARB to support include files from shaders
@@ -31,11 +31,11 @@ ShaderProgram::ShaderProgram(const std::string& filePath, const GLenum shaderTyp
 
 ProgramPipeline::ProgramPipeline(const std::vector<ShaderProgram>& shaderPrograms)
 {
-    glGenProgramPipelines(1, &(ProgramPipeline::mPipelineID));
+    glGenProgramPipelines(1, &this->mPipelineID);
     for(const ShaderProgram& p : shaderPrograms)
     {
         GLbitfield programStage = ProgramPipeline::convertShaderTypeToGLbitfield(p.Type());
-        glUseProgramStages(ProgramPipeline::mPipelineID, programStage, p.ID());
+        glUseProgramStages(this->mPipelineID, programStage, p.ID());
     }
 }
 
@@ -62,7 +62,7 @@ const GLbitfield ProgramPipeline::convertShaderTypeToGLbitfield(const GLenum sha
 
 void ProgramPipeline::Bind() const
 {
-    glBindProgramPipeline(ProgramPipeline::mPipelineID);
+    glBindProgramPipeline(this->mPipelineID);
 }
 } // namespace GL
 } // namespace Engine
