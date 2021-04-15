@@ -9,7 +9,10 @@
 
 #include "utils.hpp"
 #include "shader.h"
+#include "model.h"
 #include "data.h"
+
+#include "binding.h"
 
 namespace Engine {
     int main(int argc, char* argv[])
@@ -51,27 +54,34 @@ namespace Engine {
         const std::string absPathVS = absPath + "shaders/triangle-vs.glsl";
         const std::string absPathFS = absPath + "shaders/triangle-fs.glsl";
 
-        std::vector<GL::Shader> shaders;
-        shaders.push_back(GL::Shader(absPathVS, GL_VERTEX_SHADER));
-        shaders.push_back(GL::Shader(absPathFS, GL_FRAGMENT_SHADER));
-        GL::Program shaderProgram(shaders);
+        std::vector<GL::ShaderProgram> shaders;
+        shaders.push_back(GL::ShaderProgram(absPathVS, GL_VERTEX_SHADER));
+        shaders.push_back(GL::ShaderProgram(absPathFS, GL_FRAGMENT_SHADER));
+
+        GL::ProgramPipeline programPipeline(shaders);
 
         // table containing triangle vertices
         std::vector<glm::vec3> vertices;
         vertices.push_back(glm::vec3(-1.0f, -1.0f, 0.0f));
         vertices.push_back(glm::vec3(1.0f, -1.0f, 0.0f));
-        vertices.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+        vertices.push_back(glm::vec3(-1.0f, 1.0f, 0.0f));
+        vertices.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
+
+        std::vector<GLuint> indices = {0, 1, 2, 1, 2, 3};
 
         std::vector<glm::vec3> colors;
         colors.push_back(glm::vec3(1.0f, 0.0f, 1.0f));
         colors.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
         colors.push_back(glm::vec3(0.0f, 1.0f, 1.0f));
+        colors.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+
+        std::vector<glm::vec3> data = {glm::vec3(1.0f, 0.0f, 1.0f)};
+        GL::ShaderData<glm::vec3> shaderData(data, GL::BindableProperty::MVP);
 
         // create a model containing vertices and colors
-        GL::Model model(vertices, colors);
-
+        GL::Model model(vertices, indices, colors);
         if (glGetError() != GL_NO_ERROR) {
-            std::cerr << "OpenGL error" << std::endl;
+            std::cerr << "OpenGL error " << std::endl;
             return EXIT_FAILURE;
         }
         // ===============================
@@ -84,8 +94,10 @@ namespace Engine {
 
             // ===============================
             // TODO: render here !
-            shaderProgram.Use();
+            programPipeline.Bind();
+            shaderData.ToGPU();
             model.Draw();
+
             // ===============================
 
             glfwSwapBuffers(window);

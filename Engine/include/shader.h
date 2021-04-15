@@ -8,25 +8,28 @@ namespace Engine
 {
 namespace GL
 {
-class Shader
+class ShaderProgram
 {
 public:
-    Shader() = delete;
-    Shader(const std::string& filePath, const GLenum shaderType);
-    const GLuint ID() const;
-private:
-    GLuint mShaderID = 0;
-};
-
-class Program
-{
-public:
-    Program() = delete;
-    Program(const std::vector<Shader>& shaders);
-    void Use() const;
-    const GLuint ID() const;
+    ShaderProgram() = delete;
+    ShaderProgram(const std::string& filepath, const GLenum shaderType);
+    inline const GLuint ID() const { return mProgramID; };
+    inline const GLenum Type() const { return mShaderType; };
 private:
     GLuint mProgramID = 0;
+    GLenum mShaderType = 0;
+};
+
+class ProgramPipeline
+{
+public:
+    ProgramPipeline() = delete;
+    ProgramPipeline(const std::vector<ShaderProgram>& shaderPrograms);
+    inline const GLuint ID() const { return mPipelineID; };
+    void Bind() const;
+private:
+    const GLbitfield convertShaderTypeToGLbitfield(const GLenum shaderType) const;
+    GLuint mPipelineID = 0;
 };
 } // namespace GL
 } // namespace Engine

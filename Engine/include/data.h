@@ -4,27 +4,23 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+#include "binding.h"
+
 namespace Engine
 {
 namespace GL
 {
-enum class PropertyType
-{
-    position = 0,
-    color = 1
-};
-
-class Model
+template<typename T>
+class ShaderData
 {
 public:
-    Model() = delete;
-    Model(const std::vector<glm::vec3>& positions,
-          const std::vector<glm::vec3>& colors);
-    void Draw() const;
+    ShaderData() = delete;
+    ShaderData(const std::vector<T>& data, BindableProperty binding);
+    void ToGPU() const;
 private:
-    void assignToVAO(const std::vector<glm::vec3>& data,
-                     const PropertyType& type);
-    GLuint mVAO = 0;
+    GLuint mSSBO = 0;
+    BindableProperty mBinding;
+    std::vector<T> mData;
 };
 } // namespace GL
 } // namespace Engine

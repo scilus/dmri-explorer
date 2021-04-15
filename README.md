@@ -20,3 +20,12 @@ To run the executable:
 cd build/Engine
 ./main
 ```
+
+## TODO
+* [x] Shader program class
+* [x] Program pipeline class
+* [x] Indices buffer
+* [ ] Uniform buffers management (SSBO): `glBindBufferBase`
+* [ ] Instancing with `glMultiDrawElementsIndirect`
+* [ ] Includes in shaders: `glNamedStringARB`, `glCompileShaderIncludeARB`
+* [ ] SSBO definition in shader include
