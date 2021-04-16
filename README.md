@@ -26,6 +26,7 @@ cd build/Engine
 * [x] Program pipeline class
 * [x] Indices buffer
 * [ ] Uniform buffers management (SSBO): `glBindBufferBase`
+* [ ] Struct for uniforms
 * [ ] Instancing with `glMultiDrawElementsIndirect`
 * [ ] Includes in shaders: `glNamedStringARB`, `glCompileShaderIncludeARB`
 * [ ] SSBO definition in shader include

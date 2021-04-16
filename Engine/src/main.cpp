@@ -78,7 +78,7 @@ namespace Engine {
 
         std::vector<glm::mat4> data = {glm::translate(glm::mat4(1.0f),
                                                       glm::vec3(1.0f, 1.0f, 0.0f))};
-        GL::ShaderData<glm::mat4> shaderData(data, GL::BindableProperty::MVP);
+        GL::ShaderData<glm::mat4> shaderData(data, GL::BindableProperty::offset);
 
         // create a model containing vertices and colors
         GL::Model model(vertices, indices, colors);

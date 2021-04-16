@@ -25,7 +25,7 @@ void Model::genIBOAndAssignToVAO(const std::vector<GLuint>& indices)
     glNamedBufferData(this->mIBO, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
 
     // assign object from CPU to GPU
-    const GLuint VAOIndex = static_cast<int>(BindableProperty::indices);
+    const GLuint VAOIndex = static_cast<int>(BindableProperty::indice);
     glEnableVertexArrayAttrib(this->mVAO, VAOIndex);
     glVertexArrayAttribFormat(this->mVAO, VAOIndex, 1, GL_UNSIGNED_INT, GL_FALSE, 0);
     glVertexArrayVertexBuffer(this->mVAO, VAOIndex, this->mIBO, 0, sizeof(GLuint));

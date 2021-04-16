@@ -15,13 +15,12 @@ class ShaderData
 {
 public:
     ShaderData() = delete;
-    ShaderData(const std::vector<T>& data,
-                       BindableProperty binding)
+    ShaderData(const std::vector<T>& data, BindableProperty binding)
     {
         this->mData = data;
         this->mBinding = binding;
         glCreateBuffers(1, &this->mSSBO);
-        // glNamedBufferSubData
+        // glNamedBufferSubData?
         glNamedBufferData(this->mSSBO, data.size() * sizeof(T), data.data(), GL_STATIC_READ);
     };
 

@@ -8,8 +8,8 @@ enum class BindableProperty
 {
     position = 0,
     color = 1,
-    indices = 2,
-    MVP = 3
+    indice = 2,
+    offset = 3
 };
 } // namespace GL
 } // namespace Engine
