@@ -3,7 +3,6 @@
 #include <iostream>
 #include <vector>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp> 
 #include <memory>
 #include <vector>
 #include <string>
@@ -12,10 +11,32 @@
 #include "shader.h"
 #include "model.h"
 #include "data.h"
-
+#include "camera.h"
 #include "binding.h"
+#include "global_state.h"
+
 
 namespace Engine {
+    // global states
+    Global::State globalState;
+
+    void onMouseButton(GLFWwindow* window, int button, int action, int mod)
+    {
+        Global::Mouse& mouse = globalState.GetMouse();
+        mouse.action = action;
+        mouse.button = button;
+        mouse.modifier = mod;
+    }
+
+    void onMouseMove(GLFWwindow* window, double x, double y)
+    {
+        Global::Mouse& mouse = globalState.GetMouse();
+        mouse.dx = x - globalState.GetMouse().xPos;
+        mouse.dy = y - globalState.GetMouse().yPos;
+        mouse.xPos = x;
+        mouse.yPos = y;
+    }
+
     int main(int argc, char* argv[])
     {
         // Init GLFW
@@ -37,6 +58,8 @@ namespace Engine {
         glfwMakeContextCurrent(window);
         glfwSetWindowUserPointer(window, NULL);
 
+        glfwSetMouseButtonCallback(window, onMouseButton);
+        glfwSetCursorPosCallback(window, onMouseMove);
 
         // Load all OpenGL functions using the glfw loader function
         if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -44,10 +67,6 @@ namespace Engine {
             glfwTerminate();
             return EXIT_FAILURE;
         }
-
-        // ===============================
-        // TODO: init buffers, shaders, etc.
-        // cf. https://www.khronos.org/files/opengl46-quick-reference-card.pdf
 
         // shaders
         const std::string filePath(argv[0]);
@@ -61,27 +80,13 @@ namespace Engine {
 
         GL::ProgramPipeline programPipeline(shaders);
 
-        // table containing triangle vertices
-        std::vector<glm::vec3> vertices;
-        vertices.push_back(glm::vec3(-1.0f, -1.0f, 0.0f));
-        vertices.push_back(glm::vec3(1.0f, -1.0f, 0.0f));
-        vertices.push_back(glm::vec3(-1.0f, 1.0f, 0.0f));
-        vertices.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
+        // create our model
+        GL::Model model;
 
-        std::vector<GLuint> indices = {0, 1, 2, 1, 2, 3};
+        // create our camera
+        GL::Camera camera(glm::vec3(0.0f, 0.0f, 8.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+                          deg2rad(60.0f), 1.33333f, 0.5f, 50.0f, &globalState);
 
-        std::vector<glm::vec3> colors;
-        colors.push_back(glm::vec3(1.0f, 0.0f, 1.0f));
-        colors.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
-        colors.push_back(glm::vec3(0.0f, 1.0f, 1.0f));
-        colors.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
-
-        std::vector<glm::mat4> data = {glm::translate(glm::mat4(1.0f),
-                                                      glm::vec3(1.0f, 1.0f, 0.0f))};
-        GL::ShaderData<glm::mat4> shaderData(data, GL::BindableProperty::offset);
-
-        // create a model containing vertices and colors
-        GL::Model model(vertices, indices, colors);
         if (glGetError() != GL_NO_ERROR) {
             std::cerr << "OpenGL error " << std::endl;
             return EXIT_FAILURE;
@@ -96,8 +101,9 @@ namespace Engine {
 
             // ===============================
             // TODO: render here !
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             programPipeline.Bind();
-            shaderData.ToGPU();
+            camera.Refresh();
             model.Draw();
 
             // ===============================
@@ -107,7 +113,6 @@ namespace Engine {
 
         // Clean up
         glfwTerminate();
-
         return EXIT_SUCCESS;
     }
 }

@@ -2,8 +2,10 @@
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
-#include <binding.h>
 #include <vector>
+
+#include <binding.h>
+#include <data.h>
 
 namespace Engine
 {
@@ -12,7 +14,7 @@ namespace GL
 class Model
 {
 public:
-    Model() = delete;
+    Model();
     Model(const std::vector<glm::vec3>& positions,
           const std::vector<GLuint>& indices,
           const std::vector<glm::vec3>& colors);
@@ -22,6 +24,7 @@ private:
                               const BindableProperty& type) const;
     void genIBOAndAssignToVAO(const std::vector<GLuint>& indices);
 
+    ShaderData<ModelMatrix> mModelMatrixData;
     size_t nbVertices = 0;
     size_t nbIndices = 0;
     GLuint mVAO = 0;

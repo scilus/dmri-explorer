@@ -5,9 +5,15 @@ layout (location=1) in vec3 in_color;
 layout (location=2) in vec3 in_normal;
 
 // SSBO
-layout(std430, binding = 3) buffer offsetsBuffer
+layout(std430, binding = 3) buffer model
 {
-    vec3 offsets[];
+    mat4 modelMatrix;
+};
+
+layout(std430, binding = 4) buffer camera
+{
+    mat4 viewMatrix;
+    mat4 projectionMatrix;
 };
 
 out gl_PerVertex{
@@ -17,6 +23,6 @@ out vec3 v_color;
 
 void main()
 {
-    gl_Position = vec4(in_pos, 1.0);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_pos, 1.0);
     v_color = in_color;
 }

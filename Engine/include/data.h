@@ -10,18 +10,38 @@ namespace Engine
 {
 namespace GL
 {
-template<typename T>
+struct CamParams
+{
+    CamParams() = default;
+    CamParams(const glm::mat4& view, const glm::mat4& projection);
+    glm::mat4 viewMatrix;
+    glm::mat4 projectionMatrix;
+};
+
+struct ModelMatrix
+{
+    ModelMatrix() = default;
+    ModelMatrix(const glm::mat4& matrix);
+    glm::mat4 matrix;
+};
+
+template <typename T>
 class ShaderData
 {
 public:
-    ShaderData() = delete;
-    ShaderData(const std::vector<T>& data, BindableProperty binding)
+    ShaderData():
+    mBinding(BindableProperty::none),
+    mData()
+    {
+    };
+
+    ShaderData(const T& data, BindableProperty binding)
     {
         this->mData = data;
         this->mBinding = binding;
         glCreateBuffers(1, &this->mSSBO);
         // glNamedBufferSubData?
-        glNamedBufferData(this->mSSBO, data.size() * sizeof(T), data.data(), GL_STATIC_READ);
+        glNamedBufferData(this->mSSBO, sizeof(T), &(this->mData), GL_STATIC_READ);
     };
 
     void ToGPU() const
@@ -34,7 +54,7 @@ public:
 private:
     GLuint mSSBO = 0;
     BindableProperty mBinding;
-    std::vector<T> mData;
+    T mData;
 };
 } // namespace GL
 } // namespace Engine

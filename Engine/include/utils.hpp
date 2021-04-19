@@ -5,6 +5,9 @@
 #include <fstream>
 #include <sstream>
 
+const float DEG2RAD_FACTOR = 0.0174532925199f;
+const float RAD2DEG_FACTOR = 57.2957795131f;
+
 static inline std::string readFile(const std::string &filePath)
 {
     std::ifstream ifs(filePath, std::ifstream::in);
@@ -45,4 +48,14 @@ static inline void assertProgramLinkingSuccess(const GLint program)
     {
         throw std::runtime_error("Error linking shader program.");
     }
+}
+
+static inline float deg2rad(const float& deg)
+{
+    return DEG2RAD_FACTOR * deg;
+}
+
+static inline float rad2deg(const float& rad)
+{
+    return RAD2DEG_FACTOR * rad;
 }

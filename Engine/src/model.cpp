@@ -4,6 +4,36 @@ namespace Engine
 {
 namespace GL
 {
+Model::Model()
+{
+    std::vector<glm::vec3> vertices;
+    vertices.push_back(glm::vec3(-1.0f, -1.0f, 0.0f));
+    vertices.push_back(glm::vec3(1.0f, -1.0f, 0.0f));
+    vertices.push_back(glm::vec3(-1.0f, 1.0f, 0.0f));
+    vertices.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
+
+    std::vector<glm::vec3> colors;
+    colors.push_back(glm::vec3(1.0f, 0.0f, 1.0f));
+    colors.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
+    colors.push_back(glm::vec3(0.0f, 1.0f, 1.0f));
+    colors.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+
+    std::vector<GLuint> indices = {0, 1, 2, 1, 2, 3};
+
+    this->nbVertices = vertices.size();
+    this->nbIndices = indices.size();
+
+    // vertex array object
+    glCreateVertexArrays(1, &this->mVAO); // initialize an empty array
+    genVBOAndAssignToVAO(vertices, BindableProperty::position);
+    genVBOAndAssignToVAO(colors, BindableProperty::color);
+    genIBOAndAssignToVAO(indices);
+
+    glm::mat4 modelMatrix(1.0f);
+    this->mModelMatrixData = ShaderData<ModelMatrix>(modelMatrix, BindableProperty::model);
+}
+
+
 Model::Model(const std::vector<glm::vec3>& positions,
              const std::vector<GLuint>& indices,
              const std::vector<glm::vec3>& colors)
@@ -52,6 +82,7 @@ void Model::genVBOAndAssignToVAO(const std::vector<glm::vec3>& data,
 
 void Model::Draw() const
 {
+    mModelMatrixData.ToGPU();
     glBindVertexArray(this->mVAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->mIBO);
     glDrawRangeElements(GL_TRIANGLES, 0, this->nbVertices, this->nbIndices, GL_UNSIGNED_INT, 0);
