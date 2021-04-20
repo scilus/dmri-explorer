@@ -31,8 +31,8 @@ namespace Engine {
     void onMouseMove(GLFWwindow* window, double x, double y)
     {
         Global::Mouse& mouse = globalState.GetMouse();
-        mouse.dx = x - globalState.GetMouse().xPos;
-        mouse.dy = y - globalState.GetMouse().yPos;
+        mouse.dx = x - mouse.xPos;
+        mouse.dy = y - mouse.yPos;
         mouse.xPos = x;
         mouse.yPos = y;
     }
@@ -91,7 +91,6 @@ namespace Engine {
             std::cerr << "OpenGL error " << std::endl;
             return EXIT_FAILURE;
         }
-        // ===============================
 
         // Rendering loop
         while (!glfwWindowShouldClose(window))
@@ -99,14 +98,10 @@ namespace Engine {
             // Handle events
             glfwPollEvents();
 
-            // ===============================
-            // TODO: render here !
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             programPipeline.Bind();
-            camera.Refresh();
             model.Draw();
-
-            // ===============================
+            camera.Refresh();
 
             glfwSwapBuffers(window);
         }

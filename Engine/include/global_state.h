@@ -11,10 +11,10 @@ struct Mouse
     int action = -1;
     int button = -1;
     int modifier = -1;
-    float xPos = 0.f;
-    float yPos = 0.f;
-    float dx = 0.f;
-    float dy = 0.f;
+    double xPos = 0.0;
+    double yPos = 0.0;
+    double dx = 0.0;
+    double dy = 0.0;
 };
 
 class State
