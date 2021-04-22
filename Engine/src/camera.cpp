@@ -67,7 +67,7 @@ void Camera::Refresh()
     Global::Mouse& mouse = mGlobalState->GetMouse();
     if(mouse.action == GLFW_PRESS && mouse.button == GLFW_MOUSE_BUTTON_LEFT)
     {
-        rotateAroundCenter(mouse.dx, mouse.dy);
+        rotateAroundCenter(-mouse.dx, -mouse.dy);
     }
     mouse.dx = 0.0;
     mouse.dy = 0.0;

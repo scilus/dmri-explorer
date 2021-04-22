@@ -53,6 +53,7 @@ namespace Engine {
 
         const int width = 800;
         const int height = 600;
+        const float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
         GLFWwindow* window = glfwCreateWindow(width, height, "stunning-succotash", NULL, NULL);
         glfwMakeContextCurrent(window);
@@ -85,7 +86,7 @@ namespace Engine {
 
         // create our camera
         GL::Camera camera(glm::vec3(0.0f, 0.0f, 8.0f), glm::vec3(0.0f, 0.0f, 0.0f),
-                          deg2rad(60.0f), 1.33333f, 0.5f, 50.0f, &globalState);
+                          glm::radians(60.0f), aspectRatio, 0.5f, 50.0f, &globalState);
 
         if (glGetError() != GL_NO_ERROR) {
             std::cerr << "OpenGL error " << std::endl;
@@ -98,10 +99,11 @@ namespace Engine {
             // Handle events
             glfwPollEvents();
 
+            // Draw scene
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             programPipeline.Bind();
-            model.Draw();
             camera.Refresh();
+            model.Draw();
 
             glfwSwapBuffers(window);
         }

@@ -29,9 +29,9 @@ template <typename T>
 class ShaderData
 {
 public:
-    ShaderData():
-    mBinding(BindableProperty::none),
-    mData()
+    ShaderData()
+        :mBinding(BindableProperty::none)
+        ,mData()
     {
     };
 

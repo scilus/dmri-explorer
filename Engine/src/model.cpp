@@ -1,91 +1,106 @@
 #include "model.h"
+#include <stdexcept>
 
 namespace Engine
 {
 namespace GL
 {
 Model::Model()
+    :mVertices()
+    ,mColors()
+    ,mIndices()
+    ,mModelMatrix()
+    ,mVAO(0)
+    ,mIndicesBO(0)
+    ,mVerticesBO(0)
+    ,mColorBO(0)
+    ,mModelMatrixData()
 {
-    std::vector<glm::vec3> vertices;
-    vertices.push_back(glm::vec3(-1.0f, -1.0f, 0.0f));
-    vertices.push_back(glm::vec3(1.0f, -1.0f, 0.0f));
-    vertices.push_back(glm::vec3(-1.0f, 1.0f, 0.0f));
-    vertices.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
+    // Generate primitives
+    genPrimitives();
 
-    std::vector<glm::vec3> colors;
-    colors.push_back(glm::vec3(1.0f, 0.0f, 1.0f));
-    colors.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
-    colors.push_back(glm::vec3(0.0f, 1.0f, 1.0f));
-    colors.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+    // Bind primitives to GPU
+    glCreateVertexArrays(1, &mVAO);
+    mColorBO = genVBO<glm::vec3>(mVertices);
+    mVerticesBO = genVBO<glm::vec3>(mColors);
+    mIndicesBO = genVBO<GLuint>(mIndices);
+    addToVAO(mColorBO, BindableProperty::position);
+    addToVAO(mVerticesBO, BindableProperty::color);
+    addToVAO(mIndicesBO, BindableProperty::indice);
 
-    std::vector<GLuint> indices = {0, 1, 2, 1, 2, 3};
-
-    this->nbVertices = vertices.size();
-    this->nbIndices = indices.size();
-
-    // vertex array object
-    glCreateVertexArrays(1, &this->mVAO); // initialize an empty array
-    genVBOAndAssignToVAO(vertices, BindableProperty::position);
-    genVBOAndAssignToVAO(colors, BindableProperty::color);
-    genIBOAndAssignToVAO(indices);
-
-    glm::mat4 modelMatrix(1.0f);
-    this->mModelMatrixData = ShaderData<ModelMatrix>(modelMatrix, BindableProperty::model);
+    // Bind uniform buffers to GPU
+    mModelMatrixData = genShaderData<ModelMatrix>(mModelMatrix,
+                                                  BindableProperty::model);
 }
 
-
-Model::Model(const std::vector<glm::vec3>& positions,
-             const std::vector<GLuint>& indices,
-             const std::vector<glm::vec3>& colors)
+void Model::genPrimitives()
 {
-    this->nbVertices = positions.size();
-    this->nbIndices = indices.size();
+    mVertices.push_back(glm::vec3(-1.0f, -1.0f, 0.0f));
+    mVertices.push_back(glm::vec3(1.0f, -1.0f, 0.0f));
+    mVertices.push_back(glm::vec3(-1.0f, 1.0f, 0.0f));
+    mVertices.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
 
-    // vertex array object
-    glCreateVertexArrays(1, &this->mVAO); // initialize an empty array
-    genVBOAndAssignToVAO(positions, BindableProperty::position);
-    genVBOAndAssignToVAO(colors, BindableProperty::color);
-    genIBOAndAssignToVAO(indices);
+    mColors.push_back(glm::vec3(1.0f, 0.0f, 1.0f));
+    mColors.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
+    mColors.push_back(glm::vec3(0.0f, 1.0f, 1.0f));
+    mColors.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+
+    mIndices = {0, 1, 2, 1, 2, 3};
+    mModelMatrix = glm::mat4(1.0f);
 }
 
-void Model::genIBOAndAssignToVAO(const std::vector<GLuint>& indices)
+template <typename T>
+GLuint Model::genVBO(const std::vector<T>& data) const
 {
-    // Generate VBO
-    glCreateBuffers(1, &this->mIBO);
-    glNamedBufferData(this->mIBO, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
-
-    // assign object from CPU to GPU
-    const GLuint VAOIndex = static_cast<int>(BindableProperty::indice);
-    glEnableVertexArrayAttrib(this->mVAO, VAOIndex);
-    glVertexArrayAttribFormat(this->mVAO, VAOIndex, 1, GL_UNSIGNED_INT, GL_FALSE, 0);
-    glVertexArrayVertexBuffer(this->mVAO, VAOIndex, this->mIBO, 0, sizeof(GLuint));
-    glVertexArrayBindingDivisor(this->mVAO, VAOIndex, 0);
-    glVertexArrayAttribBinding(this->mVAO, VAOIndex, VAOIndex);
+    GLuint vbo;
+    glCreateBuffers(1, &vbo);
+    glNamedBufferData(vbo, data.size() * sizeof(T), &data[0], GL_STATIC_DRAW);
+    return vbo;
 }
 
-void Model::genVBOAndAssignToVAO(const std::vector<glm::vec3>& data,
-                                 const BindableProperty& type) const
+template <typename T>
+ShaderData<T> Model::genShaderData(const T& data,
+                                   const BindableProperty& binding)
 {
-    // Generate VBO
-    GLuint VBO;
-    glCreateBuffers(1, &VBO);
-    glNamedBufferData(VBO, data.size() * sizeof(glm::vec3), &data[0], GL_STATIC_DRAW);
+    return ShaderData<T>(data, binding);
+}
 
-    // assign object from CPU to GPU
-    const GLuint VAOIndex = static_cast<int>(type);
-    glEnableVertexArrayAttrib(this->mVAO, VAOIndex);
-    glVertexArrayAttribFormat(this->mVAO, VAOIndex, 3, GL_FLOAT, GL_FALSE, 0);
-    glVertexArrayVertexBuffer(this->mVAO, VAOIndex, VBO, 0, sizeof(float)*3);
-    glVertexArrayBindingDivisor(this->mVAO, VAOIndex, 0);
-    glVertexArrayAttribBinding(this->mVAO, VAOIndex, VAOIndex);
+void Model::addToVAO(const GLuint& vbo, const BindableProperty& binding)
+{
+    GLuint type, size, count;
+    switch(binding)
+    {
+    case BindableProperty::color:
+    case BindableProperty::position:
+        type = GL_FLOAT;
+        size = sizeof(float) * 3;
+        count = 3;
+        break;
+    case BindableProperty::indice:
+        type = GL_UNSIGNED_INT;
+        size = sizeof(GLuint);
+        count = 1;
+        break;
+    default:
+        throw std::runtime_error("Invalid binding.");
+    }
+
+    const GLuint bindingLocation = static_cast<GLuint>(binding);
+    glEnableVertexArrayAttrib(mVAO, bindingLocation);
+    glVertexArrayAttribFormat(mVAO, bindingLocation, count, type, GL_FALSE, 0);
+    glVertexArrayVertexBuffer(mVAO, bindingLocation, vbo, 0, size);
+    glVertexArrayBindingDivisor(mVAO, bindingLocation, 0);
+    glVertexArrayAttribBinding(mVAO, bindingLocation, bindingLocation);
 }
 
 void Model::Draw() const
 {
     mModelMatrixData.ToGPU();
-    glBindVertexArray(this->mVAO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->mIBO);
-    glDrawRangeElements(GL_TRIANGLES, 0, this->nbVertices, this->nbIndices, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(mVAO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndicesBO);
+    //glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this->mDrawIndirectBO);
+    glDrawRangeElements(GL_TRIANGLES, 0, mVertices.size(), mIndices.size(), GL_UNSIGNED_INT, 0);
+    //glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, (void*)0, 1, 0);
 }
 } // namespace GL
 } // namespace Engine
