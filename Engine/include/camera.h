@@ -19,7 +19,8 @@ class Camera
 {
 public:
     Camera() = default;
-    Camera(const glm::vec3& position, const glm::vec3& center,
+    Camera(const SphericalCoordinates& position,
+           const glm::vec3& center,
            const float& fov, const float& aspect,
            const float& near, const float& far,
            Global::State* state);
@@ -27,13 +28,12 @@ public:
 private:
     void rotateAroundCenter(double dTheta, double dPhi);
     glm::vec3 getPosition(const SphericalCoordinates& coords);
-    SphericalCoordinates getSphericalCoordinates(const glm::vec3& position);
     void updateCamParams();
 
-    glm::vec3 mPosition;
     glm::vec3 mCenter;
     glm::mat4 mProjectionMatrix;
     glm::mat4 mViewMatrix;
+    SphericalCoordinates mSphCoords;
     ShaderData<CamParams> mCamParamsData;
     Global::State* mGlobalState;
 };

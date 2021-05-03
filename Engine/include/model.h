@@ -11,9 +11,9 @@ namespace Engine
 {
 namespace GL
 {
-struct DrawElementsIndirectParams
+struct DrawElementsIndirectCommand
 {
-    DrawElementsIndirectParams()
+    DrawElementsIndirectCommand()
         :count(0)
         ,instanceCount(0)
         ,firstIndex(0)
@@ -22,7 +22,7 @@ struct DrawElementsIndirectParams
     {
     };
 
-    DrawElementsIndirectParams(uint count,
+    DrawElementsIndirectCommand(uint count,
                                uint instanceCount,
                                uint firstIndex,
                                uint baseVertex,
@@ -35,8 +35,11 @@ struct DrawElementsIndirectParams
     {
     };
 
+    /// Number of elements to be rendered
     uint count;
+    /// Number of instances of the indexed geometry to draw
     uint instanceCount;
+    /// Offset to the beginning of elements
     uint firstIndex;
     uint baseVertex;
     uint baseInstance;
@@ -53,6 +56,11 @@ private:
     template<typename T> ShaderData<T> genShaderData(const T& data,
                                                      const BindableProperty& binding);
     void addToVAO(const GLuint& vbo, const BindableProperty& binding);
+    void multiDrawElementsIndirect(GLenum mode,
+                                   GLenum type,
+                                   const void* indirect,
+                                   GLsizei drawcount,
+                                   GLsizei stride) const;
 
     // Primitives
     std::vector<glm::vec3> mVertices;
@@ -66,6 +74,7 @@ private:
     GLuint mColorBO = 0;
     GLuint mIndicesBO = 0;
     ShaderData<ModelMatrix> mModelMatrixData;
+    std::vector<DrawElementsIndirectCommand> mIndirectCmd;
 };
 } // namespace GL
 } // namespace Engine

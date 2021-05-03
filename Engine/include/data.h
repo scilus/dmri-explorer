@@ -22,7 +22,7 @@ struct ModelMatrix
 {
     ModelMatrix() = default;
     ModelMatrix(const glm::mat4& matrix);
-    glm::mat4 matrix;
+    glm::mat4 matrix; // TODO: MULTIPLE MODEL MATRIX ACCESS WITH GL_INSTANCE_ID
 };
 
 template <typename T>

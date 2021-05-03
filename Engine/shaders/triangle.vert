@@ -3,6 +3,7 @@
 layout (location=0) in vec3 in_pos;
 layout (location=1) in vec3 in_color;
 layout (location=2) in vec3 in_normal;
+in int gl_InstanceID;
 
 // SSBO
 layout(std430, binding = 3) buffer model
@@ -24,5 +25,5 @@ out vec3 v_color;
 void main()
 {
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(in_pos, 1.0);
-    v_color = in_color;
+    v_color = in_color;// * gl_InstanceID;
 }

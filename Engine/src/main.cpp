@@ -15,7 +15,6 @@
 #include "binding.h"
 #include "global_state.h"
 
-
 namespace Engine {
     // global states
     Global::State globalState;
@@ -85,7 +84,11 @@ namespace Engine {
         GL::Model model;
 
         // create our camera
-        GL::Camera camera(glm::vec3(0.0f, 0.0f, 8.0f), glm::vec3(0.0f, 0.0f, 0.0f),
+        GL::SphericalCoordinates position;
+        position.r = 10.0;
+        position.theta = M_PI / 2.0;
+        position.phi = 0.0;
+        GL::Camera camera(position, glm::vec3(0.0f, 0.0f, 0.0f),
                           glm::radians(60.0f), aspectRatio, 0.5f, 50.0f, &globalState);
 
         if (glGetError() != GL_NO_ERROR) {

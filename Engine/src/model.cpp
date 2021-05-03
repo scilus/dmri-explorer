@@ -1,5 +1,6 @@
 #include "model.h"
 #include <stdexcept>
+#include <cstdint>
 
 namespace Engine
 {
@@ -7,6 +8,7 @@ namespace GL
 {
 Model::Model()
     :mVertices()
+    ,mIndirectCmd()
     ,mColors()
     ,mIndices()
     ,mModelMatrix()
@@ -35,17 +37,27 @@ Model::Model()
 
 void Model::genPrimitives()
 {
-    mVertices.push_back(glm::vec3(-1.0f, -1.0f, 0.0f));
-    mVertices.push_back(glm::vec3(1.0f, -1.0f, 0.0f));
-    mVertices.push_back(glm::vec3(-1.0f, 1.0f, 0.0f));
-    mVertices.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
+    for(uint i = 0; i < 2; ++i)
+    {
+        mVertices.push_back(glm::vec3(-1.0f + 2.5f * i, -1.0f, 0.0f));
+        mVertices.push_back(glm::vec3(1.0f + 2.5f * i, -1.0f, 0.0f));
+        mVertices.push_back(glm::vec3(-1.0f + 2.5f * i, 1.0f, 0.0f));
+        mVertices.push_back(glm::vec3(1.0f + 2.5f * i, 1.0f, 0.0f));
 
-    mColors.push_back(glm::vec3(1.0f, 0.0f, 1.0f));
-    mColors.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
-    mColors.push_back(glm::vec3(0.0f, 1.0f, 1.0f));
-    mColors.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+        mColors.push_back(glm::vec3(1.0f, 0.0f, 1.0f));
+        mColors.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
+        mColors.push_back(glm::vec3(0.0f, 1.0f, 1.0f));
+        mColors.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
 
-    mIndices = {0, 1, 2, 1, 2, 3};
+        mIndices.push_back(0 + i * 4);
+        mIndices.push_back(1 + i * 4);
+        mIndices.push_back(2 + i * 4);
+        mIndices.push_back(1 + i * 4);
+        mIndices.push_back(2 + i * 4);
+        mIndices.push_back(3 + i * 4);
+
+        mIndirectCmd.push_back(DrawElementsIndirectCommand(6, 1, 0 + i*6, 0, 0));
+    }
     mModelMatrix = glm::mat4(1.0f);
 }
 
@@ -93,14 +105,42 @@ void Model::addToVAO(const GLuint& vbo, const BindableProperty& binding)
     glVertexArrayAttribBinding(mVAO, bindingLocation, bindingLocation);
 }
 
+void Model::multiDrawElementsIndirect(GLenum mode, GLenum type,
+                                      const void* indirect,
+                                      GLsizei drawcount,
+                                      GLsizei stride) const
+{
+    if(type != GL_UNSIGNED_INT)
+    {
+        throw std::runtime_error("Invalid type for element buffer.");
+    }
+    size_t sizeOfType = sizeof(GLuint);
+
+    GLsizei n;
+    for (n = 0; n < drawcount; n++) {
+        const DrawElementsIndirectCommand *cmd;
+        if (stride != 0) {
+            cmd = (const DrawElementsIndirectCommand  *)((uintptr_t)indirect + n * stride);
+        } else {
+            cmd = (const DrawElementsIndirectCommand  *)indirect + n;
+        }
+
+        glDrawElementsInstancedBaseVertexBaseInstance(mode,
+                                                      cmd->count,
+                                                      type,
+                                                      (void*)(cmd->firstIndex * sizeOfType),
+                                                      cmd->instanceCount,
+                                                      cmd->baseVertex,
+                                                      cmd->baseInstance);
+    }
+}
+
 void Model::Draw() const
 {
     mModelMatrixData.ToGPU();
     glBindVertexArray(mVAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndicesBO);
-    //glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this->mDrawIndirectBO);
-    glDrawRangeElements(GL_TRIANGLES, 0, mVertices.size(), mIndices.size(), GL_UNSIGNED_INT, 0);
-    //glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, (void*)0, 1, 0);
+    multiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, &mIndirectCmd[0], 2, 0);
 }
 } // namespace GL
 } // namespace Engine
