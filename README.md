@@ -27,9 +27,10 @@ cd build/Engine
 * [x] Indices buffer
 * [x] Uniform buffers management (SSBO): `glBindBufferBase`
 * [x] Struct for uniforms
-* [ ] Instancing with `glMultiDrawElementsIndirect`
+* [-] Instancing with `glMultiDrawElementsIndirect`
 * [ ] Includes in shaders: `glNamedStringARB`, `glCompileShaderIncludeARB`
 * [ ] SSBO definition in shader include
+* [ ] Load data from nifti
 
 ## On `glMultiDrawElementsIndirect` errors
 GL_INVALID_OPERATION is generated if no buffer is bound to the GL_ELEMENT_ARRAY_BUFFER binding, or if such a buffer's data store is currently mapped.

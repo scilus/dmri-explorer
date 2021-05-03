@@ -96,6 +96,8 @@ namespace Engine {
             return EXIT_FAILURE;
         }
 
+        glEnable(GL_DEPTH_TEST);
+
         // Rendering loop
         while (!glfwWindowShouldClose(window))
         {

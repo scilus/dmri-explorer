@@ -41,20 +41,37 @@ struct DrawElementsIndirectCommand
     uint instanceCount;
     /// Offset to the beginning of elements
     uint firstIndex;
+    /// Constant that should be added to each element of indices
     uint baseVertex;
+    /// Base instance for use in fetching instanced vertex attributes
     uint baseInstance;
+};
+
+struct Sphere
+{
+    Sphere() = default;
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> normals;
+    std::vector<GLuint> indices;
+    std::vector<glm::vec3> color;
 };
 
 class Model
 {
 public:
     Model();
+    ~Model();
     void Draw() const;
 private:
     void genPrimitives();
+    Sphere genUnitSphere(const int resolution) const;
     template<typename T> GLuint genVBO(const std::vector<T>& data) const;
     template<typename T> ShaderData<T> genShaderData(const T& data,
-                                                     const BindableProperty& binding);
+                                                     const BindableProperty& binding) const;
+    template<typename T> ShaderData<T> genShaderData(const T& data,
+                                                     const BindableProperty& binding,
+                                                     size_t sizeofT,
+                                                     bool isPtr) const;
     void addToVAO(const GLuint& vbo, const BindableProperty& binding);
     void multiDrawElementsIndirect(GLenum mode,
                                    GLenum type,
@@ -65,15 +82,18 @@ private:
     // Primitives
     std::vector<glm::vec3> mVertices;
     std::vector<glm::vec3> mColors;
+    std::vector<glm::vec3> mNormals;
     std::vector<GLuint> mIndices;
-    glm::mat4 mModelMatrix;
+    std::vector<glm::mat4> mInstanceTransforms;
+    uint mNbObjects;
 
     // GPU bindings
     GLuint mVAO = 0;
     GLuint mVerticesBO = 0;
     GLuint mColorBO = 0;
+    GLuint mNormalsBO = 0;
     GLuint mIndicesBO = 0;
-    ShaderData<ModelMatrix> mModelMatrixData;
+    ShaderData<glm::mat4*> mInstanceTransformsData;
     std::vector<DrawElementsIndirectCommand> mIndirectCmd;
 };
 } // namespace GL

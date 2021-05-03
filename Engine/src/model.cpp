@@ -1,4 +1,6 @@
 #include "model.h"
+#include <utils.hpp>
+
 #include <stdexcept>
 #include <cstdint>
 
@@ -10,55 +12,110 @@ Model::Model()
     :mVertices()
     ,mIndirectCmd()
     ,mColors()
+    ,mNormals()
     ,mIndices()
-    ,mModelMatrix()
+    ,mInstanceTransforms()
+    ,mNbObjects(2)
     ,mVAO(0)
     ,mIndicesBO(0)
     ,mVerticesBO(0)
+    ,mNormalsBO(0)
     ,mColorBO(0)
-    ,mModelMatrixData()
+    ,mInstanceTransformsData()
 {
     // Generate primitives
     genPrimitives();
 
     // Bind primitives to GPU
     glCreateVertexArrays(1, &mVAO);
-    mColorBO = genVBO<glm::vec3>(mVertices);
-    mVerticesBO = genVBO<glm::vec3>(mColors);
+    mVerticesBO = genVBO<glm::vec3>(mVertices);
+    mColorBO = genVBO<glm::vec3>(mColors);
+    mNormalsBO = genVBO<glm::vec3>(mNormals);
     mIndicesBO = genVBO<GLuint>(mIndices);
-    addToVAO(mColorBO, BindableProperty::position);
-    addToVAO(mVerticesBO, BindableProperty::color);
+    addToVAO(mVerticesBO, BindableProperty::position);
+    addToVAO(mNormalsBO, BindableProperty::normal);
+    addToVAO(mColorBO, BindableProperty::color);
     addToVAO(mIndicesBO, BindableProperty::indice);
 
     // Bind uniform buffers to GPU
-    mModelMatrixData = genShaderData<ModelMatrix>(mModelMatrix,
-                                                  BindableProperty::model);
+    mInstanceTransformsData = genShaderData<glm::mat4*>(mInstanceTransforms.data(),
+                                                        BindableProperty::model,
+                                                        sizeof(glm::mat4) * mInstanceTransforms.size(),
+                                                        true);
+}
+
+Model::~Model()
+{
 }
 
 void Model::genPrimitives()
 {
-    for(uint i = 0; i < 2; ++i)
+    Sphere sphere = genUnitSphere(20);
+    for(uint i = 0; i < mNbObjects; ++i)
     {
-        mVertices.push_back(glm::vec3(-1.0f + 2.5f * i, -1.0f, 0.0f));
-        mVertices.push_back(glm::vec3(1.0f + 2.5f * i, -1.0f, 0.0f));
-        mVertices.push_back(glm::vec3(-1.0f + 2.5f * i, 1.0f, 0.0f));
-        mVertices.push_back(glm::vec3(1.0f + 2.5f * i, 1.0f, 0.0f));
-
-        mColors.push_back(glm::vec3(1.0f, 0.0f, 1.0f));
-        mColors.push_back(glm::vec3(1.0f, 1.0f, 0.0f));
-        mColors.push_back(glm::vec3(0.0f, 1.0f, 1.0f));
-        mColors.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
-
-        mIndices.push_back(0 + i * 4);
-        mIndices.push_back(1 + i * 4);
-        mIndices.push_back(2 + i * 4);
-        mIndices.push_back(1 + i * 4);
-        mIndices.push_back(2 + i * 4);
-        mIndices.push_back(3 + i * 4);
-
-        mIndirectCmd.push_back(DrawElementsIndirectCommand(6, 1, 0 + i*6, 0, 0));
+        mVertices.insert(mVertices.end(), sphere.vertices.begin(), sphere.vertices.end());
+        mNormals.insert(mNormals.end(), sphere.normals.begin(), sphere.normals.end());
+        mIndices.insert(mIndices.end(), sphere.indices.begin(), sphere.indices.end());
+        mColors.insert(mColors.end(), sphere.color.begin(), sphere.color.end());
+        mInstanceTransforms.push_back(glm::mat4(1.0f, 0.0f, 0.0f, 0.0f,
+                                                0.0f, 1.0f, 0.0f, 0.0f,
+                                                0.0f, 0.0f, 1.0f, 0.0f,
+                                                i * 2.0f, 0.0f, 0.0f, 1.0f));
+        mIndirectCmd.push_back(
+            DrawElementsIndirectCommand(sphere.indices.size(),
+                                        1,
+                                        i*sphere.indices.size(),
+                                        i*sphere.vertices.size(),
+                                        i));
     }
-    mModelMatrix = glm::mat4(1.0f);
+}
+
+Sphere Model::genUnitSphere(const int resolution) const
+{
+    Sphere sphere;
+    const float thetaMax = M_PI;
+    const float phiMax = 2.0 * M_PI;
+    const int maxThetaSteps = resolution;
+    const int maxPhiSteps = 2 * maxThetaSteps;
+
+    // Create sphere vertices and normals
+    float theta;
+    float phi;
+    glm::vec3 vertice;
+    for(int i = 0; i <= maxPhiSteps; ++i)
+    {
+        for(int j = 0; j <= maxThetaSteps; ++j)
+        {
+            theta = j * thetaMax / maxThetaSteps;
+            phi = i * phiMax / maxPhiSteps;
+            vertice = sphericalToCartesian(1.0f, theta, phi);
+            sphere.vertices.push_back(vertice);
+            sphere.normals.push_back(vertice);
+            sphere.color.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+        }
+    }
+
+    // Create faces from vertices
+    int ii, jj, kk, ll, mm, nn;
+    for(int i = 0; i < maxPhiSteps; ++i)
+    {
+        for(int j = 0; j < maxThetaSteps; ++j)
+        {
+            ii = i * (maxThetaSteps + 1) + j;
+            sphere.indices.push_back(ii);
+            jj = ii + 1;
+            sphere.indices.push_back(jj);
+            kk = jj + maxThetaSteps;
+            sphere.indices.push_back(kk);
+            ll = jj;
+            sphere.indices.push_back(ll);
+            mm = kk + 1;
+            sphere.indices.push_back(mm);
+            nn = kk;
+            sphere.indices.push_back(nn);
+        }
+    }
+    return sphere;
 }
 
 template <typename T>
@@ -72,9 +129,17 @@ GLuint Model::genVBO(const std::vector<T>& data) const
 
 template <typename T>
 ShaderData<T> Model::genShaderData(const T& data,
-                                   const BindableProperty& binding)
+                                   const BindableProperty& binding) const
 {
     return ShaderData<T>(data, binding);
+}
+
+template <typename T>
+ShaderData<T> Model::genShaderData(const T& data,
+                                   const BindableProperty& binding,
+                                   size_t sizeofT, bool isPtr) const
+{
+    return ShaderData<T>(data, binding, sizeofT, isPtr);
 }
 
 void Model::addToVAO(const GLuint& vbo, const BindableProperty& binding)
@@ -83,6 +148,7 @@ void Model::addToVAO(const GLuint& vbo, const BindableProperty& binding)
     switch(binding)
     {
     case BindableProperty::color:
+    case BindableProperty::normal:
     case BindableProperty::position:
         type = GL_FLOAT;
         size = sizeof(float) * 3;
@@ -117,13 +183,21 @@ void Model::multiDrawElementsIndirect(GLenum mode, GLenum type,
     size_t sizeOfType = sizeof(GLuint);
 
     GLsizei n;
-    for (n = 0; n < drawcount; n++) {
+    ShaderData<GLsizei> drawID;
+    for (n = 0; n < drawcount; n++)
+    {
         const DrawElementsIndirectCommand *cmd;
-        if (stride != 0) {
-            cmd = (const DrawElementsIndirectCommand  *)((uintptr_t)indirect + n * stride);
-        } else {
-            cmd = (const DrawElementsIndirectCommand  *)indirect + n;
+        if (stride != 0)
+        {
+            cmd = (const DrawElementsIndirectCommand*)((uintptr_t)indirect + n * stride);
+        } else
+        {
+            cmd = (const DrawElementsIndirectCommand*)indirect + n;
         }
+
+        // TODO: Modify existing ShaderData
+        drawID = genShaderData<GLsizei>(n, BindableProperty::drawID);
+        drawID.ToGPU();
 
         glDrawElementsInstancedBaseVertexBaseInstance(mode,
                                                       cmd->count,
@@ -137,10 +211,10 @@ void Model::multiDrawElementsIndirect(GLenum mode, GLenum type,
 
 void Model::Draw() const
 {
-    mModelMatrixData.ToGPU();
+    mInstanceTransformsData.ToGPU();
     glBindVertexArray(mVAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndicesBO);
-    multiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, &mIndirectCmd[0], 2, 0);
+    multiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, &mIndirectCmd[0], mNbObjects, 0);
 }
 } // namespace GL
 } // namespace Engine

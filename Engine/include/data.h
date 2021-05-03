@@ -13,7 +13,8 @@ namespace GL
 struct CamParams
 {
     CamParams() = default;
-    CamParams(const glm::mat4& view, const glm::mat4& projection);
+    CamParams(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& eye);
+    glm::vec4 eye;
     glm::mat4 viewMatrix;
     glm::mat4 projectionMatrix;
 };
@@ -22,7 +23,14 @@ struct ModelMatrix
 {
     ModelMatrix() = default;
     ModelMatrix(const glm::mat4& matrix);
-    glm::mat4 matrix; // TODO: MULTIPLE MODEL MATRIX ACCESS WITH GL_INSTANCE_ID
+    glm::mat4 matrix;
+};
+
+struct ModelInstanceTransforms
+{
+    ModelInstanceTransforms():matrices(){};
+    inline const size_t getSize(){ return matrices.size() * sizeof(glm::mat4); };
+    std::vector<glm::mat4> matrices;
 };
 
 template <typename T>
@@ -40,8 +48,22 @@ public:
         this->mData = data;
         this->mBinding = binding;
         glCreateBuffers(1, &this->mSSBO);
-        // glNamedBufferSubData?
         glNamedBufferData(this->mSSBO, sizeof(T), &(this->mData), GL_STATIC_READ);
+    };
+
+    ShaderData(const T& data, BindableProperty binding, size_t sizeofT, bool isPtr=false)
+    {
+        this->mData = data;
+        this->mBinding = binding;
+        glCreateBuffers(1, &this->mSSBO);
+        if(isPtr)
+        {
+            glNamedBufferData(this->mSSBO, sizeofT, this->mData, GL_STATIC_READ);
+        }
+        else
+        {
+            glNamedBufferData(this->mSSBO, sizeofT, &(this->mData), GL_STATIC_READ);
+        }
     };
 
     void ToGPU() const

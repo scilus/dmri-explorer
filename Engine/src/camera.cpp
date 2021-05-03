@@ -1,4 +1,5 @@
 #include <camera.h>
+#include <utils.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/norm.hpp>
 #include <math.h>
@@ -27,18 +28,16 @@ Camera::Camera(const SphericalCoordinates& sphCoords,
 
 void Camera::updateCamParams()
 {
-    CamParams camParams(mViewMatrix, mProjectionMatrix);
+    const glm::vec3 eye = sphericalToCartesian(mSphCoords.r,
+                                               mSphCoords.theta,
+                                               mSphCoords.phi);
+    CamParams camParams(mViewMatrix, mProjectionMatrix, eye);
     mCamParamsData = ShaderData<CamParams>(camParams, BindableProperty::camera);
 }
 
 glm::vec3 Camera::getPosition(const SphericalCoordinates& coord)
 {
-    glm::vec3 pos;
-    pos.x = coord.r * sin(coord.phi) * sin(coord.theta);
-    pos.y = coord.r * cos(coord.theta);
-    pos.z = coord.r * cos(coord.phi) * sin(coord.theta);
-
-    return pos;
+    return sphericalToCartesian(coord.r, coord.theta, coord.phi);
 }
 
 void Camera::rotateAroundCenter(double dx, double dy)

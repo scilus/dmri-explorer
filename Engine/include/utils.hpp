@@ -1,5 +1,6 @@
 #pragma once
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 
 #include <string>
 #include <fstream>
@@ -58,4 +59,16 @@ static inline float deg2rad(const float& deg)
 static inline float rad2deg(const float& rad)
 {
     return RAD2DEG_FACTOR * rad;
+}
+
+static inline glm::vec3 sphericalToCartesian(const float r,
+                                             const float theta,
+                                             const float phi)
+{
+    glm::vec3 pos;
+    pos.x = r * sin(phi) * sin(theta);
+    pos.y = r * cos(theta);
+    pos.z = r * cos(phi) * sin(theta);
+
+    return pos;
 }
