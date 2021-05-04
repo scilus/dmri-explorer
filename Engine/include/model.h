@@ -3,9 +3,11 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <vector>
+#include <memory>
 
 #include <binding.h>
 #include <data.h>
+#include <loader.h>
 
 namespace Engine
 {
@@ -59,7 +61,7 @@ struct Sphere
 class Model
 {
 public:
-    Model();
+    Model(std::shared_ptr<Loader::Image> image);
     ~Model();
     void Draw() const;
 private:
@@ -79,13 +81,15 @@ private:
                                    GLsizei drawcount,
                                    GLsizei stride) const;
 
+    // Image data
+    std::shared_ptr<Loader::Image> mImage;
+
     // Primitives
     std::vector<glm::vec3> mVertices;
     std::vector<glm::vec3> mColors;
     std::vector<glm::vec3> mNormals;
     std::vector<GLuint> mIndices;
     std::vector<glm::mat4> mInstanceTransforms;
-    uint mNbObjects;
 
     // GPU bindings
     GLuint mVAO = 0;

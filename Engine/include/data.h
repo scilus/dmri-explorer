@@ -66,6 +66,11 @@ public:
         }
     };
 
+    void ModifySubData(GLintptr offset, GLsizeiptr size, const void* data)
+    {
+        glNamedBufferSubData(this->mSSBO, offset, size, data);
+    };
+
     void ToGPU() const
     {
         // Copy SSBO data to GPU

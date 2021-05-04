@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <data.h>
 #include <global_state.h>
+#include <memory>
 
 namespace Engine
 {
@@ -23,10 +24,12 @@ public:
            const glm::vec3& center,
            const float& fov, const float& aspect,
            const float& near, const float& far,
-           Global::State* state);
+           std::shared_ptr<Global::State> state);
     void Refresh();
 private:
     void rotateAroundCenter(double dTheta, double dPhi);
+    void zoom(double delta);
+    void translate(double dx, double dy);
     glm::vec3 getPosition(const SphericalCoordinates& coords);
     void updateCamParams();
 
@@ -35,7 +38,7 @@ private:
     glm::mat4 mViewMatrix;
     SphericalCoordinates mSphCoords;
     ShaderData<CamParams> mCamParamsData;
-    Global::State* mGlobalState;
+    std::shared_ptr<Global::State> mGlobalState;
 };
 } // namespace GL
 } // namespace Engine

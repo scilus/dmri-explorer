@@ -1,6 +1,7 @@
 #include "model.h"
 #include <utils.hpp>
 
+#include <iostream>
 #include <stdexcept>
 #include <cstdint>
 
@@ -8,14 +9,14 @@ namespace Engine
 {
 namespace GL
 {
-Model::Model()
-    :mVertices()
+Model::Model(std::shared_ptr<Loader::Image> image)
+    :mImage(image)
+    ,mVertices()
     ,mIndirectCmd()
     ,mColors()
     ,mNormals()
     ,mIndices()
     ,mInstanceTransforms()
-    ,mNbObjects(2)
     ,mVAO(0)
     ,mIndicesBO(0)
     ,mVerticesBO(0)
@@ -48,25 +49,54 @@ Model::~Model()
 {
 }
 
+uint to1d(uint i, uint j, uint k, glm::vec<4, int> gridDims)
+{
+    return i * (gridDims.y * gridDims.z) + j * gridDims.z + k;
+};
+
 void Model::genPrimitives()
 {
-    Sphere sphere = genUnitSphere(20);
-    for(uint i = 0; i < mNbObjects; ++i)
+    Sphere sphere = genUnitSphere(10);
+    const glm::vec<4, int> gridDims = mImage->dims();
+    const glm::vec3 gridCenter((gridDims.x - 1) / 2.0f,
+                               (gridDims.y - 1) / 2.0f,
+                               (gridDims.z - 1) / 2.0f);
+
+    for(uint i = 0; i < gridDims.x; ++i)
     {
-        mVertices.insert(mVertices.end(), sphere.vertices.begin(), sphere.vertices.end());
-        mNormals.insert(mNormals.end(), sphere.normals.begin(), sphere.normals.end());
-        mIndices.insert(mIndices.end(), sphere.indices.begin(), sphere.indices.end());
-        mColors.insert(mColors.end(), sphere.color.begin(), sphere.color.end());
-        mInstanceTransforms.push_back(glm::mat4(1.0f, 0.0f, 0.0f, 0.0f,
-                                                0.0f, 1.0f, 0.0f, 0.0f,
-                                                0.0f, 0.0f, 1.0f, 0.0f,
-                                                i * 2.0f, 0.0f, 0.0f, 1.0f));
-        mIndirectCmd.push_back(
-            DrawElementsIndirectCommand(sphere.indices.size(),
-                                        1,
-                                        i*sphere.indices.size(),
-                                        i*sphere.vertices.size(),
-                                        i));
+        for(uint j = 0; j < gridDims.y; ++j)
+        {
+            for(uint k = 0; k < gridDims.z; ++k)
+            {
+                mVertices.insert(mVertices.end(),
+                                 sphere.vertices.begin(),
+                                 sphere.vertices.end());
+                mNormals.insert(mNormals.end(),
+                                sphere.normals.begin(),
+                                sphere.normals.end());
+                mIndices.insert(mIndices.end(),
+                                sphere.indices.begin(),
+                                sphere.indices.end());
+                mColors.insert(mColors.end(),
+                               sphere.color.begin(),
+                               sphere.color.end());
+                glm::mat4 modelMat = glm::mat4(0.5f, 0.0f, 0.0f, 0.0f,
+                                               0.0f, 0.5f, 0.0f, 0.0f,
+                                               0.0f, 0.0f, 0.5f, 0.0f,
+                                               i - gridCenter.x,
+                                               j - gridCenter.y,
+                                               k - gridCenter.z,
+                                               1.0f);
+                mInstanceTransforms.push_back(modelMat);
+                const uint index1d = to1d(i, j, k, gridDims);
+                mIndirectCmd.push_back(
+                    DrawElementsIndirectCommand(sphere.indices.size(),
+                                                1,
+                                                index1d*sphere.indices.size(),
+                                                index1d*sphere.vertices.size(),
+                                                index1d));
+            }
+        }
     }
 }
 
@@ -183,7 +213,7 @@ void Model::multiDrawElementsIndirect(GLenum mode, GLenum type,
     size_t sizeOfType = sizeof(GLuint);
 
     GLsizei n;
-    ShaderData<GLsizei> drawID;
+    ShaderData<GLsizei> drawID(0, BindableProperty::drawID);
     for (n = 0; n < drawcount; n++)
     {
         const DrawElementsIndirectCommand *cmd;
@@ -195,8 +225,7 @@ void Model::multiDrawElementsIndirect(GLenum mode, GLenum type,
             cmd = (const DrawElementsIndirectCommand*)indirect + n;
         }
 
-        // TODO: Modify existing ShaderData
-        drawID = genShaderData<GLsizei>(n, BindableProperty::drawID);
+        drawID.ModifySubData(0, sizeof(GLsizei), &n);
         drawID.ToGPU();
 
         glDrawElementsInstancedBaseVertexBaseInstance(mode,
@@ -214,7 +243,11 @@ void Model::Draw() const
     mInstanceTransformsData.ToGPU();
     glBindVertexArray(mVAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndicesBO);
-    multiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, &mIndirectCmd[0], mNbObjects, 0);
+    multiDrawElementsIndirect(GL_TRIANGLES,
+                              GL_UNSIGNED_INT,
+                              &mIndirectCmd[0],
+                              mImage->flatGridSize(),
+                              0);
 }
 } // namespace GL
 } // namespace Engine

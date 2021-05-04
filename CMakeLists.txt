@@ -14,4 +14,5 @@ find_package(glm CONFIG REQUIRED)
 add_library(GLAD "glad/src/glad.c")
 include_directories("glad/include/")
 
+add_subdirectory("nifti_clib")
 add_subdirectory("Engine")

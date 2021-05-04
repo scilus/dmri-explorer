@@ -5,6 +5,7 @@ add_executable(main ${SOURCES})
 target_link_libraries(main PRIVATE GLAD)
 target_link_libraries(main PRIVATE glm::glm)
 target_link_libraries(main PRIVATE glfw)
+target_link_libraries(main PRIVATE NIFTI::nifticdf)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 

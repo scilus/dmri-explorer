@@ -6,6 +6,12 @@ namespace Engine
 {
 namespace Global
 {
+struct MouseWheel
+{
+    bool enabled = false;
+    double dy = 0.0;
+};
+
 struct Mouse
 {
     int action = -1;
@@ -15,7 +21,9 @@ struct Mouse
     double yPos = 0.0;
     double dx = 0.0;
     double dy = 0.0;
+    MouseWheel wheel;
 };
+
 
 class State
 {
