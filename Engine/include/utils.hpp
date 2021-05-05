@@ -5,6 +5,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <limits>
 
 const float DEG2RAD_FACTOR = 0.0174532925199f;
 const float RAD2DEG_FACTOR = 57.2957795131f;
@@ -71,4 +72,10 @@ static inline glm::vec3 sphericalToCartesian(const float r,
     pos.z = r * cos(phi) * sin(theta);
 
     return pos;
+}
+
+static inline bool doubleEqual(double a, double b)
+{
+    const double eps = std::numeric_limits<double>().epsilon();
+    return a > b - eps && a < b + eps;
 }

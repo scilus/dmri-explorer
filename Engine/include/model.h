@@ -81,8 +81,12 @@ private:
                                    GLsizei drawcount,
                                    GLsizei stride) const;
 
+    // utility function
+    uint toFlatIndex(uint i, uint j, uint k) const;
+
     // Image data
     std::shared_ptr<Loader::Image> mImage;
+    glm::vec<4, int> mGridDims;
 
     // Primitives
     std::vector<glm::vec3> mVertices;
@@ -97,6 +101,7 @@ private:
     GLuint mColorBO = 0;
     GLuint mNormalsBO = 0;
     GLuint mIndicesBO = 0;
+    GLuint mIndirectBO = 0;
     ShaderData<glm::mat4*> mInstanceTransformsData;
     std::vector<DrawElementsIndirectCommand> mIndirectCmd;
 };

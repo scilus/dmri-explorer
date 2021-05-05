@@ -9,8 +9,8 @@ void main()
 {
     vec3 n = normalize(v_normal);
     vec3 l = vec3(0.0, 0.0, 1.0);
-    vec3 diffuse = vec3(1.0f, 1.0f, 1.0f) * max(dot(n, v_eye.xyz), 0.0) * 0.9;
-    vec3 ambient = vec3(1.0, 1.0, 1.0) * 0.1;
+    vec3 diffuse = v_color * max(dot(n, v_eye.xyz), 0.0) * 0.9;
+    vec3 ambient = v_color * 0.1;
 
     color = vec4(ambient + diffuse, 1.0);
 }

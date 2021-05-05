@@ -32,7 +32,7 @@ out vec4 v_eye;
 
 void main()
 {
-    gl_Position = projectionMatrix * viewMatrix * modelMatrix[drawID] * vec4(in_pos, 1.0);
+    gl_Position = projectionMatrix * viewMatrix * modelMatrix[gl_DrawID] * vec4(in_pos, 1.0);
     v_color = in_color;
     v_normal = in_normal;
     v_eye = normalize(eye);

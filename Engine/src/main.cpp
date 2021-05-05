@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
     }
 
     // load our image
-    std::shared_ptr<Loader::Image> image(new Loader::Image("../../odf.nii.gz"));
+    std::shared_ptr<Loader::Image> image(new Loader::Image("../../todi_sh_8_descoteaux.nii.gz"));
 
     // create our model
     GL::Model model(image);

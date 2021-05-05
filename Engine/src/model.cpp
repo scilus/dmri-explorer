@@ -11,6 +11,7 @@ namespace GL
 {
 Model::Model(std::shared_ptr<Loader::Image> image)
     :mImage(image)
+    ,mGridDims(image->dims())
     ,mVertices()
     ,mIndirectCmd()
     ,mColors()
@@ -22,6 +23,7 @@ Model::Model(std::shared_ptr<Loader::Image> image)
     ,mVerticesBO(0)
     ,mNormalsBO(0)
     ,mColorBO(0)
+    ,mIndirectBO(0)
     ,mInstanceTransformsData()
 {
     // Generate primitives
@@ -33,10 +35,11 @@ Model::Model(std::shared_ptr<Loader::Image> image)
     mColorBO = genVBO<glm::vec3>(mColors);
     mNormalsBO = genVBO<glm::vec3>(mNormals);
     mIndicesBO = genVBO<GLuint>(mIndices);
+    mIndirectBO = genVBO<DrawElementsIndirectCommand>(mIndirectCmd);
+
     addToVAO(mVerticesBO, BindableProperty::position);
     addToVAO(mNormalsBO, BindableProperty::normal);
     addToVAO(mColorBO, BindableProperty::color);
-    addToVAO(mIndicesBO, BindableProperty::indice);
 
     // Bind uniform buffers to GPU
     mInstanceTransformsData = genShaderData<glm::mat4*>(mInstanceTransforms.data(),
@@ -49,25 +52,30 @@ Model::~Model()
 {
 }
 
-uint to1d(uint i, uint j, uint k, glm::vec<4, int> gridDims)
+uint Model::toFlatIndex(uint i, uint j, uint k) const
 {
-    return i * (gridDims.y * gridDims.z) + j * gridDims.z + k;
-};
+    return i * (mGridDims.y * mGridDims.z) + j * mGridDims.z + k;
+}
 
 void Model::genPrimitives()
 {
     Sphere sphere = genUnitSphere(10);
-    const glm::vec<4, int> gridDims = mImage->dims();
-    const glm::vec3 gridCenter((gridDims.x - 1) / 2.0f,
-                               (gridDims.y - 1) / 2.0f,
-                               (gridDims.z - 1) / 2.0f);
+    const glm::vec3 gridCenter((mGridDims.x - 1) / 2.0f,
+                               (mGridDims.y - 1) / 2.0f,
+                               (mGridDims.z - 1) / 2.0f);
 
-    for(uint i = 0; i < gridDims.x; ++i)
+    for(uint i = 0; i < mGridDims.x; ++i)
     {
-        for(uint j = 0; j < gridDims.y; ++j)
+        for(uint j = 0; j < mGridDims.y; ++j)
         {
-            for(uint k = 0; k < gridDims.z; ++k)
+            for(uint k = 0; k < mGridDims.z; ++k)
             {
+                double scaling = *mImage->at(i, j, k)[0];
+                if(doubleEqual(scaling, 0.0))
+                {
+                    continue;
+                }
+
                 mVertices.insert(mVertices.end(),
                                  sphere.vertices.begin(),
                                  sphere.vertices.end());
@@ -80,21 +88,23 @@ void Model::genPrimitives()
                 mColors.insert(mColors.end(),
                                sphere.color.begin(),
                                sphere.color.end());
-                glm::mat4 modelMat = glm::mat4(0.5f, 0.0f, 0.0f, 0.0f,
-                                               0.0f, 0.5f, 0.0f, 0.0f,
-                                               0.0f, 0.0f, 0.5f, 0.0f,
+
+                glm::mat4 modelMat = glm::mat4(0.5f * scaling, 0.0f, 0.0f, 0.0f,
+                                               0.0f, 0.5f * scaling, 0.0f, 0.0f,
+                                               0.0f, 0.0f, 0.5f * scaling, 0.0f,
                                                i - gridCenter.x,
                                                j - gridCenter.y,
                                                k - gridCenter.z,
                                                1.0f);
+
+                const uint index1d = toFlatIndex(i, j, k);
                 mInstanceTransforms.push_back(modelMat);
-                const uint index1d = to1d(i, j, k, gridDims);
                 mIndirectCmd.push_back(
                     DrawElementsIndirectCommand(sphere.indices.size(),
                                                 1,
-                                                index1d*sphere.indices.size(),
-                                                index1d*sphere.vertices.size(),
-                                                index1d));
+                                                mIndirectCmd.size()*sphere.indices.size(),
+                                                mIndirectCmd.size()*sphere.vertices.size(),
+                                                mIndirectCmd.size()));
             }
         }
     }
@@ -121,7 +131,7 @@ Sphere Model::genUnitSphere(const int resolution) const
             vertice = sphericalToCartesian(1.0f, theta, phi);
             sphere.vertices.push_back(vertice);
             sphere.normals.push_back(vertice);
-            sphere.color.push_back(glm::vec3(1.0f, 1.0f, 1.0f));
+            sphere.color.push_back(glm::vec3(1.0f, 0.0f, 1.0f));
         }
     }
 
@@ -133,16 +143,11 @@ Sphere Model::genUnitSphere(const int resolution) const
         {
             ii = i * (maxThetaSteps + 1) + j;
             sphere.indices.push_back(ii);
-            jj = ii + 1;
-            sphere.indices.push_back(jj);
-            kk = jj + maxThetaSteps;
-            sphere.indices.push_back(kk);
-            ll = jj;
-            sphere.indices.push_back(ll);
-            mm = kk + 1;
-            sphere.indices.push_back(mm);
-            nn = kk;
-            sphere.indices.push_back(nn);
+            sphere.indices.push_back(ii + 1);
+            sphere.indices.push_back(ii + 1 + maxThetaSteps);
+            sphere.indices.push_back(ii + 1);
+            sphere.indices.push_back(ii + maxThetaSteps + 2);
+            sphere.indices.push_back(ii + 1 + maxThetaSteps);
         }
     }
     return sphere;
@@ -183,11 +188,6 @@ void Model::addToVAO(const GLuint& vbo, const BindableProperty& binding)
         type = GL_FLOAT;
         size = sizeof(float) * 3;
         count = 3;
-        break;
-    case BindableProperty::indice:
-        type = GL_UNSIGNED_INT;
-        size = sizeof(GLuint);
-        count = 1;
         break;
     default:
         throw std::runtime_error("Invalid binding.");
@@ -243,11 +243,12 @@ void Model::Draw() const
     mInstanceTransformsData.ToGPU();
     glBindVertexArray(mVAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndicesBO);
-    multiDrawElementsIndirect(GL_TRIANGLES,
-                              GL_UNSIGNED_INT,
-                              &mIndirectCmd[0],
-                              mImage->flatGridSize(),
-                              0);
+    glBindBuffer(GL_DRAW_INDIRECT_BUFFER, mIndirectBO);
+    glMultiDrawElementsIndirect(GL_TRIANGLES,
+                                GL_UNSIGNED_INT,
+                                (GLvoid*)0,
+                                mIndirectCmd.size(),
+                                0);
 }
 } // namespace GL
 } // namespace Engine
