@@ -4,12 +4,14 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstdint>
+#include <spherical_harmonic.h>
+#include <sphere.h>
 
 namespace Engine
 {
 namespace GL
 {
-Model::Model(std::shared_ptr<Loader::Image> image)
+Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image)
     :mImage(image)
     ,mGridDims(image->dims())
     ,mVertices()
@@ -52,105 +54,56 @@ Model::~Model()
 {
 }
 
-uint Model::toFlatIndex(uint i, uint j, uint k) const
-{
-    return i * (mGridDims.y * mGridDims.z) + j * mGridDims.z + k;
-}
-
 void Model::genPrimitives()
 {
-    Sphere sphere = genUnitSphere(10);
+    Primitive::Sphere sphere(10);
+    sphere.updateNormals();
     const glm::vec3 gridCenter((mGridDims.x - 1) / 2.0f,
                                (mGridDims.y - 1) / 2.0f,
                                (mGridDims.z - 1) / 2.0f);
 
-    for(uint i = 0; i < mGridDims.x; ++i)
+    const uint nVox =  mGridDims.x * mGridDims.y * mGridDims.z;
+    double coeff0;
+    Math::SH::SphHarmBasis basis(8);
+    for(uint flatIndex = 0; flatIndex < nVox; ++flatIndex)
     {
-        for(uint j = 0; j < mGridDims.y; ++j)
+        glm::vec<3, uint> indice3D = mImage->unravelIndex3d(flatIndex);
+        coeff0 = mImage->at(indice3D.x, indice3D.y, indice3D.z, 0);
+        if(doubleEqual(coeff0, 0.0))
         {
-            for(uint k = 0; k < mGridDims.z; ++k)
-            {
-                double scaling = *mImage->at(i, j, k)[0];
-                if(doubleEqual(scaling, 0.0))
-                {
-                    continue;
-                }
-
-                mVertices.insert(mVertices.end(),
-                                 sphere.vertices.begin(),
-                                 sphere.vertices.end());
-                mNormals.insert(mNormals.end(),
-                                sphere.normals.begin(),
-                                sphere.normals.end());
-                mIndices.insert(mIndices.end(),
-                                sphere.indices.begin(),
-                                sphere.indices.end());
-                mColors.insert(mColors.end(),
-                               sphere.color.begin(),
-                               sphere.color.end());
-
-                glm::mat4 modelMat = glm::mat4(0.5f * scaling, 0.0f, 0.0f, 0.0f,
-                                               0.0f, 0.5f * scaling, 0.0f, 0.0f,
-                                               0.0f, 0.0f, 0.5f * scaling, 0.0f,
-                                               i - gridCenter.x,
-                                               j - gridCenter.y,
-                                               k - gridCenter.z,
-                                               1.0f);
-
-                const uint index1d = toFlatIndex(i, j, k);
-                mInstanceTransforms.push_back(modelMat);
-                mIndirectCmd.push_back(
-                    DrawElementsIndirectCommand(sphere.indices.size(),
-                                                1,
-                                                mIndirectCmd.size()*sphere.indices.size(),
-                                                mIndirectCmd.size()*sphere.vertices.size(),
-                                                mIndirectCmd.size()));
-            }
+            continue;
         }
-    }
-}
+        Primitive::Sphere scaledSphere = sphere; //basis.evaluate(mImage, indice3D.x, indice3D.y, indice3D.z, sphere);
+        mVertices.insert(mVertices.end(),
+                         scaledSphere.getVertices().begin(),
+                         scaledSphere.getVertices().end());
+        mNormals.insert(mNormals.end(),
+                        scaledSphere.getNormals().begin(),
+                        scaledSphere.getNormals().end());
+        mIndices.insert(mIndices.end(),
+                        scaledSphere.getIndices().begin(),
+                        scaledSphere.getIndices().end());
+        mColors.insert(mColors.end(),
+                       scaledSphere.getColors().begin(),
+                       scaledSphere.getColors().end());
 
-Sphere Model::genUnitSphere(const int resolution) const
-{
-    Sphere sphere;
-    const float thetaMax = M_PI;
-    const float phiMax = 2.0 * M_PI;
-    const int maxThetaSteps = resolution;
-    const int maxPhiSteps = 2 * maxThetaSteps;
+        float scale = 0.5f;
+        glm::mat4 modelMat = glm::mat4(scale, 0.0f, 0.0f, 0.0f,
+                                       0.0f, scale, 0.0f, 0.0f,
+                                       0.0f, 0.0f, scale, 0.0f,
+                                       indice3D.x - gridCenter.x,
+                                       indice3D.y - gridCenter.y,
+                                       indice3D.z - gridCenter.z,
+                                       1.0f);
 
-    // Create sphere vertices and normals
-    float theta;
-    float phi;
-    glm::vec3 vertice;
-    for(int i = 0; i <= maxPhiSteps; ++i)
-    {
-        for(int j = 0; j <= maxThetaSteps; ++j)
-        {
-            theta = j * thetaMax / maxThetaSteps;
-            phi = i * phiMax / maxPhiSteps;
-            vertice = sphericalToCartesian(1.0f, theta, phi);
-            sphere.vertices.push_back(vertice);
-            sphere.normals.push_back(vertice);
-            sphere.color.push_back(glm::vec3(1.0f, 0.0f, 1.0f));
-        }
+        mInstanceTransforms.push_back(modelMat);
+        mIndirectCmd.push_back(
+            DrawElementsIndirectCommand(sphere.nbIndices(),
+                                        1,
+                                        mIndirectCmd.size() * sphere.nbIndices(),
+                                        mIndirectCmd.size() * sphere.nbVertices(),
+                                        mIndirectCmd.size()));
     }
-
-    // Create faces from vertices
-    int ii, jj, kk, ll, mm, nn;
-    for(int i = 0; i < maxPhiSteps; ++i)
-    {
-        for(int j = 0; j < maxThetaSteps; ++j)
-        {
-            ii = i * (maxThetaSteps + 1) + j;
-            sphere.indices.push_back(ii);
-            sphere.indices.push_back(ii + 1);
-            sphere.indices.push_back(ii + 1 + maxThetaSteps);
-            sphere.indices.push_back(ii + 1);
-            sphere.indices.push_back(ii + maxThetaSteps + 2);
-            sphere.indices.push_back(ii + 1 + maxThetaSteps);
-        }
-    }
-    return sphere;
 }
 
 template <typename T>
@@ -199,43 +152,6 @@ void Model::addToVAO(const GLuint& vbo, const BindableProperty& binding)
     glVertexArrayVertexBuffer(mVAO, bindingLocation, vbo, 0, size);
     glVertexArrayBindingDivisor(mVAO, bindingLocation, 0);
     glVertexArrayAttribBinding(mVAO, bindingLocation, bindingLocation);
-}
-
-void Model::multiDrawElementsIndirect(GLenum mode, GLenum type,
-                                      const void* indirect,
-                                      GLsizei drawcount,
-                                      GLsizei stride) const
-{
-    if(type != GL_UNSIGNED_INT)
-    {
-        throw std::runtime_error("Invalid type for element buffer.");
-    }
-    size_t sizeOfType = sizeof(GLuint);
-
-    GLsizei n;
-    ShaderData<GLsizei> drawID(0, BindableProperty::drawID);
-    for (n = 0; n < drawcount; n++)
-    {
-        const DrawElementsIndirectCommand *cmd;
-        if (stride != 0)
-        {
-            cmd = (const DrawElementsIndirectCommand*)((uintptr_t)indirect + n * stride);
-        } else
-        {
-            cmd = (const DrawElementsIndirectCommand*)indirect + n;
-        }
-
-        drawID.ModifySubData(0, sizeof(GLsizei), &n);
-        drawID.ToGPU();
-
-        glDrawElementsInstancedBaseVertexBaseInstance(mode,
-                                                      cmd->count,
-                                                      type,
-                                                      (void*)(cmd->firstIndex * sizeOfType),
-                                                      cmd->instanceCount,
-                                                      cmd->baseVertex,
-                                                      cmd->baseInstance);
-    }
 }
 
 void Model::Draw() const

@@ -14,7 +14,7 @@
 #include "camera.h"
 #include "binding.h"
 #include "global_state.h"
-#include "loader.h"
+#include "image.h"
 
 namespace Engine
 {
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
     }
 
     // load our image
-    std::shared_ptr<Loader::Image> image(new Loader::Image("../../todi_sh_8_descoteaux.nii.gz"));
+    std::shared_ptr<Image::NiftiImageWrapper> image(new Image::NiftiImageWrapper("../../odf.nii.gz"));
 
     // create our model
     GL::Model model(image);
@@ -123,8 +123,9 @@ int main(int argc, char* argv[])
 
     // OpenGL parameters
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    //glEnable(GL_CULL_FACE);
+    //glCullFace(GL_BACK);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Rendering loop
     while (!glfwWindowShouldClose(window))

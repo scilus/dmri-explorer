@@ -7,7 +7,7 @@
 
 #include <binding.h>
 #include <data.h>
-#include <loader.h>
+#include <image.h>
 
 namespace Engine
 {
@@ -49,24 +49,14 @@ struct DrawElementsIndirectCommand
     uint baseInstance;
 };
 
-struct Sphere
-{
-    Sphere() = default;
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec3> normals;
-    std::vector<GLuint> indices;
-    std::vector<glm::vec3> color;
-};
-
 class Model
 {
 public:
-    Model(std::shared_ptr<Loader::Image> image);
+    Model(std::shared_ptr<Image::NiftiImageWrapper> image);
     ~Model();
     void Draw() const;
 private:
     void genPrimitives();
-    Sphere genUnitSphere(const int resolution) const;
     template<typename T> GLuint genVBO(const std::vector<T>& data) const;
     template<typename T> ShaderData<T> genShaderData(const T& data,
                                                      const BindableProperty& binding) const;
@@ -75,17 +65,9 @@ private:
                                                      size_t sizeofT,
                                                      bool isPtr) const;
     void addToVAO(const GLuint& vbo, const BindableProperty& binding);
-    void multiDrawElementsIndirect(GLenum mode,
-                                   GLenum type,
-                                   const void* indirect,
-                                   GLsizei drawcount,
-                                   GLsizei stride) const;
-
-    // utility function
-    uint toFlatIndex(uint i, uint j, uint k) const;
 
     // Image data
-    std::shared_ptr<Loader::Image> mImage;
+    std::shared_ptr<Image::NiftiImageWrapper> mImage;
     glm::vec<4, int> mGridDims;
 
     // Primitives

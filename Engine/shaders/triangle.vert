@@ -17,11 +17,6 @@ layout(std430, binding = 4) buffer camera
     mat4 projectionMatrix;
 };
 
-layout(std430, binding = 5) buffer drawIndices
-{
-    uint drawID;
-};
-
 // Outputs
 out gl_PerVertex{
     vec4 gl_Position;
