@@ -54,6 +54,11 @@ void Camera::rotateAroundCenter(double dx, double dy)
 
 void Camera::zoom(double delta)
 {
+    while (delta > mSphCoords.r)
+    {
+        delta /= 2.0;
+    }
+
     mSphCoords.r -= delta;
     mSphCoords.r = std::max(0.01, mSphCoords.r);
 

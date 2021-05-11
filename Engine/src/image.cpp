@@ -46,7 +46,7 @@ size_t NiftiImageWrapper::flattenIndex(uint i, uint j, uint k, uint l) const
 
 double NiftiImageWrapper::at(uint i, uint j, uint k, uint l) const
 {
-    const size_t flatIndex = flattenIndex(i, j, k, 0);
+    const size_t flatIndex = flattenIndex(i, j, k, l);
     double value = 0.0;
     if(dtype() == DataType::float64)
     {

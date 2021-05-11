@@ -26,6 +26,7 @@ public:
     int nbVertices() const { return mVertices.size(); };
     int nbIndices() const { return mIndices.size(); };
     void updateNormals();
+    void maxNormalize();
 private:
     void genUnitSphere();
     void addPoint(float theta, float phi,
@@ -38,6 +39,7 @@ private:
     unsigned int mResolution;
     std::vector<float> mThetas;
     std::vector<float> mPhis;
+    std::vector<float> mRadiis;
 };
 } // Primitive
 } // Engine

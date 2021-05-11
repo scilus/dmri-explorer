@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstdint>
+#include <glm/gtc/matrix_transform.hpp>
 #include <spherical_harmonic.h>
 #include <sphere.h>
 
@@ -56,53 +57,56 @@ Model::~Model()
 
 void Model::genPrimitives()
 {
-    Primitive::Sphere sphere(10);
+    Primitive::Sphere sphere(14);
     sphere.updateNormals();
     const glm::vec3 gridCenter((mGridDims.x - 1) / 2.0f,
                                (mGridDims.y - 1) / 2.0f,
                                (mGridDims.z - 1) / 2.0f);
 
-    const uint nVox =  mGridDims.x * mGridDims.y * mGridDims.z;
+    const uint nVox = mGridDims.x * mGridDims.y * mGridDims.z;
     double coeff0;
     Math::SH::SphHarmBasis basis(8);
     for(uint flatIndex = 0; flatIndex < nVox; ++flatIndex)
     {
         glm::vec<3, uint> indice3D = mImage->unravelIndex3d(flatIndex);
         coeff0 = mImage->at(indice3D.x, indice3D.y, indice3D.z, 0);
-        if(doubleEqual(coeff0, 0.0))
+        if(!doubleEqual(coeff0, 0.0))
         {
-            continue;
+            Primitive::Sphere scaledSphere = basis.evaluate(mImage,
+                                                            indice3D.x,
+                                                            indice3D.y,
+                                                            indice3D.z,
+                                                            sphere);
+            mVertices.insert(mVertices.end(),
+                             scaledSphere.getVertices().begin(),
+                             scaledSphere.getVertices().end());
+            mNormals.insert(mNormals.end(),
+                            scaledSphere.getNormals().begin(),
+                            scaledSphere.getNormals().end());
+            mIndices.insert(mIndices.end(),
+                            scaledSphere.getIndices().begin(),
+                            scaledSphere.getIndices().end());
+            mColors.insert(mColors.end(),
+                           scaledSphere.getColors().begin(),
+                           scaledSphere.getColors().end());
+
+            float scale = 0.1f;
+            glm::mat4 modelMat = glm::mat4(scale, 0.0f, 0.0f, 0.0f,
+                                        0.0f, scale, 0.0f, 0.0f,
+                                        0.0f, 0.0f, scale, 0.0f,
+                                        indice3D.x - gridCenter.x,
+                                        indice3D.y - gridCenter.y,
+                                        indice3D.z - gridCenter.z,
+                                        1.0f);
+
+            mInstanceTransforms.push_back(modelMat);
+            mIndirectCmd.push_back(
+                DrawElementsIndirectCommand(sphere.nbIndices(),
+                                            1,
+                                            mIndirectCmd.size() * sphere.nbIndices(),
+                                            mIndirectCmd.size() * sphere.nbVertices(),
+                                            mIndirectCmd.size()));
         }
-        Primitive::Sphere scaledSphere = sphere; //basis.evaluate(mImage, indice3D.x, indice3D.y, indice3D.z, sphere);
-        mVertices.insert(mVertices.end(),
-                         scaledSphere.getVertices().begin(),
-                         scaledSphere.getVertices().end());
-        mNormals.insert(mNormals.end(),
-                        scaledSphere.getNormals().begin(),
-                        scaledSphere.getNormals().end());
-        mIndices.insert(mIndices.end(),
-                        scaledSphere.getIndices().begin(),
-                        scaledSphere.getIndices().end());
-        mColors.insert(mColors.end(),
-                       scaledSphere.getColors().begin(),
-                       scaledSphere.getColors().end());
-
-        float scale = 0.5f;
-        glm::mat4 modelMat = glm::mat4(scale, 0.0f, 0.0f, 0.0f,
-                                       0.0f, scale, 0.0f, 0.0f,
-                                       0.0f, 0.0f, scale, 0.0f,
-                                       indice3D.x - gridCenter.x,
-                                       indice3D.y - gridCenter.y,
-                                       indice3D.z - gridCenter.z,
-                                       1.0f);
-
-        mInstanceTransforms.push_back(modelMat);
-        mIndirectCmd.push_back(
-            DrawElementsIndirectCommand(sphere.nbIndices(),
-                                        1,
-                                        mIndirectCmd.size() * sphere.nbIndices(),
-                                        mIndirectCmd.size() * sphere.nbVertices(),
-                                        mIndirectCmd.size()));
     }
 }
 

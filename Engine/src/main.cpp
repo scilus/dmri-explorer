@@ -18,6 +18,12 @@
 
 namespace Engine
 {
+struct CLArgs
+{
+    std::string absWorkingDir = "";
+    std::string imagePath = "";
+};
+
 // global states
 std::shared_ptr<Global::State> globalState;
 
@@ -45,7 +51,7 @@ void onMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
     mouse.wheel.dy = yoffset;
 }
 
-int main(int argc, char* argv[])
+int main(const CLArgs& args)
 {
     // Init GLFW
     glfwInit();
@@ -82,10 +88,8 @@ int main(int argc, char* argv[])
     }
 
     // shaders
-    const std::string filePath(argv[0]);
-    const std::string absPath = extractPath(filePath);
-    const std::string absPathVS = absPath + "shaders/triangle.vert";
-    const std::string absPathFS = absPath + "shaders/triangle.frag";
+    const std::string absPathVS = args.absWorkingDir + "shaders/triangle.vert";
+    const std::string absPathFS = args.absWorkingDir + "shaders/triangle.frag";
 
     std::vector<GL::ShaderProgram> shaders;
     shaders.push_back(GL::ShaderProgram(absPathVS, GL_VERTEX_SHADER));
@@ -100,7 +104,7 @@ int main(int argc, char* argv[])
     }
 
     // load our image
-    std::shared_ptr<Image::NiftiImageWrapper> image(new Image::NiftiImageWrapper("../../odf.nii.gz"));
+    std::shared_ptr<Image::NiftiImageWrapper> image(new Image::NiftiImageWrapper(args.imagePath));
 
     // create our model
     GL::Model model(image);
@@ -123,9 +127,9 @@ int main(int argc, char* argv[])
 
     // OpenGL parameters
     glEnable(GL_DEPTH_TEST);
-    //glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // Rendering loop
     while (!glfwWindowShouldClose(window))
@@ -148,7 +152,20 @@ int main(int argc, char* argv[])
 }
 }
 
+Engine::CLArgs parseArguments(int argc, char** argv)
+{
+    if(argc < 2)
+    {
+        throw std::runtime_error("Missing required argument: imagePath.");
+    }
+    Engine::CLArgs args;
+    args.absWorkingDir = extractPath(argv[0]);
+    args.imagePath = argv[1];
+    return args;
+}
+
 int main(int argc, char** argv)
 {
-    return Engine::main(argc, argv);
+    Engine::CLArgs args = parseArguments(argc, argv);
+    return Engine::main(args);
 }

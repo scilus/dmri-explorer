@@ -1,6 +1,7 @@
 #include <spherical_harmonic.h>
+#include <utils.hpp>
 #include <cmath>
-#include <boost/math/special_functions/spherical_harmonic.hpp>
+#include <iostream>
 
 namespace Math
 {
@@ -25,7 +26,7 @@ SphHarmBasis::evaluate(const std::shared_ptr<Image::NiftiImageWrapper>& image,
     const std::vector<float>& thetas = sphere.getThetas();
     const std::vector<float>& phis = sphere.getPhis();
     const uint& nChannels = image->dims().w;
-    for(uint v = 0; v < sphere.nbVertices(); ++ v) // for each sphere direction
+    for(uint v = 0; v < sphere.nbVertices(); ++v) // for each sphere direction
     {
         int channelID = 0;
         double value = 0.0;
@@ -43,54 +44,45 @@ SphHarmBasis::evaluate(const std::shared_ptr<Image::NiftiImageWrapper>& image,
     return outSphere;
 }
 
-double SphHarmBasis::evaluate(std::vector<double*> coefficients, double theta, double phi) const
-{
-    double result = 0.0;
-    size_t i = 0;
-    for(uint l= 0; l <= mMaxOrder; l += 2)
-    {
-        for(int m = -l; m <= l; ++l)
-        {
-            result += *coefficients[i] * real_sh_descoteaux(m, l, theta, phi);
-        }
-    }
-    return result;
-}
-
-double SphHarmBasis::evaluate(std::vector<float*> coefficients, double theta, double phi) const
-{
-    double result = 0.0;
-    size_t i = 0;
-    for(uint l= 0; l <= mMaxOrder; l += 2)
-    {
-        for(int m = -l; m <= l; ++l)
-        {
-            result += static_cast<double>(*coefficients[i])
-                    * real_sh_descoteaux(m, l, theta, phi);
-        }
-    }
-    return result;
-}
-
 double SphHarmBasis::real_sh_descoteaux(int m, int l, double theta, double phi) const
 {
     // Descoteaux 2007 real SH basis
     // Y_j = sqrt(2) * Re[Y_l^|m|] if m < 0
     //       Y_l^m                 if m = 0
     //       sqrt(2) * Im[Y_l^m]   if m > 0
-
+    double v = 0.0;
     if(m < 0)
     {
-        return sqrt(2.0) * boost::math::spherical_harmonic_r(l, abs(m), theta, phi);
+        v = sqrt(2.0) * spherical_harmonic(l, abs(m), theta, phi).real();
     }
-    if(m == 0)
+    else if(m == 0)
     {
-        return boost::math::spherical_harmonic_r(l, m, theta, phi);
+        v = spherical_harmonic(l, m, theta, phi).real();
     }
-    if(m > 0)
+    else // if(m > 0)
     {
-        return sqrt(2.0) * boost::math::spherical_harmonic_i(l, m, theta, phi);
+        v = sqrt(2.0) * spherical_harmonic(l, m, theta, phi).imag();
     }
+    //std::cout << v << std::endl;
+    return v;
+}
+
+double legendre(int l, int m, double x)
+{
+    double val = pow(-1.0, m) * std::assoc_legendre(l, abs(m), x);
+    if(m < 0)
+        val *= pow(-1.0f, m) * factorial(l - m) / factorial(l + m);
+    return val;
+}
+
+std::complex<double> SphHarmBasis::spherical_harmonic(int l, int m, double theta, double phi) const
+{
+    double r = (2.0 * l + 1) / 4.0 / M_PI
+             * factorial(l - m) / factorial(l + m);
+    r = sqrt(r) * legendre(l, m, cos(theta));
+    std::complex<double> sh = std::polar(r, m * phi);
+    //std::cout << l << ", " << m << ", th:" << theta << ", ph:" << phi << ") " << sh << std::endl;
+    return sh;
 }
 } // SH
 } // Math
