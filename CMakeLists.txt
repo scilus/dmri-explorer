@@ -1,4 +1,4 @@
-set(CMAKE_TOOLCHAIN_FILE ./vcpkg/scripts/buildsystems/vcpkg.cmake)
+set(CMAKE_TOOLCHAIN_FILE ./third/vcpkg/scripts/buildsystems/vcpkg.cmake)
 
 #========== Global Configurations =============#
 #----------------------------------------------#
@@ -11,8 +11,8 @@ find_package(glfw3 CONFIG REQUIRED)
 find_package(glm CONFIG REQUIRED)
 
 # glad include
-add_library(GLAD "glad/src/glad.c")
-include_directories("glad/include/")
+add_library(GLAD "third/glad/src/glad.c")
+include_directories("third/glad/include/")
 
-add_subdirectory("nifti_clib")
+add_subdirectory("third/nifti_clib")
 add_subdirectory("Engine")

@@ -1,4 +1,4 @@
 #!/bin/bash
-git clone https://github.com/microsoft/vcpkg.git
-./vcpkg/bootstrap-vcpkg.sh -disableMetrics
-vcpkg/vcpkg install glfw3 glad glm
+git clone https://github.com/microsoft/vcpkg.git third/vcpkg
+./third/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+./third/vcpkg/vcpkg install glfw3 glm
