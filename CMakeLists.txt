@@ -1,4 +1,4 @@
-set(CMAKE_TOOLCHAIN_FILE ./third/vcpkg/scripts/buildsystems/vcpkg.cmake)
+set(CMAKE_TOOLCHAIN_FILE ./third/vcpkg-export-20210512-131839/scripts/buildsystems/vcpkg.cmake)
 
 #========== Global Configurations =============#
 #----------------------------------------------#

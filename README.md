@@ -1,11 +1,7 @@
 # stunning-succotash
-OpenGL viewer.
+White matter fiber ODF viewer using `OpenGL 4.6`.
 
 ## Installation
-To install third party libraries, run the command below.
-```
-./fetch_third_party.sh
-```
 
 To build the project:
 ```
@@ -17,7 +13,7 @@ make
 
 To run the executable:
 ```
-./build/Engine/main
+./build/Engine/main path/to/image.nii.gz
 ```
 
 ## TODO
