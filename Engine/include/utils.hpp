@@ -60,6 +60,14 @@ static inline void assertShaderCompilationSuccess(const GLint shader, const std:
     glGetShaderiv(shader, GL_COMPILE_STATUS, &compileStatus);
     if(!compileStatus)
     {
+        GLint logLength = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
+        if(logLength > 0)
+        {
+            char log[logLength];
+            glGetShaderInfoLog(shader, logLength, NULL, log);
+            std::cout << log << std::endl;
+        }
         throw std::runtime_error("Error compiling shader: " + shaderName + ".");
     }
 }

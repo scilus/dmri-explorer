@@ -13,6 +13,9 @@ enum class BindableProperty
     camera = 4,
     drawID = 5,
     normal = 6,
+    sphHarm = 7,
+    theta = 8,
+    phi = 9,
     none = 30
 };
 } // namespace GL

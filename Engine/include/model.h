@@ -54,7 +54,7 @@ class Model
 public:
     Model(std::shared_ptr<Image::NiftiImageWrapper> image);
     ~Model();
-    void Draw() const;
+    void Draw();
 private:
     void genPrimitives();
     template<typename T> GLuint genVBO(const std::vector<T>& data) const;
@@ -75,16 +75,22 @@ private:
     std::vector<glm::vec3> mColors;
     std::vector<glm::vec3> mNormals;
     std::vector<GLuint> mIndices;
+    std::vector<float> mThetas;
+    std::vector<float> mPhis;
     std::vector<glm::mat4> mInstanceTransforms;
+    std::vector<float> mSphHarmCoeffs;
 
     // GPU bindings
     GLuint mVAO = 0;
     GLuint mVerticesBO = 0;
     GLuint mColorBO = 0;
+    GLuint mThetasBO = 0;
+    GLuint mPhisBO = 0;
     GLuint mNormalsBO = 0;
     GLuint mIndicesBO = 0;
     GLuint mIndirectBO = 0;
     ShaderData<glm::mat4*> mInstanceTransformsData;
+    ShaderData<float*> mSphHarmCoeffsData;
     std::vector<DrawElementsIndirectCommand> mIndirectCmd;
 };
 } // namespace GL

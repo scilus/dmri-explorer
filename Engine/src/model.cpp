@@ -16,6 +16,8 @@ Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image)
     :mImage(image)
     ,mGridDims(image->dims())
     ,mVertices()
+    ,mThetas()
+    ,mPhis()
     ,mIndirectCmd()
     ,mColors()
     ,mNormals()
@@ -28,27 +30,31 @@ Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image)
     ,mColorBO(0)
     ,mIndirectBO(0)
     ,mInstanceTransformsData()
+    ,mSphHarmCoeffs()
 {
     // Generate primitives
     genPrimitives();
 
     // Bind primitives to GPU
     glCreateVertexArrays(1, &mVAO);
-    mVerticesBO = genVBO<glm::vec3>(mVertices);
-    mColorBO = genVBO<glm::vec3>(mColors);
-    mNormalsBO = genVBO<glm::vec3>(mNormals);
+    //mVerticesBO = genVBO<glm::vec3>(mVertices);
     mIndicesBO = genVBO<GLuint>(mIndices);
     mIndirectBO = genVBO<DrawElementsIndirectCommand>(mIndirectCmd);
+    mThetasBO = genVBO<float>(mThetas);
+    mPhisBO = genVBO<float>(mPhis);
 
-    addToVAO(mVerticesBO, BindableProperty::position);
-    addToVAO(mNormalsBO, BindableProperty::normal);
-    addToVAO(mColorBO, BindableProperty::color);
+    addToVAO(mThetasBO, BindableProperty::theta);
+    addToVAO(mPhisBO, BindableProperty::phi);
 
     // Bind uniform buffers to GPU
     mInstanceTransformsData = genShaderData<glm::mat4*>(mInstanceTransforms.data(),
                                                         BindableProperty::model,
                                                         sizeof(glm::mat4) * mInstanceTransforms.size(),
                                                         true);
+    mSphHarmCoeffsData = genShaderData<float*>(mSphHarmCoeffs.data(),
+                                               BindableProperty::sphHarm,
+                                               sizeof(float)* mSphHarmCoeffs.size(),
+                                               true);
 }
 
 Model::~Model()
@@ -58,7 +64,6 @@ Model::~Model()
 void Model::genPrimitives()
 {
     Primitive::Sphere sphere(14);
-    sphere.updateNormals();
     const glm::vec3 gridCenter((mGridDims.x - 1) / 2.0f,
                                (mGridDims.y - 1) / 2.0f,
                                (mGridDims.z - 1) / 2.0f);
@@ -66,47 +71,48 @@ void Model::genPrimitives()
     const uint nVox = mGridDims.x * mGridDims.y * mGridDims.z;
     double coeff0;
     Math::SH::SphHarmBasis basis(8);
+    mThetas.reserve(nVox * sphere.nbVertices());
+    mPhis.reserve(nVox * sphere.nbVertices());
+    mIndices.reserve(nVox * sphere.nbIndices());
     for(uint flatIndex = 0; flatIndex < nVox; ++flatIndex)
     {
         glm::vec<3, uint> indice3D = mImage->unravelIndex3d(flatIndex);
-        coeff0 = mImage->at(indice3D.x, indice3D.y, indice3D.z, 0);
-        if(!doubleEqual(coeff0, 0.0))
+        for(int k = 0; k < 45; ++k)
         {
-            Primitive::Sphere scaledSphere = basis.evaluate(mImage,
-                                                            indice3D.x,
-                                                            indice3D.y,
-                                                            indice3D.z,
-                                                            sphere);
-            mVertices.insert(mVertices.end(),
-                             scaledSphere.getVertices().begin(),
-                             scaledSphere.getVertices().end());
-            mNormals.insert(mNormals.end(),
-                            scaledSphere.getNormals().begin(),
-                            scaledSphere.getNormals().end());
-            mIndices.insert(mIndices.end(),
-                            scaledSphere.getIndices().begin(),
-                            scaledSphere.getIndices().end());
-            mColors.insert(mColors.end(),
-                           scaledSphere.getColors().begin(),
-                           scaledSphere.getColors().end());
-
-            float scale = 0.1f;
-            glm::mat4 modelMat = glm::mat4(scale, 0.0f, 0.0f, 0.0f,
-                                        0.0f, scale, 0.0f, 0.0f,
-                                        0.0f, 0.0f, scale, 0.0f,
-                                        indice3D.x - gridCenter.x,
-                                        indice3D.y - gridCenter.y,
-                                        indice3D.z - gridCenter.z,
-                                        1.0f);
-
-            mInstanceTransforms.push_back(modelMat);
-            mIndirectCmd.push_back(
-                DrawElementsIndirectCommand(sphere.nbIndices(),
-                                            1,
-                                            mIndirectCmd.size() * sphere.nbIndices(),
-                                            mIndirectCmd.size() * sphere.nbVertices(),
-                                            mIndirectCmd.size()));
+            mSphHarmCoeffs.push_back(
+                static_cast<float>(mImage->at(indice3D.x,
+                                              indice3D.y,
+                                              indice3D.z,
+                                              k)
+                )
+            );
         }
+
+        mPhis.insert(mPhis.end(),
+                     sphere.getPhis().begin(),
+                     sphere.getPhis().end());
+        mThetas.insert(mThetas.end(),
+                       sphere.getThetas().begin(),
+                       sphere.getThetas().end());
+        mIndices.insert(mIndices.end(),
+                        sphere.getIndices().begin(),
+                        sphere.getIndices().end());
+
+        float scale = 0.2f;
+        glm::mat4 modelMat = glm::mat4(scale, 0.0f, 0.0f, 0.0f,
+                                       0.0f, scale, 0.0f, 0.0f,
+                                       0.0f, 0.0f, scale, 0.0f,
+                                       indice3D.x - gridCenter.x,
+                                       indice3D.y - gridCenter.y,
+                                       indice3D.z - gridCenter.z,
+                                       1.0f);
+        mInstanceTransforms.push_back(modelMat);
+        mIndirectCmd.push_back(
+            DrawElementsIndirectCommand(sphere.nbIndices(),
+                                        1,
+                                        mIndirectCmd.size() * sphere.nbIndices(),
+                                        mIndirectCmd.size() * sphere.nbVertices(),
+                                        mIndirectCmd.size()));
     }
 }
 
@@ -146,6 +152,12 @@ void Model::addToVAO(const GLuint& vbo, const BindableProperty& binding)
         size = sizeof(float) * 3;
         count = 3;
         break;
+    case BindableProperty::theta:
+    case BindableProperty::phi:
+        type = GL_FLOAT;
+        size = sizeof(float);
+        count = 1;
+        break;
     default:
         throw std::runtime_error("Invalid binding.");
     }
@@ -158,9 +170,10 @@ void Model::addToVAO(const GLuint& vbo, const BindableProperty& binding)
     glVertexArrayAttribBinding(mVAO, bindingLocation, bindingLocation);
 }
 
-void Model::Draw() const
+void Model::Draw()
 {
     mInstanceTransformsData.ToGPU();
+    mSphHarmCoeffsData.ToGPU();
     glBindVertexArray(mVAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndicesBO);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, mIndirectBO);

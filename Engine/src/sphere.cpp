@@ -58,8 +58,7 @@ Sphere::Sphere(const Sphere& sphere)
 {
 }
 
-void Sphere::addPoint(float theta, float phi,
-                        const glm::vec3& color)
+void Sphere::addPoint(float theta, float phi)
 {
     glm::vec3 direction = sphericalToCartesian(1.0f, theta, phi);
     direction = glm::rotateX(direction, M_PIf32 / 2.0f);
@@ -88,11 +87,11 @@ void Sphere::genUnitSphere()
             theta = j * thetaMax / (maxThetaSteps - 1);
             phi = i * phiMax / maxPhiSteps;
             vertice = sphericalToCartesian(1.0f, theta, phi);
-            addPoint(theta, phi, glm::vec3(1.0f, 0.0f, 1.0f));
+            addPoint(theta, phi);
         }
     }
-    addPoint(0.0f, 0.0f, glm::vec3(1.0f, 0.0f, 1.0f)); // top vertice
-    addPoint(M_PI, 0.0f, glm::vec3(1.0f, 0.0f, 1.0f)); // bottom vertice
+    addPoint(0.0f, 0.0f); // top vertice
+    addPoint(M_PI, 0.0f); // bottom vertice
 
     // Create faces from vertices
     int flatIndex;

@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <vector>
+#include <iostream>
 
 #include "binding.h"
 
@@ -47,6 +48,7 @@ public:
     {
         this->mData = data;
         this->mBinding = binding;
+        this->isDirty = true;
         glCreateBuffers(1, &this->mSSBO);
         glNamedBufferData(this->mSSBO, sizeof(T), &(this->mData), GL_STATIC_READ);
     };
@@ -55,6 +57,7 @@ public:
     {
         this->mData = data;
         this->mBinding = binding;
+        this->isDirty = true;
         glCreateBuffers(1, &this->mSSBO);
         if(isPtr)
         {
@@ -68,19 +71,26 @@ public:
 
     void ModifySubData(GLintptr offset, GLsizeiptr size, const void* data)
     {
+        this->isDirty = true;
         glNamedBufferSubData(this->mSSBO, offset, size, data);
     };
 
-    void ToGPU() const
+    void ToGPU()
     {
         // Copy SSBO data to GPU
+        if(!this->isDirty)
+        {
+            return;
+        }
         GLuint index = static_cast<GLuint>(this->mBinding);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, this->mSSBO);
+        this->isDirty = false;
     };
 
 private:
     GLuint mSSBO = 0;
     BindableProperty mBinding;
+    bool isDirty = true;
     T mData;
 };
 } // namespace GL

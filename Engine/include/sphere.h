@@ -29,8 +29,7 @@ public:
     void maxNormalize();
 private:
     void genUnitSphere();
-    void addPoint(float theta, float phi,
-                  const glm::vec3& color);
+    void addPoint(float theta, float phi);
 
     std::vector<glm::vec3> mVertices;
     std::vector<glm::vec3> mNormals;
