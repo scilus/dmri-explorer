@@ -1,25 +1,23 @@
 #version 460
 
-layout (location=0) in vec3 in_pos;
-layout (location=1) in vec3 in_color;
-layout (location=6) in vec3 in_normal;
-layout (location=8) in float in_theta;
-layout (location=9) in float in_phi;
+// per vertex attributes
+layout (location=0) in float in_theta;
+layout (location=1) in float in_phi;
 
-// SSBO
-layout(std430, binding = 3) buffer instanceTransforms
+// Uniform buffer objects
+layout(std430, binding = 2) buffer instanceTransforms
 {
     mat4 modelMatrix[];
 };
 
-layout(std430, binding = 4) buffer camera
+layout(std430, binding = 3) buffer camera
 {
     vec4 eye;
     mat4 viewMatrix;
     mat4 projectionMatrix;
 };
 
-layout(std430, binding = 7) buffer sphHarms
+layout(std430, binding = 5) buffer sphHarms
 {
     float shCoeffs[];
 };
@@ -32,6 +30,7 @@ out vec3 v_color;
 out vec3 v_normal;
 out vec4 v_eye;
 
+// Constants
 const float PI = 3.14159265358f;
 const int MAX_FACTORIAL = 18;
 const float FACTORIALS_LUT[MAX_FACTORIAL + 1] =
@@ -57,14 +56,43 @@ const float FACTORIALS_LUT[MAX_FACTORIAL + 1] =
     6402373705728000.0f
 };
 
+// Global variable per vertices
+float plm[81]; // associated legendre polynomial evaluated for all orders and degrees up to 8
+
 float factorial(int n)
 {
     return FACTORIALS_LUT[n];
 }
 
-float combination(int n, int k)
+
+float plm(int l, int m)
 {
-    return factorial(n) / factorial(k) / factorial(n - k);
+    
+    return p[0];
+}
+
+int j(int l, int m)
+{
+    return l * (l + 1) + m;
+}
+
+void computeAssocLegendre(float x)
+{
+    int lmax = 8;
+    int j;
+    p[0] = 1.0f; // identity for p00
+    for(int mm = 1; mm <= lmax; ++mm) // fill up p11, p22, ..., p88
+    {
+        p[j(mm, mm)] = (1.0f - 2.0f * m) * sqrt(1.0f - x*x) * p[j(mm - 1, mm - 1)];
+    }
+    for(int mm = 0; mm < 8; ++m) // fill up p10, p21, ..., p87
+    {
+        p[j(mm+1, mm)] = (2.0f * m + 1) * x * p[j(mm, mm)];
+    }
+    for(int ll = 2; ll <= 8; ++ll) // p20, p30
+    {
+        p[j(ll, 0)] = (2.0f * l - 1) * x * p[j(ll-1, 0)] - (l  m - 1.0f) * p[j(ll - 2, 0)] / float(ll);
+    }
 }
 
 float assoc_legendre(int l, int m, float x)
@@ -136,16 +164,20 @@ float real_sh_descoteaux(int l, int m, float theta, float phi)
 float evaluateSH(float theta, float phi)
 {
     float ret = 0.0f;
+    float sum = 0.0f;
     int offset = 0;
     for(int l = 0; l <= 8; l+=2)
     {
         for(int m = -l; m <= l; ++m)
         {
+            sum += abs(shCoeffs[gl_DrawID*45 + offset]);
             ret += shCoeffs[gl_DrawID*45 + offset] * real_sh_descoteaux(l, m, theta, phi);
             ++offset;
         }
     }
-    return ret;
+    if(sum > -1e-10)
+        return ret / sum;
+    return 0.0;
 }
 
 vec3 toCartesianCoordinates(float r, float theta, float phi)

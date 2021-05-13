@@ -15,12 +15,9 @@ namespace GL
 Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image)
     :mImage(image)
     ,mGridDims(image->dims())
-    ,mVertices()
     ,mThetas()
     ,mPhis()
     ,mIndirectCmd()
-    ,mColors()
-    ,mNormals()
     ,mIndices()
     ,mInstanceTransforms()
     ,mVAO(0)
@@ -37,7 +34,6 @@ Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image)
 
     // Bind primitives to GPU
     glCreateVertexArrays(1, &mVAO);
-    //mVerticesBO = genVBO<glm::vec3>(mVertices);
     mIndicesBO = genVBO<GLuint>(mIndices);
     mIndirectBO = genVBO<DrawElementsIndirectCommand>(mIndirectCmd);
     mThetasBO = genVBO<float>(mThetas);
@@ -69,11 +65,11 @@ void Model::genPrimitives()
                                (mGridDims.z - 1) / 2.0f);
 
     const uint nVox = mGridDims.x * mGridDims.y * mGridDims.z;
-    double coeff0;
-    Math::SH::SphHarmBasis basis(8);
+
     mThetas.reserve(nVox * sphere.nbVertices());
     mPhis.reserve(nVox * sphere.nbVertices());
     mIndices.reserve(nVox * sphere.nbIndices());
+    const float scale = 5.0f;
     for(uint flatIndex = 0; flatIndex < nVox; ++flatIndex)
     {
         glm::vec<3, uint> indice3D = mImage->unravelIndex3d(flatIndex);
@@ -98,7 +94,6 @@ void Model::genPrimitives()
                         sphere.getIndices().begin(),
                         sphere.getIndices().end());
 
-        float scale = 0.2f;
         glm::mat4 modelMat = glm::mat4(scale, 0.0f, 0.0f, 0.0f,
                                        0.0f, scale, 0.0f, 0.0f,
                                        0.0f, 0.0f, scale, 0.0f,
@@ -145,13 +140,6 @@ void Model::addToVAO(const GLuint& vbo, const BindableProperty& binding)
     GLuint type, size, count;
     switch(binding)
     {
-    case BindableProperty::color:
-    case BindableProperty::normal:
-    case BindableProperty::position:
-        type = GL_FLOAT;
-        size = sizeof(float) * 3;
-        count = 3;
-        break;
     case BindableProperty::theta:
     case BindableProperty::phi:
         type = GL_FLOAT;

@@ -71,9 +71,6 @@ private:
     glm::vec<4, int> mGridDims;
 
     // Primitives
-    std::vector<glm::vec3> mVertices;
-    std::vector<glm::vec3> mColors;
-    std::vector<glm::vec3> mNormals;
     std::vector<GLuint> mIndices;
     std::vector<float> mThetas;
     std::vector<float> mPhis;
