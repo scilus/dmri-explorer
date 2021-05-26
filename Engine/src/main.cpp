@@ -16,6 +16,11 @@
 #include "global_state.h"
 #include "image.h"
 
+namespace
+{
+const int SPHERE_RESOLUTION = 20;
+}
+
 namespace Engine
 {
 struct CLArgs
@@ -107,7 +112,7 @@ int main(const CLArgs& args)
     std::shared_ptr<Image::NiftiImageWrapper> image(new Image::NiftiImageWrapper(args.imagePath));
 
     // create our model
-    GL::Model model(image);
+    GL::Model model(image, SPHERE_RESOLUTION);
 
     // initalize global state for tracking mouse/keyboard inputs
     globalState.reset(new Global::State());

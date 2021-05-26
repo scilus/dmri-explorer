@@ -4,25 +4,27 @@
 #include <memory>
 #include <complex>
 
-#include <sphere.h>
 #include <image.h>
 
 namespace Math
 {
 namespace SH
 {
-class SphHarmBasis
+class RealSymDescoteauxBasis
 {
 public:
-    SphHarmBasis();
-    SphHarmBasis(uint order);
-    Engine::Primitive::Sphere evaluate(const std::shared_ptr<Image::NiftiImageWrapper>& image,
-                                       uint i, uint j, uint k,
-                                       const Engine::Primitive::Sphere& sphere) const;
+    RealSymDescoteauxBasis();
+    RealSymDescoteauxBasis(uint maxOrder);
+    ~RealSymDescoteauxBasis() = default;
+    float at(uint l, int m, float theta, float phi) const;
 private:
-    std::complex<double> spherical_harmonic(int m, int l, double theta, double phi) const;
-    double real_sh_descoteaux(int m, int l, double theta, double phi) const;
-    uint mMaxOrder = 0;
+    const size_t J(uint l, int m) const;
+    const size_t numCoeffs() const;
+    void computeScaling();
+    std::complex<float> computeSHFunc(uint l, int m, float theta, float phi) const;
+    std::vector<float> mScaling;
+    uint mMaxOrder = 8;
 };
+
 } // SH
 } // Math

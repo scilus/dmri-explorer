@@ -6,12 +6,13 @@ namespace GL
 {
 enum class BindableProperty
 {
-    theta = 0,
-    phi = 1,
+    neighbours = 0,
+    position = 1,
     model = 2,
     camera = 3,
-    assocLegendre = 4,
-    sphHarm = 5,
+    sphHarmCoeffs = 4,
+    sphHarmFunc = 5,
+    nbVertices = 6,
     none = 30
 };
 } // namespace GL

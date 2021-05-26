@@ -10,7 +10,7 @@ namespace Engine
 namespace GL
 {
 const double ROT_SPEED = 0.05;
-const double TRANSLATION_SPEED = 0.1;
+const double TRANSLATION_SPEED = 0.5;
 
 Camera::Camera(const SphericalCoordinates& sphCoords,
                const glm::vec3& center,

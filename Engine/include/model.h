@@ -8,6 +8,7 @@
 #include <binding.h>
 #include <data.h>
 #include <image.h>
+#include <sphere.h>
 
 namespace Engine
 {
@@ -52,7 +53,7 @@ struct DrawElementsIndirectCommand
 class Model
 {
 public:
-    Model(std::shared_ptr<Image::NiftiImageWrapper> image);
+    Model(std::shared_ptr<Image::NiftiImageWrapper> image, uint sphereRes);
     ~Model();
     void Draw();
 private:
@@ -72,22 +73,23 @@ private:
 
     // Primitives
     std::vector<GLuint> mIndices;
-    std::vector<float> mThetas;
-    std::vector<float> mPhis;
+    std::vector<glm::vec3> mPositions;
     std::vector<glm::mat4> mInstanceTransforms;
     std::vector<float> mSphHarmCoeffs;
+    std::vector<float> mSphHarmFuncs;
+    Primitive::Sphere mSphere;
+    uint mNbVertices;
 
     // GPU bindings
     GLuint mVAO = 0;
-    GLuint mVerticesBO = 0;
-    GLuint mColorBO = 0;
-    GLuint mThetasBO = 0;
-    GLuint mPhisBO = 0;
-    GLuint mNormalsBO = 0;
+    GLuint mPositionsBO = 0;
     GLuint mIndicesBO = 0;
+    GLuint mNeighboursBO = 0;
     GLuint mIndirectBO = 0;
     ShaderData<glm::mat4*> mInstanceTransformsData;
     ShaderData<float*> mSphHarmCoeffsData;
+    ShaderData<float*> mSphHarmFuncsData;
+    ShaderData<uint*> mNbVerticesData;
     std::vector<DrawElementsIndirectCommand> mIndirectCmd;
 };
 } // namespace GL

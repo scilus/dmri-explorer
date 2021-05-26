@@ -3,6 +3,8 @@
 #include <glad/glad.h>
 #include <vector>
 
+#include <spherical_harmonic.h>
+
 namespace Engine
 {
 namespace Primitive
@@ -10,35 +12,26 @@ namespace Primitive
 class Sphere
 {
 public:
+
     Sphere();
     Sphere(unsigned int resolution);
     Sphere(const Sphere& s);
     Sphere& operator=(const Sphere& s);
-    std::vector<glm::vec3>& getVertices() { return mVertices; };
-    const std::vector<glm::vec3>& getVertices() const { return mVertices; };
     std::vector<GLuint>& getIndices() { return mIndices; };
-    std::vector<glm::vec3>& getNormals() { return mNormals; };
-    std::vector<glm::vec3>& getColors() { return mColors; };
-    std::vector<float>& getThetas() { return mThetas; };
-    const std::vector<float>& getThetas() const { return mThetas; };
-    std::vector<float>& getPhis() { return mPhis; };
-    const std::vector<float>& getPhis() const { return mPhis; };
-    int nbVertices() const { return mVertices.size(); };
-    int nbIndices() const { return mIndices.size(); };
-    void updateNormals();
-    void maxNormalize();
+    std::vector<glm::vec3>& getPositions() {return mPositions; };
+    std::vector<float>& getSHFuncs() { return mSphHarmFunc; };
+    std::vector<glm::uvec2>& getNeighboursID() { return mNeighboursID; };
 private:
     void genUnitSphere();
-    void addPoint(float theta, float phi);
+    void addPoint(float theta, float phi, float r);
 
-    std::vector<glm::vec3> mVertices;
-    std::vector<glm::vec3> mNormals;
+    /// Position in spherical coordinates r, theta, phi
+    std::vector<glm::vec3> mPositions;
     std::vector<GLuint> mIndices;
-    std::vector<glm::vec3> mColors;
+    std::vector<glm::uvec2> mNeighboursID;
+    std::vector<float> mSphHarmFunc;
+    Math::SH::RealSymDescoteauxBasis mSHBasis;
     unsigned int mResolution;
-    std::vector<float> mThetas;
-    std::vector<float> mPhis;
-    std::vector<float> mRadiis;
 };
 } // Primitive
 } // Engine

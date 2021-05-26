@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <limits>
+#include <cmath>
 #include <iostream>
 
 const float DEG2RAD_FACTOR = 0.0174532925199f;
@@ -120,11 +121,9 @@ static inline bool vecEqual(const glm::vec3& v1, const glm::vec3& v2)
 
 static inline double factorial(int n)
 {
-    if(n < 0 || n >= MAX_FACTORIAL)
+    if(n < 0)
     {
-        std::cout << "Factorial n value: " << n << std::endl;
         throw std::runtime_error("Invalid value for factorial.");
     }
-
-    return FACTORIALS_LUT[n];
+    return tgamma(n + 1);
 }
