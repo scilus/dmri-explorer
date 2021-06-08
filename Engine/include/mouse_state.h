@@ -34,5 +34,15 @@ public:
 private:
     Mouse mMouse;
 };
+
+struct MouseState
+{
+    int lastAction = -1;
+    int lastModifier = -1;
+    int lastButton = -1;
+    double lastPosX = 0.0;
+    double lastPosY = 0.0;
+    void Reset();
+};
 }
 }
