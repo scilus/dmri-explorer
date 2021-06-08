@@ -2,7 +2,7 @@
 
 namespace Engine
 {
-namespace GL
+namespace GPUData
 {
 enum class BindableProperty
 {
@@ -15,5 +15,5 @@ enum class BindableProperty
     nbVertices = 6,
     none = 30
 };
-} // namespace GL
+} // namespace GPUData
 } // namespace Engine

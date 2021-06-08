@@ -14,7 +14,7 @@ const size_t NB_SH = 45;
 
 namespace Engine
 {
-namespace GL
+namespace Scene
 {
 Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image, uint sphereRes)
     :mImage(image)
@@ -42,24 +42,24 @@ Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image, uint sphereRes)
     mIndirectBO = genVBO<DrawElementsIndirectCommand>(mIndirectCmd);
     mPositionsBO = genVBO<glm::vec3>(mPositions);
 
-    addToVAO(mPositionsBO, BindableProperty::position);
-    addToVAO(mNeighboursBO, BindableProperty::neighbours);
+    addToVAO(mPositionsBO, GPUData::BindableProperty::position);
+    addToVAO(mNeighboursBO, GPUData::BindableProperty::neighbours);
 
     // Bind uniform buffers to GPU
     mInstanceTransformsData = genShaderData<glm::mat4*>(mInstanceTransforms.data(),
-                                                        BindableProperty::model,
+                                                        GPUData::BindableProperty::model,
                                                         sizeof(glm::mat4) * mInstanceTransforms.size(),
                                                         true);
     mSphHarmCoeffsData = genShaderData<float*>(mSphHarmCoeffs.data(),
-                                               BindableProperty::sphHarmCoeffs,
+                                               GPUData::BindableProperty::sphHarmCoeffs,
                                                sizeof(float)* mSphHarmCoeffs.size(),
                                                true);
     mSphHarmFuncsData = genShaderData<float*>(mSphere.getSHFuncs().data(),
-                                              BindableProperty::sphHarmFunc,
+                                              GPUData::BindableProperty::sphHarmFunc,
                                               sizeof(float) * mSphere.getSHFuncs().size(),
                                               true);
     mNbVerticesData = genShaderData<uint*>(&mNbVertices,
-                                           BindableProperty::nbVertices,
+                                           GPUData::BindableProperty::nbVertices,
                                            sizeof(uint),
                                            true);
 }
@@ -128,31 +128,31 @@ GLuint Model::genVBO(const std::vector<T>& data) const
 }
 
 template <typename T>
-ShaderData<T> Model::genShaderData(const T& data,
-                                   const BindableProperty& binding) const
+GPUData::ShaderData<T> Model::genShaderData(const T& data,
+                                            const GPUData::BindableProperty& binding) const
 {
-    return ShaderData<T>(data, binding);
+    return GPUData::ShaderData<T>(data, binding);
 }
 
 template <typename T>
-ShaderData<T> Model::genShaderData(const T& data,
-                                   const BindableProperty& binding,
-                                   size_t sizeofT, bool isPtr) const
+GPUData::ShaderData<T> Model::genShaderData(const T& data,
+                                            const GPUData::BindableProperty& binding,
+                                            size_t sizeofT, bool isPtr) const
 {
-    return ShaderData<T>(data, binding, sizeofT, isPtr);
+    return GPUData::ShaderData<T>(data, binding, sizeofT, isPtr);
 }
 
-void Model::addToVAO(const GLuint& vbo, const BindableProperty& binding)
+void Model::addToVAO(const GLuint& vbo, const GPUData::BindableProperty& binding)
 {
     GLuint type, size, count;
     switch(binding)
     {
-    case BindableProperty::position:
+    case GPUData::BindableProperty::position:
         type = GL_FLOAT;
         size = sizeof(float) * 3;
         count = 3;
         break;
-    case BindableProperty::neighbours:
+    case GPUData::BindableProperty::neighbours:
         type = GL_UNSIGNED_INT;
         size = sizeof(uint) * 2;
         count = 2;
@@ -182,5 +182,5 @@ void Model::Draw()
     glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT,
                                 (GLvoid*)0, mIndirectCmd.size(), 0);
 }
-} // namespace GL
+} // namespace Scene
 } // namespace Engine

@@ -127,3 +127,8 @@ static inline double factorial(int n)
     }
     return tgamma(n + 1);
 }
+
+static inline void logVec3(const glm::vec3& v, const std::string& m)
+{
+    std::cout << m << " " << v.x << ", " << v.y << ", " << v.z << std::endl;
+}

@@ -9,7 +9,7 @@
 
 namespace Engine
 {
-namespace GL
+namespace GPUData
 {
 struct CamParams
 {
@@ -93,5 +93,5 @@ private:
     bool isDirty = true;
     T mData;
 };
-} // namespace GL
+} // namespace GPUData
 } // namespace Engine

@@ -6,7 +6,7 @@
 
 namespace Engine
 {
-namespace GL
+namespace Scene
 {
 class ShaderProgram
 {
@@ -31,5 +31,5 @@ private:
     const GLbitfield convertShaderTypeToGLbitfield(const GLenum shaderType) const;
     GLuint mPipelineID = 0;
 };
-} // namespace GL
+} // namespace Scene
 } // namespace Engine

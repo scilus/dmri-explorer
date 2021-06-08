@@ -3,7 +3,7 @@
 
 namespace Engine
 {
-namespace GL
+namespace GPUData
 {
 
 CamParams::CamParams(const glm::mat4& view,
@@ -20,5 +20,5 @@ ModelMatrix::ModelMatrix(const glm::mat4& matrix)
 {
 }
 
-} // namespace GL
+} // namespace GPUData
 } // namespce Engine

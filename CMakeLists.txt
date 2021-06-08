@@ -14,5 +14,13 @@ find_package(glm CONFIG REQUIRED)
 add_library(GLAD "third/glad/src/glad.c")
 include_directories("third/glad/include/")
 
+# nifti clib library
 add_subdirectory("third/nifti_clib")
+
+# imgui include
+file(GLOB IMGUI_SRC "third/imgui/src/*.cpp")
+add_library(IMGUI ${IMGUI_SRC})
+include_directories("third/imgui/include/")
+target_link_libraries(IMGUI PRIVATE glfw)
+
 add_subdirectory("Engine")

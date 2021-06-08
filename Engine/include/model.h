@@ -12,7 +12,7 @@
 
 namespace Engine
 {
-namespace GL
+namespace Scene
 {
 struct DrawElementsIndirectCommand
 {
@@ -59,13 +59,13 @@ public:
 private:
     void genPrimitives();
     template<typename T> GLuint genVBO(const std::vector<T>& data) const;
-    template<typename T> ShaderData<T> genShaderData(const T& data,
-                                                     const BindableProperty& binding) const;
-    template<typename T> ShaderData<T> genShaderData(const T& data,
-                                                     const BindableProperty& binding,
-                                                     size_t sizeofT,
-                                                     bool isPtr) const;
-    void addToVAO(const GLuint& vbo, const BindableProperty& binding);
+    template<typename T> GPUData::ShaderData<T> genShaderData(const T& data,
+                                                              const GPUData::BindableProperty& binding) const;
+    template<typename T> GPUData::ShaderData<T> genShaderData(const T& data,
+                                                              const GPUData::BindableProperty& binding,
+                                                              size_t sizeofT,
+                                                              bool isPtr) const;
+    void addToVAO(const GLuint& vbo, const GPUData::BindableProperty& binding);
 
     // Image data
     std::shared_ptr<Image::NiftiImageWrapper> mImage;
@@ -86,11 +86,13 @@ private:
     GLuint mIndicesBO = 0;
     GLuint mNeighboursBO = 0;
     GLuint mIndirectBO = 0;
-    ShaderData<glm::mat4*> mInstanceTransformsData;
-    ShaderData<float*> mSphHarmCoeffsData;
-    ShaderData<float*> mSphHarmFuncsData;
-    ShaderData<uint*> mNbVerticesData;
+
+    GPUData::ShaderData<glm::mat4*> mInstanceTransformsData;
+    GPUData::ShaderData<float*> mSphHarmCoeffsData;
+    GPUData::ShaderData<float*> mSphHarmFuncsData;
+    GPUData::ShaderData<uint*> mNbVerticesData;
+
     std::vector<DrawElementsIndirectCommand> mIndirectCmd;
 };
-} // namespace GL
+} // namespace Scene
 } // namespace Engine
