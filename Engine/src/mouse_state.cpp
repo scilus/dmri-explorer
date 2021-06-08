@@ -2,9 +2,9 @@
 
 namespace Engine
 {
-namespace Global
+namespace State
 {
-void MouseState::Reset()
+void Mouse::Reset()
 {
     lastAction = -1;
     lastModifier = -1;
@@ -12,5 +12,5 @@ void MouseState::Reset()
     lastPosX = 0.0;
     lastPosY = 0.0;
 }
-}
-}
+} // namespace State
+} // Engine

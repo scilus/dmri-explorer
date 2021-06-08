@@ -7,7 +7,7 @@
 
 namespace Engine
 {
-namespace GL
+namespace Scene
 {
 struct SphericalCoordinates
 {
@@ -46,7 +46,7 @@ private:
     glm::mat4 mViewMatrix;
     SphericalCoordinates mSphCoords;
     SphericalCoordinates mUpVector;
-    ShaderData<CamParams> mCamParamsData;
+    GPUData::ShaderData<GPUData::CamParams> mCamParamsData;
 };
-} // namespace GL
+} // namespace Scene
 } // namespace Engine

@@ -3,7 +3,7 @@
 
 namespace Engine
 {
-namespace GL
+namespace Scene
 {
 ShaderProgram::ShaderProgram(const std::string& filePath, const GLenum shaderType)
 {
@@ -64,5 +64,5 @@ void ProgramPipeline::Bind() const
 {
     glBindProgramPipeline(this->mPipelineID);
 }
-} // namespace GL
+} // namespace Scene
 } // namespace Engine

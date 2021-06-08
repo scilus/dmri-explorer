@@ -7,7 +7,7 @@
 
 namespace Engine
 {
-namespace GL
+namespace Scene
 {
 const double ROT_SPEED = 0.05;
 const double TRANSLATION_SPEED = 0.1;
@@ -56,8 +56,8 @@ void Camera::updateCamParams()
                                                mSphCoords.phi);
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
     mViewMatrix = glm::lookAt(getPosition(mSphCoords), mCenter, getDirection(mUpVector));
-    CamParams camParams(mViewMatrix, mProjectionMatrix, eye);
-    mCamParamsData = ShaderData<CamParams>(camParams, BindableProperty::camera);
+    GPUData::CamParams camParams(mViewMatrix, mProjectionMatrix, eye);
+    mCamParamsData = GPUData::ShaderData<GPUData::CamParams>(camParams, GPUData::BindableProperty::camera);
 }
 
 void Camera::Resize(const float& aspect)
@@ -106,5 +106,5 @@ void Camera::Refresh()
 {
     mCamParamsData.ToGPU();
 }
-} // namespace GL
+} // namespace Scene
 } // namespace Engine

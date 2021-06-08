@@ -10,7 +10,7 @@
 
 namespace Engine
 {
-namespace GL
+namespace Scene
 {
 Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image)
     :mImage(image)
@@ -40,13 +40,13 @@ Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image)
     mIndicesBO = genVBO<GLuint>(mIndices);
     mIndirectBO = genVBO<DrawElementsIndirectCommand>(mIndirectCmd);
 
-    addToVAO(mVerticesBO, BindableProperty::position);
-    addToVAO(mNormalsBO, BindableProperty::normal);
-    addToVAO(mColorBO, BindableProperty::color);
+    addToVAO(mVerticesBO, GPUData::BindableProperty::position);
+    addToVAO(mNormalsBO, GPUData::BindableProperty::normal);
+    addToVAO(mColorBO, GPUData::BindableProperty::color);
 
     // Bind uniform buffers to GPU
     mInstanceTransformsData = genShaderData<glm::mat4*>(mInstanceTransforms.data(),
-                                                        BindableProperty::model,
+                                                        GPUData::BindableProperty::model,
                                                         sizeof(glm::mat4) * mInstanceTransforms.size(),
                                                         true);
 }
@@ -120,28 +120,28 @@ GLuint Model::genVBO(const std::vector<T>& data) const
 }
 
 template <typename T>
-ShaderData<T> Model::genShaderData(const T& data,
-                                   const BindableProperty& binding) const
+GPUData::ShaderData<T> Model::genShaderData(const T& data,
+                                            const GPUData::BindableProperty& binding) const
 {
-    return ShaderData<T>(data, binding);
+    return GPUData::ShaderData<T>(data, binding);
 }
 
 template <typename T>
-ShaderData<T> Model::genShaderData(const T& data,
-                                   const BindableProperty& binding,
-                                   size_t sizeofT, bool isPtr) const
+GPUData::ShaderData<T> Model::genShaderData(const T& data,
+                                            const GPUData::BindableProperty& binding,
+                                            size_t sizeofT, bool isPtr) const
 {
-    return ShaderData<T>(data, binding, sizeofT, isPtr);
+    return GPUData::ShaderData<T>(data, binding, sizeofT, isPtr);
 }
 
-void Model::addToVAO(const GLuint& vbo, const BindableProperty& binding)
+void Model::addToVAO(const GLuint& vbo, const GPUData::BindableProperty& binding)
 {
     GLuint type, size, count;
     switch(binding)
     {
-    case BindableProperty::color:
-    case BindableProperty::normal:
-    case BindableProperty::position:
+    case GPUData::BindableProperty::color:
+    case GPUData::BindableProperty::normal:
+    case GPUData::BindableProperty::position:
         type = GL_FLOAT;
         size = sizeof(float) * 3;
         count = 3;
@@ -170,5 +170,5 @@ void Model::Draw() const
                                 mIndirectCmd.size(),
                                 0);
 }
-} // namespace GL
+} // namespace Scene
 } // namespace Engine

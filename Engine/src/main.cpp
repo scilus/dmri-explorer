@@ -28,10 +28,10 @@ struct CLArgs
     std::string imagePath = "";
 };
 
-Global::MouseState mouseState;
+State::Mouse mouseState;
 
 // camera
-GL::Camera camera;
+Scene::Camera camera;
 
 void onMouseButton(GLFWwindow* window, int button, int action, int mod)
 {
@@ -144,11 +144,11 @@ int main(const CLArgs& args)
     const std::string absPathVS = args.absWorkingDir + "shaders/triangle.vert";
     const std::string absPathFS = args.absWorkingDir + "shaders/triangle.frag";
 
-    std::vector<GL::ShaderProgram> shaders;
-    shaders.push_back(GL::ShaderProgram(absPathVS, GL_VERTEX_SHADER));
-    shaders.push_back(GL::ShaderProgram(absPathFS, GL_FRAGMENT_SHADER));
+    std::vector<Scene::ShaderProgram> shaders;
+    shaders.push_back(Scene::ShaderProgram(absPathVS, GL_VERTEX_SHADER));
+    shaders.push_back(Scene::ShaderProgram(absPathFS, GL_FRAGMENT_SHADER));
 
-    GL::ProgramPipeline programPipeline(shaders);
+    Scene::ProgramPipeline programPipeline(shaders);
 
     if (glGetError() != GL_NO_ERROR)
     {
@@ -160,17 +160,17 @@ int main(const CLArgs& args)
     std::shared_ptr<Image::NiftiImageWrapper> image(new Image::NiftiImageWrapper(args.imagePath));
 
     // create our model
-    GL::Model model(image);
+    Scene::Model model(image);
 
     // create our camera
-    GL::SphericalCoordinates position(10.0, M_PI / 2.0, 0.0);
-    GL::SphericalCoordinates upVector(1.0, 0.0, 0.0);
-    camera = GL::Camera(position, upVector,
-                        glm::vec3(0.0f, 0.0f, 0.0f),
-                        glm::radians(60.0f),
-                        aspectRatio,
-                        0.5f,
-                        500.0f);
+    Scene::SphericalCoordinates position(10.0, M_PI / 2.0, 0.0);
+    Scene::SphericalCoordinates upVector(1.0, 0.0, 0.0);
+    camera = Scene::Camera(position, upVector,
+                           glm::vec3(0.0f, 0.0f, 0.0f),
+                           glm::radians(60.0f),
+                           aspectRatio,
+                           0.5f,
+                           500.0f);
 
     // OpenGL parameters
     glEnable(GL_DEPTH_TEST);

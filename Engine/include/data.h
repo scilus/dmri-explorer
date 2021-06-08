@@ -8,7 +8,7 @@
 
 namespace Engine
 {
-namespace GL
+namespace GPUData
 {
 struct CamParams
 {
@@ -83,5 +83,5 @@ private:
     BindableProperty mBinding;
     T mData;
 };
-} // namespace GL
+} // namespace GPUData
 } // namespace Engine

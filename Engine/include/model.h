@@ -11,7 +11,7 @@
 
 namespace Engine
 {
-namespace GL
+namespace Scene
 {
 struct DrawElementsIndirectCommand
 {
@@ -58,13 +58,13 @@ public:
 private:
     void genPrimitives();
     template<typename T> GLuint genVBO(const std::vector<T>& data) const;
-    template<typename T> ShaderData<T> genShaderData(const T& data,
-                                                     const BindableProperty& binding) const;
-    template<typename T> ShaderData<T> genShaderData(const T& data,
-                                                     const BindableProperty& binding,
-                                                     size_t sizeofT,
-                                                     bool isPtr) const;
-    void addToVAO(const GLuint& vbo, const BindableProperty& binding);
+    template<typename T> GPUData::ShaderData<T> genShaderData(const T& data,
+                                                              const GPUData::BindableProperty& binding) const;
+    template<typename T> GPUData::ShaderData<T> genShaderData(const T& data,
+                                                              const GPUData::BindableProperty& binding,
+                                                              size_t sizeofT,
+                                                              bool isPtr) const;
+    void addToVAO(const GLuint& vbo, const GPUData::BindableProperty& binding);
 
     // Image data
     std::shared_ptr<Image::NiftiImageWrapper> mImage;
@@ -84,8 +84,8 @@ private:
     GLuint mNormalsBO = 0;
     GLuint mIndicesBO = 0;
     GLuint mIndirectBO = 0;
-    ShaderData<glm::mat4*> mInstanceTransformsData;
+    GPUData::ShaderData<glm::mat4*> mInstanceTransformsData;
     std::vector<DrawElementsIndirectCommand> mIndirectCmd;
 };
-} // namespace GL
+} // namespace Scene
 } // namespace Engine
