@@ -93,18 +93,6 @@ static inline float rad2deg(const float& rad)
     return RAD2DEG_FACTOR * rad;
 }
 
-static inline glm::vec3 sphericalToCartesian(const float r,
-                                             const float theta,
-                                             const float phi)
-{
-    glm::vec3 pos;
-    pos.x = r * sin(phi) * sin(theta);
-    pos.y = r * cos(theta);
-    pos.z = r * cos(phi) * sin(theta);
-
-    return pos;
-}
-
 static inline bool doubleEqual(double a, double b)
 {
     const double eps = std::numeric_limits<double>().epsilon();

@@ -12,15 +12,8 @@ namespace Scene
 const double ROT_SPEED = 0.05;
 const double TRANSLATION_SPEED = 0.5;
 
-SphericalCoordinates::SphericalCoordinates(double r, double theta, double phi)
-    :r(r)
-    ,theta(theta)
-    ,phi(phi)
-{
-}
-
-Camera::Camera(const SphericalCoordinates& sphCoords,
-               const SphericalCoordinates& upVector,
+Camera::Camera(const Math::Coordinate::Spherical& sphCoords,
+               const Math::Coordinate::Spherical& upVector,
                const glm::vec3& center,
                const float& fov, const float& aspect,
                const float& near, const float& far)
@@ -31,33 +24,41 @@ Camera::Camera(const SphericalCoordinates& sphCoords,
     ,mNear(near)
     ,mFar(far)
     ,mAspect(aspect)
+    ,mCamParams()
+    ,mCamParamsData(&mCamParams,
+                    GPUData::BindableProperty::camera,
+                    sizeof(GPUData::CamParams))
 {
-    mViewMatrix = glm::lookAt(getPosition(sphCoords),
-                              center, getDirection(mUpVector));
-    mProjectionMatrix = glm::perspective(fov, aspect, near, far);
-
     updateCamParams();
 }
 
-glm::vec3 Camera::getPosition(const SphericalCoordinates& coord)
+glm::vec3 Camera::convertToCartesian(const Math::Coordinate::Spherical& coord) const
 {
-    return sphericalToCartesian(coord.r, coord.theta, coord.phi) + mCenter;
+    glm::vec3 pos;
+    pos.x = coord.r * sin(coord.phi) * sin(coord.theta);
+    pos.y = coord.r * cos(coord.theta);
+    pos.z = coord.r * cos(coord.phi) * sin(coord.theta);
+
+    return pos;
 }
 
-glm::vec3 Camera::getDirection(const SphericalCoordinates& coord)
+glm::vec3 Camera::getPosition(const Math::Coordinate::Spherical& coord) const
 {
-    return sphericalToCartesian(coord.r, coord.theta, coord.phi);
+    return convertToCartesian(coord) + mCenter;
+}
+
+glm::vec3 Camera::getDirection(const Math::Coordinate::Spherical& coord) const
+{
+    return convertToCartesian(coord);
 }
 
 void Camera::updateCamParams()
 {
-    const glm::vec3 eye = sphericalToCartesian(mSphCoords.r,
-                                               mSphCoords.theta,
-                                               mSphCoords.phi);
+    const glm::vec3 eye = convertToCartesian(mSphCoords);
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
     mViewMatrix = glm::lookAt(getPosition(mSphCoords), mCenter, getDirection(mUpVector));
-    GPUData::CamParams camParams(mViewMatrix, mProjectionMatrix, eye);
-    mCamParamsData = GPUData::ShaderData<GPUData::CamParams>(camParams, GPUData::BindableProperty::camera);
+    mCamParams = GPUData::CamParams(mViewMatrix, mProjectionMatrix, eye);
+    mCamParamsData.ModifySubData(0, sizeof(GPUData::CamParams), &mCamParams);
 }
 
 void Camera::Resize(const float& aspect)
@@ -67,15 +68,14 @@ void Camera::Resize(const float& aspect)
 }
 
 void Camera::RotateAroundCenter(double dPhi, double dTheta)
-{ 
+{
+    // rotate the eye
     mSphCoords.theta += ROT_SPEED * dTheta;
-    // mSphCoords.theta = std::max(std::min(mSphCoords.theta, M_PI - 0.01), 0.01 * M_PI);
     mSphCoords.phi += ROT_SPEED * dPhi;
 
     // rotate the up vector
     mUpVector.theta += ROT_SPEED * dTheta;
     mUpVector.phi += ROT_SPEED * dPhi;
-
     updateCamParams();
 }
 
@@ -87,7 +87,7 @@ void Camera::Zoom(double delta)
     }
 
     mSphCoords.r -= delta;
-    mSphCoords.r = std::max(0.01, mSphCoords.r);
+    mSphCoords.r = std::max(0.01f, mSphCoords.r);
 
     updateCamParams();
 }

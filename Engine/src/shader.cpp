@@ -39,6 +39,13 @@ ProgramPipeline::ProgramPipeline(const std::vector<ShaderProgram>& shaderProgram
     }
 }
 
+ProgramPipeline::ProgramPipeline(const ShaderProgram& shaderProgram)
+{
+    glGenProgramPipelines(1, &this->mPipelineID);
+    GLbitfield programStage = ProgramPipeline::convertShaderTypeToGLbitfield(shaderProgram.Type());
+    glUseProgramStages(this->mPipelineID, programStage, shaderProgram.ID());
+}
+
 const GLbitfield ProgramPipeline::convertShaderTypeToGLbitfield(const GLenum shaderType) const
 {
     switch(shaderType)

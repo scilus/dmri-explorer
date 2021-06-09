@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <spherical_harmonic.h>
+#include <spherical_coordinates.h>
 
 namespace Engine
 {
@@ -17,18 +18,20 @@ public:
     Sphere(unsigned int resolution);
     Sphere(const Sphere& s);
     Sphere& operator=(const Sphere& s);
-    std::vector<GLuint>& getIndices() { return mIndices; };
-    std::vector<glm::vec3>& getPositions() {return mPositions; };
-    std::vector<float>& getSHFuncs() { return mSphHarmFunc; };
-    std::vector<glm::uvec2>& getNeighboursID() { return mNeighboursID; };
+    inline std::vector<GLuint> getIndices() const { return mIndices; };
+    inline std::vector<Math::Coordinate::Spherical> getCoordinates() const { return mCoordinates; };
+    inline std::vector<glm::vec3> getPoints() const { return mPoints; };
+    inline std::vector<float> getSHFuncs() const { return mSphHarmFunc; };
+    inline unsigned int getNbVertices() const { return mCoordinates.size(); };
 private:
     void genUnitSphere();
     void addPoint(float theta, float phi, float r);
+    glm::vec3 convertToCartesian(float r, float theta, float phi) const;
 
-    /// Position in spherical coordinates r, theta, phi
-    std::vector<glm::vec3> mPositions;
+    // Positions in spherical coordinates r, theta, phi
+    std::vector<Math::Coordinate::Spherical> mCoordinates;
+    std::vector<glm::vec3> mPoints; // positions as cartesian coordinates
     std::vector<GLuint> mIndices;
-    std::vector<glm::uvec2> mNeighboursID;
     std::vector<float> mSphHarmFunc;
     Math::SH::RealSymDescoteauxBasis mSHBasis;
     unsigned int mResolution;

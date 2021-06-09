@@ -25,6 +25,7 @@ class ProgramPipeline
 public:
     ProgramPipeline() = delete;
     ProgramPipeline(const std::vector<ShaderProgram>& shaderPrograms);
+    ProgramPipeline(const ShaderProgram& shaderProgram);
     inline const GLuint ID() const { return mPipelineID; };
     void Bind() const;
 private:

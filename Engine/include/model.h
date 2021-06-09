@@ -56,15 +56,10 @@ public:
     Model(std::shared_ptr<Image::NiftiImageWrapper> image, uint sphereRes);
     ~Model();
     void Draw();
+    void SendShaderDataToGPU();
 private:
     void genPrimitives();
     template<typename T> GLuint genVBO(const std::vector<T>& data) const;
-    template<typename T> GPUData::ShaderData<T> genShaderData(const T& data,
-                                                              const GPUData::BindableProperty& binding) const;
-    template<typename T> GPUData::ShaderData<T> genShaderData(const T& data,
-                                                              const GPUData::BindableProperty& binding,
-                                                              size_t sizeofT,
-                                                              bool isPtr) const;
     void addToVAO(const GLuint& vbo, const GPUData::BindableProperty& binding);
 
     // Image data
@@ -73,24 +68,26 @@ private:
 
     // Primitives
     std::vector<GLuint> mIndices;
-    std::vector<glm::vec3> mPositions;
+    std::vector<float> mCoordinates;
+    std::vector<float> mNormals;
     std::vector<glm::mat4> mInstanceTransforms;
     std::vector<float> mSphHarmCoeffs;
     std::vector<float> mSphHarmFuncs;
     Primitive::Sphere mSphere;
-    uint mNbVertices;
+    GPUData::SphereInfo mSphereInfo;
 
     // GPU bindings
     GLuint mVAO = 0;
-    GLuint mPositionsBO = 0;
     GLuint mIndicesBO = 0;
-    GLuint mNeighboursBO = 0;
     GLuint mIndirectBO = 0;
 
-    GPUData::ShaderData<glm::mat4*> mInstanceTransformsData;
-    GPUData::ShaderData<float*> mSphHarmCoeffsData;
-    GPUData::ShaderData<float*> mSphHarmFuncsData;
-    GPUData::ShaderData<uint*> mNbVerticesData;
+    GPUData::ShaderData mInstanceTransformsData;
+    GPUData::ShaderData mSphHarmCoeffsData;
+    GPUData::ShaderData mSphHarmFuncsData;
+    GPUData::ShaderData mCoordinatesData;
+    GPUData::ShaderData mNormalsData;
+    GPUData::ShaderData mIndicesData;
+    GPUData::ShaderData mSphereInfoData;
 
     std::vector<DrawElementsIndirectCommand> mIndirectCmd;
 };

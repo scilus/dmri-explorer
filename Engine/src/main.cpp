@@ -18,6 +18,7 @@
 #include "camera.h"
 #include "binding.h"
 #include "mouse_state.h"
+#include "spherical_coordinates.h"
 #include "image.h"
 
 namespace
@@ -166,16 +167,25 @@ int main(const CLArgs& args)
 
     // create our model
     Scene::Model model(image, SPHERE_RESOLUTION);
+    model.SendShaderDataToGPU();
+
+    // compute shader
+    std::string absPathCS = args.absWorkingDir + "shaders/compute.glsl";
+    Scene::ShaderProgram computeShader(absPathCS, GL_COMPUTE_SHADER);
+    Scene::ProgramPipeline computePipeline(computeShader);
+    //computePipeline.Bind();
+    glUseProgram(computeShader.ID());
+    glDispatchCompute((GLuint)(image->dims().x * image->dims().y * image->dims().z), 1, 1);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    glUseProgram(0);
 
     // create our camera
-    Scene::SphericalCoordinates position(10.0, M_PI / 2.0, 0.0);
-    Scene::SphericalCoordinates upVector(1.0, 0.0, 0.0);
+    Math::Coordinate::Spherical position(10.0, M_PI / 2.0, 0.0);
+    Math::Coordinate::Spherical upVector(1.0, 0.0, 0.0);
     camera = Scene::Camera(position, upVector,
                            glm::vec3(0.0f, 0.0f, 0.0f),
                            glm::radians(60.0f),
-                           aspectRatio,
-                           0.5f,
-                           500.0f);
+                           aspectRatio, 0.5f, 500.0f);
 
     // OpenGL parameters
     glEnable(GL_DEPTH_TEST);

@@ -3,27 +3,18 @@
 #include <glm/glm.hpp>
 #include <data.h>
 #include <memory>
-#include <mouse_state.h>
+#include <spherical_coordinates.h>
 
 namespace Engine
 {
 namespace Scene
 {
-struct SphericalCoordinates
-{
-    SphericalCoordinates() = default;
-    SphericalCoordinates(double r, double theta, double phi);
-    double r = 0.0;
-    double theta = 0.0;
-    double phi = 0.0;
-};
-
 class Camera
 {
 public:
     Camera() = default;
-    Camera(const SphericalCoordinates& position,
-           const SphericalCoordinates& upVector,
+    Camera(const Math::Coordinate::Spherical& position,
+           const Math::Coordinate::Spherical& upVector,
            const glm::vec3& center,
            const float& fov, const float& aspect,
            const float& near, const float& far);
@@ -33,8 +24,9 @@ public:
     void RotateAroundCenter(double dPhi, double dTheta);
     void Translate(double dx, double dy);
 private:
-    glm::vec3 getPosition(const SphericalCoordinates& coords);
-    glm::vec3 getDirection(const SphericalCoordinates& coords);
+    glm::vec3 convertToCartesian(const Math::Coordinate::Spherical& coords) const;
+    glm::vec3 getPosition(const Math::Coordinate::Spherical& coords) const;
+    glm::vec3 getDirection(const Math::Coordinate::Spherical& coords) const;
     void updateCamParams();
 
     glm::vec3 mCenter;
@@ -44,9 +36,10 @@ private:
     float mAspect;
     glm::mat4 mProjectionMatrix;
     glm::mat4 mViewMatrix;
-    SphericalCoordinates mSphCoords;
-    SphericalCoordinates mUpVector;
-    GPUData::ShaderData<GPUData::CamParams> mCamParamsData;
+    Math::Coordinate::Spherical mSphCoords;
+    Math::Coordinate::Spherical mUpVector;
+    GPUData::CamParams mCamParams;
+    GPUData::ShaderData mCamParamsData;
 };
 } // namespace Scene
 } // namespace Engine
