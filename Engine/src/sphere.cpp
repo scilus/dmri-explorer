@@ -56,7 +56,8 @@ Sphere::Sphere(const Sphere& sphere)
 void Sphere::addPoint(float theta, float phi, float r)
 {
     mCoordinates.push_back(Math::Coordinate::Spherical(r, theta, phi));
-    mPoints.push_back(convertToCartesian(theta, phi, r));
+    const glm::vec3 vecCartesian = convertToCartesian(theta, phi, r);
+    mPoints.push_back(glm::vec4(vecCartesian.x, vecCartesian.y, vecCartesian.z, 1.0f));
     // evaluate SH function for all l, m up to MAX_SH_ORDER
     for(int l = 0; l <= MAX_SH_ORDER; l += 2)
     {

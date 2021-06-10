@@ -58,7 +58,7 @@ public:
     void Draw();
     void SendShaderDataToGPU();
 private:
-    void genPrimitives();
+    void initializeArrays();
     template<typename T> GLuint genVBO(const std::vector<T>& data) const;
     void addToVAO(const GLuint& vbo, const GPUData::BindableProperty& binding);
 
@@ -68,11 +68,13 @@ private:
 
     // Primitives
     std::vector<GLuint> mIndices;
-    std::vector<float> mCoordinates;
-    std::vector<float> mNormals;
+    std::vector<glm::vec4> mAllScaledSpheres;
+    std::vector<glm::vec4> mAllNormals;
+
     std::vector<glm::mat4> mInstanceTransforms;
     std::vector<float> mSphHarmCoeffs;
     std::vector<float> mSphHarmFuncs;
+
     Primitive::Sphere mSphere;
     GPUData::SphereInfo mSphereInfo;
 
@@ -84,10 +86,16 @@ private:
     GPUData::ShaderData mInstanceTransformsData;
     GPUData::ShaderData mSphHarmCoeffsData;
     GPUData::ShaderData mSphHarmFuncsData;
-    GPUData::ShaderData mCoordinatesData;
-    GPUData::ShaderData mNormalsData;
-    GPUData::ShaderData mIndicesData;
+
+    // data on topology of ONE sphere
+    GPUData::ShaderData mSphereVerticesData;
+    GPUData::ShaderData mSphereNormalsData;
+    GPUData::ShaderData mSphereIndicesData;
     GPUData::ShaderData mSphereInfoData;
+
+    // empty arrays to fill in compute shader pass
+    GPUData::ShaderData mAllSpheresVerticesData;
+    GPUData::ShaderData mAllSpheresNormalsData;
 
     std::vector<DrawElementsIndirectCommand> mIndirectCmd;
 };

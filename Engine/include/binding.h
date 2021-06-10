@@ -6,15 +6,16 @@ namespace GPUData
 {
 enum class BindableProperty
 {
-    position = 1,
-    model = 2,
-    camera = 3,
-    sphHarmCoeffs = 4,
-    sphHarmFunc = 5,
-    sphereInfo = 6,
-    vertices = 7,
-    normals = 8,
-    indices = 9,
+    allScaledSpheres = 0,
+    allNormals = 1,
+    modelTransform = 2,
+    shCoeffs = 3,
+    shFunctions = 4,
+    sphereVertices = 5,
+    sphereNormals = 6,
+    sphereIndices = 7,
+    sphereInfo = 8,
+    camera = 9,
     none = 30
 };
 } // namespace GPUData

@@ -23,7 +23,7 @@
 
 namespace
 {
-const int SPHERE_RESOLUTION = 20;
+const int SPHERE_RESOLUTION = 25;
 }
 
 namespace Engine
@@ -172,8 +172,6 @@ int main(const CLArgs& args)
     // compute shader
     std::string absPathCS = args.absWorkingDir + "shaders/compute.glsl";
     Scene::ShaderProgram computeShader(absPathCS, GL_COMPUTE_SHADER);
-    Scene::ProgramPipeline computePipeline(computeShader);
-    //computePipeline.Bind();
     glUseProgram(computeShader.ID());
     glDispatchCompute((GLuint)(image->dims().x * image->dims().y * image->dims().z), 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -194,6 +192,7 @@ int main(const CLArgs& args)
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     bool show_demo_window = true;
+    glfwSwapInterval(0);
 
     // Rendering loop
     while (!glfwWindowShouldClose(window))

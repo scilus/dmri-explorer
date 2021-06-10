@@ -19,23 +19,30 @@ namespace Scene
 Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image, uint sphereRes)
     :mImage(image)
     ,mGridDims(image->dims())
-    ,mIndirectCmd()
     ,mIndices()
-    ,mCoordinates()
+    ,mAllScaledSpheres()
+    ,mAllNormals()
     ,mInstanceTransforms()
+    ,mSphHarmCoeffs()
+    ,mSphHarmFuncs()
+    ,mSphere(sphereRes)
+    ,mSphereInfo()
     ,mVAO(0)
     ,mIndicesBO(0)
     ,mIndirectBO(0)
     ,mInstanceTransformsData()
-    ,mSphHarmCoeffs()
-    ,mSphHarmFuncs()
+    ,mSphHarmCoeffsData()
     ,mSphHarmFuncsData()
-    ,mSphere(sphereRes)
-    ,mSphereInfo()
+    ,mSphereVerticesData()
+    ,mSphereNormalsData()
+    ,mSphereIndicesData()
     ,mSphereInfoData()
+    ,mAllSpheresVerticesData()
+    ,mAllSpheresNormalsData()
+    ,mIndirectCmd()
 {
     // Generate primitives
-    genPrimitives();
+    initializeArrays();
 
     // Bind primitives to GPU
     glCreateVertexArrays(1, &mVAO);
@@ -43,26 +50,32 @@ Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image, uint sphereRes)
     mIndirectBO = genVBO<DrawElementsIndirectCommand>(mIndirectCmd);
 
     // Bind uniform buffers to GPU
+    mAllSpheresVerticesData = GPUData::ShaderData(mAllScaledSpheres.data(),
+                                                  GPUData::BindableProperty::allScaledSpheres,
+                                                  sizeof(glm::vec4) * mAllScaledSpheres.size(),
+                                                  GL_DYNAMIC_DRAW);
+    mAllSpheresNormalsData = GPUData::ShaderData(mAllNormals.data(),
+                                                 GPUData::BindableProperty::allNormals,
+                                                 sizeof(glm::vec4) * mAllNormals.size(),
+                                                 GL_DYNAMIC_DRAW);
     mInstanceTransformsData = GPUData::ShaderData(mInstanceTransforms.data(),
-                                                  GPUData::BindableProperty::model,
+                                                  GPUData::BindableProperty::modelTransform,
                                                   sizeof(glm::mat4) * mInstanceTransforms.size());
     mSphHarmCoeffsData = GPUData::ShaderData(mSphHarmCoeffs.data(),
-                                             GPUData::BindableProperty::sphHarmCoeffs,
+                                             GPUData::BindableProperty::shCoeffs,
                                              sizeof(float)* mSphHarmCoeffs.size());
     mSphHarmFuncsData = GPUData::ShaderData(mSphere.getSHFuncs().data(),
-                                            GPUData::BindableProperty::sphHarmFunc,
+                                            GPUData::BindableProperty::shFunctions,
                                             sizeof(float) * mSphere.getSHFuncs().size());
-    mCoordinatesData = GPUData::ShaderData(mCoordinates.data(),
-                                           GPUData::BindableProperty::vertices,
-                                           sizeof(float)  * mCoordinates.size(),
-                                           GL_DYNAMIC_DRAW);
-    mNormalsData = GPUData::ShaderData(mNormals.data(),
-                                       GPUData::BindableProperty::normals,
-                                       sizeof(float)  * mNormals.size(),
-                                       GL_DYNAMIC_DRAW);
-    mIndicesData = GPUData::ShaderData(mIndices.data(),
-                                       GPUData::BindableProperty::indices,
-                                       sizeof(uint)  * mIndices.size());
+    mSphereVerticesData = GPUData::ShaderData(mSphere.getPoints().data(),
+                                              GPUData::BindableProperty::sphereVertices,
+                                              sizeof(glm::vec4) * mSphere.getNbVertices());
+    mSphereNormalsData = GPUData::ShaderData(mSphere.getPoints().data(),
+                                             GPUData::BindableProperty::sphereNormals,
+                                             sizeof(glm::vec4) * mSphere.getNbVertices());
+    mSphereIndicesData = GPUData::ShaderData(mSphere.getIndices().data(),
+                                             GPUData::BindableProperty::sphereIndices,
+                                             sizeof(uint) * mSphere.getIndices().size());
     mSphereInfoData = GPUData::ShaderData(&mSphereInfo,
                                           GPUData::BindableProperty::sphereInfo,
                                           sizeof(GPUData::SphereInfo));
@@ -72,24 +85,29 @@ Model::~Model()
 {
 }
 
-void Model::genPrimitives()
+void Model::initializeArrays()
 {
     const glm::vec3 gridCenter((mGridDims.x - 1) / 2.0f,
                                (mGridDims.y - 1) / 2.0f,
                                (mGridDims.z - 1) / 2.0f);
 
     const uint nVox = mGridDims.x * mGridDims.y * mGridDims.z;
-    const size_t numVertices = mSphere.getCoordinates().size();
-    const size_t numIndices = mSphere.getIndices().size();
-    mSphereInfo.numVertices = numVertices;
-    mSphereInfo.numIndices = numIndices;
 
-    mCoordinates.reserve(nVox * numVertices);
-    mNormals.reserve(nVox * numIndices);
-    mIndices.reserve(nVox * numIndices);
+    mSphereInfo.numVertices = mSphere.getPoints().size();
+    mSphereInfo.numIndices = mSphere.getIndices().size();
+
     glm::mat4 modelMat = glm::translate(glm::mat4(1.0f),
-        glm::vec3(-gridCenter.x, -gridCenter.y, -gridCenter.z));
+                                        glm::vec3(-gridCenter.x,
+                                                  -gridCenter.y,
+                                                  -gridCenter.z));
 
+    // zero-initialized arrays (will be filled in compute shader call)
+    mAllScaledSpheres.resize(nVox * mSphereInfo.numVertices,
+                             glm::vec4(0.0, 0.0, 0.0, 0.0));
+    mAllNormals.resize(nVox * mSphereInfo.numVertices,
+                       glm::vec4(0.0, 0.0, 0.0, 0.0));
+
+    mIndices.reserve(nVox * mSphereInfo.numIndices);
     for(uint flatIndex = 0; flatIndex < nVox; ++flatIndex)
     {
         glm::vec<3, uint> indice3D = mImage->unravelIndex3d(flatIndex);
@@ -101,22 +119,7 @@ void Model::genPrimitives()
                     mImage->at(indice3D.x, indice3D.y, indice3D.z, k)));
         }
 
-        // Add sphere vertices and normals
-        for(const glm::vec3& p: mSphere.getPoints())
-        {
-            mCoordinates.push_back(p.x);
-            mCoordinates.push_back(p.y);
-            mCoordinates.push_back(p.z);
-
-            // normals correspond to vertices on a unit sphere
-            mNormals.push_back(p.x);
-            mNormals.push_back(p.y);
-            mNormals.push_back(p.z);
-        }
-
         // Add sphere faces
-        // vector.insert is linear in complexity,
-        // therefore equivalent to:
         for(const uint& i: mSphere.getIndices())
         {
             mIndices.push_back(i);
@@ -129,11 +132,11 @@ void Model::genPrimitives()
         // Add indirect draw command for current sphere
         mIndirectCmd.push_back(
             DrawElementsIndirectCommand(
-                numIndices, // num of elements to draw per drawID
+                mSphereInfo.numIndices, // num of elements to draw per drawID
                 1, // number of identical instances
-                mIndirectCmd.size() * numIndices, // offset in element buffer array
                 0, // offset in VBO
-                mIndirectCmd.size()
+                mIndirectCmd.size() * mSphereInfo.numVertices, // offset in element buffer array
+                0 // mIndirectCmd.size()
             )
         );
     }
@@ -153,11 +156,6 @@ void Model::addToVAO(const GLuint& vbo, const GPUData::BindableProperty& binding
     GLuint type, size, count;
     switch(binding)
     {
-    case GPUData::BindableProperty::position:
-        type = GL_FLOAT;
-        size = sizeof(float) * 3;
-        count = 3;
-        break;
     default:
         throw std::runtime_error("Invalid binding.");
     }
@@ -175,10 +173,12 @@ void Model::SendShaderDataToGPU()
     mInstanceTransformsData.ToGPU();
     mSphHarmCoeffsData.ToGPU();
     mSphHarmFuncsData.ToGPU();
-    mCoordinatesData.ToGPU();
-    mNormalsData.ToGPU();
-    mIndicesData.ToGPU();
+    mSphereVerticesData.ToGPU();
+    mSphereNormalsData.ToGPU();
+    mSphereIndicesData.ToGPU();
     mSphereInfoData.ToGPU();
+    mAllSpheresVerticesData.ToGPU();
+    mAllSpheresNormalsData.ToGPU();
 }
 
 void Model::Draw()

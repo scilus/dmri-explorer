@@ -20,7 +20,7 @@ public:
     Sphere& operator=(const Sphere& s);
     inline std::vector<GLuint> getIndices() const { return mIndices; };
     inline std::vector<Math::Coordinate::Spherical> getCoordinates() const { return mCoordinates; };
-    inline std::vector<glm::vec3> getPoints() const { return mPoints; };
+    inline std::vector<glm::vec4> getPoints() const { return mPoints; };
     inline std::vector<float> getSHFuncs() const { return mSphHarmFunc; };
     inline unsigned int getNbVertices() const { return mCoordinates.size(); };
 private:
@@ -30,7 +30,7 @@ private:
 
     // Positions in spherical coordinates r, theta, phi
     std::vector<Math::Coordinate::Spherical> mCoordinates;
-    std::vector<glm::vec3> mPoints; // positions as cartesian coordinates
+    std::vector<glm::vec4> mPoints; // positions as cartesian coordinates
     std::vector<GLuint> mIndices;
     std::vector<float> mSphHarmFunc;
     Math::SH::RealSymDescoteauxBasis mSHBasis;
