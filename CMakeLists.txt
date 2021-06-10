@@ -20,7 +20,8 @@ add_subdirectory("third/nifti_clib")
 # imgui include
 file(GLOB IMGUI_SRC "third/imgui/src/*.cpp")
 add_library(IMGUI ${IMGUI_SRC})
+target_link_libraries(IMGUI PRIVATE glfw GLAD)
 include_directories("third/imgui/include/")
-target_link_libraries(IMGUI PRIVATE glfw)
+add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD)
 
 add_subdirectory("Engine")
