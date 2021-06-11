@@ -40,6 +40,7 @@ public:
     DataType dtype() const;
     glm::vec<4, int> dims() const;
     uint length() const;
+    uint nbVox() const;
     glm::vec<3, uint> unravelIndex3d(size_t flatIndex) const;
     size_t flattenIndex(uint i, uint j, uint k, uint l) const;
 
@@ -72,6 +73,7 @@ public:
 private:
     std::shared_ptr<nifti_image> mData;
     glm::vec<4, int> mDims;
+    uint mNbVox;
     uint mLength;
 };
 } // Image

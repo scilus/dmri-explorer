@@ -9,6 +9,7 @@
 #include <data.h>
 #include <image.h>
 #include <sphere.h>
+#include <shader.h>
 
 namespace Engine
 {
@@ -53,18 +54,21 @@ struct DrawElementsIndirectCommand
 class Model
 {
 public:
-    Model(std::shared_ptr<Image::NiftiImageWrapper> image, uint sphereRes);
+    Model(std::shared_ptr<Image::NiftiImageWrapper> image,
+          const Scene::ShaderProgram& computeShader,
+          uint sphereRes);
     ~Model();
-    void Draw();
     void SendShaderDataToGPU();
+    void ScaleSpheres();
+    void Draw();
 private:
     void initializeArrays();
+    void initializeGPUData();
     template<typename T> GLuint genVBO(const std::vector<T>& data) const;
     void addToVAO(const GLuint& vbo, const GPUData::BindableProperty& binding);
 
     // Image data
     std::shared_ptr<Image::NiftiImageWrapper> mImage;
-    glm::vec<4, int> mGridDims;
 
     // Primitives
     std::vector<GLuint> mIndices;
@@ -83,6 +87,9 @@ private:
     GLuint mIndicesBO = 0;
     GLuint mIndirectBO = 0;
 
+    Scene::ShaderProgram mComputeShader;
+
+    // Shader uniforms
     GPUData::ShaderData mInstanceTransformsData;
     GPUData::ShaderData mSphHarmCoeffsData;
     GPUData::ShaderData mSphHarmFuncsData;

@@ -7,6 +7,7 @@ NiftiImageWrapper::NiftiImageWrapper(const std::string& path)
     :mData(nifti_image_read(path.c_str(), true))
     ,mDims(mData->nx, mData->ny, mData->nz, mData->nt)
     ,mLength(mData->nvox)
+    ,mNbVox(mDims.x * mDims.y * mDims.z)
 {
 }
 
@@ -27,6 +28,11 @@ glm::vec<4, int> NiftiImageWrapper::dims() const
 uint NiftiImageWrapper::length() const
 {
     return mLength;
+}
+
+uint NiftiImageWrapper::nbVox() const
+{
+    return mNbVox;
 }
 
 glm::vec<3, uint> NiftiImageWrapper::unravelIndex3d(size_t flatIndex) const

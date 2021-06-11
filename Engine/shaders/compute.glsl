@@ -112,7 +112,6 @@ void main()
     const uint voxID = gl_GlobalInvocationID.x;
     // first index of sphere in allVertices
     const uint firstVertID = voxID * nbVertices;
-    const uint firstNormalID = firstVertID;
 
     scaleSphere(voxID, firstVertID);
     updateNormals(firstVertID);

@@ -20,6 +20,7 @@
 #include "mouse_state.h"
 #include "spherical_coordinates.h"
 #include "image.h"
+#include <timer.h>
 
 namespace
 {
@@ -146,15 +147,18 @@ int main(const CLArgs& args)
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 460");
 
-    // shaders
+    // vertex+fragment shaders
     const std::string absPathVS = args.absWorkingDir + "shaders/triangle.vert";
     const std::string absPathFS = args.absWorkingDir + "shaders/triangle.frag";
 
     std::vector<Scene::ShaderProgram> shaders;
     shaders.push_back(Scene::ShaderProgram(absPathVS, GL_VERTEX_SHADER));
     shaders.push_back(Scene::ShaderProgram(absPathFS, GL_FRAGMENT_SHADER));
-
     Scene::ProgramPipeline programPipeline(shaders);
+
+    // compute shader
+    std::string absPathCS = args.absWorkingDir + "shaders/compute.glsl";
+    Scene::ShaderProgram computeShader(absPathCS, GL_COMPUTE_SHADER);
 
     if (glGetError() != GL_NO_ERROR)
     {
@@ -166,16 +170,16 @@ int main(const CLArgs& args)
     std::shared_ptr<Image::NiftiImageWrapper> image(new Image::NiftiImageWrapper(args.imagePath));
 
     // create our model
-    Scene::Model model(image, SPHERE_RESOLUTION);
+    Utilities::Timer timer("MODEL INIT");
+    timer.Start();
+    Scene::Model model(image, computeShader, SPHERE_RESOLUTION);
+    timer.Stop();
     model.SendShaderDataToGPU();
 
-    // compute shader
-    std::string absPathCS = args.absWorkingDir + "shaders/compute.glsl";
-    Scene::ShaderProgram computeShader(absPathCS, GL_COMPUTE_SHADER);
-    glUseProgram(computeShader.ID());
-    glDispatchCompute((GLuint)(image->dims().x * image->dims().y * image->dims().z), 1, 1);
-    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-    glUseProgram(0);
+    {
+        Utilities::AutoTimer timer("SCALING");
+        model.ScaleSpheres();
+    }
 
     // create our camera
     Math::Coordinate::Spherical position(10.0, M_PI / 2.0, 0.0);
@@ -192,7 +196,7 @@ int main(const CLArgs& args)
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     bool show_demo_window = true;
-    glfwSwapInterval(0);
+    //glfwSwapInterval(0);
 
     // Rendering loop
     while (!glfwWindowShouldClose(window))
