@@ -7,10 +7,6 @@
 #include <vector>
 #include <string>
 
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_opengl3.h"
-
 #include "utils.hpp"
 #include "shader.h"
 #include "model.h"
@@ -21,6 +17,7 @@
 #include "spherical_coordinates.h"
 #include "image.h"
 #include <timer.h>
+#include <gui.h>
 
 namespace
 {
@@ -40,9 +37,12 @@ State::Mouse mouseState;
 // camera
 Scene::Camera camera;
 
+// user interface
+GUI::UIManager UI;
+
 void onMouseButton(GLFWwindow* window, int button, int action, int mod)
 {
-    if(!(ImGui::GetIO().WantCaptureMouse))
+    if(!UI.WantCaptureMouse())
     {
         double xPos, yPos;
         glfwGetCursorPos(window, &xPos, &yPos);
@@ -60,7 +60,7 @@ void onMouseButton(GLFWwindow* window, int button, int action, int mod)
 
 void onMouseMove(GLFWwindow* window, double xPos, double yPos)
 {
-    if(!(ImGui::GetIO().WantCaptureMouse))
+    if(!UI.WantCaptureMouse())
     {
         if(mouseState.lastAction == GLFW_PRESS)
         {
@@ -86,7 +86,7 @@ void onMouseMove(GLFWwindow* window, double xPos, double yPos)
 
 void onMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
 {
-    if(!(ImGui::GetIO().WantCaptureMouse))
+    if(!UI.WantCaptureMouse())
     {
         camera.Zoom(yoffset);
     }
@@ -136,16 +136,6 @@ int main(const CLArgs& args)
         return EXIT_FAILURE;
     }
 
-    // Initialize imgui
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init("#version 460");
 
     // vertex+fragment shaders
     const std::string absPathVS = args.absWorkingDir + "shaders/triangle.vert";
@@ -174,12 +164,9 @@ int main(const CLArgs& args)
     timer.Start();
     Scene::Model model(image, computeShader, SPHERE_RESOLUTION);
     timer.Stop();
-    model.SendShaderDataToGPU();
 
-    {
-        Utilities::AutoTimer timer("SCALING");
-        model.ScaleSpheres();
-    }
+    // Initialize imgui
+    UI = GUI::UIManager(window, &model, "#version 460");
 
     // create our camera
     Math::Coordinate::Spherical position(10.0, M_PI / 2.0, 0.0);
@@ -196,7 +183,7 @@ int main(const CLArgs& args)
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     bool show_demo_window = true;
-    //glfwSwapInterval(0);
+    glfwSwapInterval(0);
 
     // Rendering loop
     while (!glfwWindowShouldClose(window))
@@ -208,25 +195,16 @@ int main(const CLArgs& args)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         programPipeline.Bind();
         camera.Refresh();
+        model.ScaleSpheres();
         model.Draw();
 
-        // imgui thingy
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-        ImGui::ShowDemoWindow(&show_demo_window);
-
-        // Rendering
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        UI.DrawInterface();
 
         glfwSwapBuffers(window);
     }
 
     // imgui cleanup
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext();
+    UI.Terminate();
 
     // glfw cleanup
     glfwTerminate();

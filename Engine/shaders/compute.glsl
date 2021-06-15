@@ -1,12 +1,12 @@
 #version 460
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-layout(std430, binding=0) buffer allScaledSpheresBuffer
+layout(std430, binding=0) buffer allSpheresVerticesBuffer
 {
     vec4 allVertices[];
 };
 
-layout(std430, binding=1) buffer allNormalsBuffer
+layout(std430, binding=1) buffer allSpheresNormalsBuffer
 {
     vec4 allNormals[];
 };
@@ -42,29 +42,28 @@ layout(std430, binding=8) buffer sphereInfoBuffer
     uint nbIndices;
 };
 
-const uint NB_SH = 45;
-
-int flatten(int l, int m)
+layout(std430, binding=9) buffer gridInfoBuffer
 {
-    return l * (l + 1) / 2 + m;
-}
+    ivec4 gridDims;
+    ivec4 sliceIndex;
+};
 
-float evaluateSH(uint drawID, uint sphVertID)
+const uint NB_SH = 45;
+const float FLOAT_EPS = 1e-4;
+
+float evaluateSH(uint voxID, uint sphVertID)
 {
     float ret = 0.0f;
     float sum = 0.0f;
-    for(int l = 0; l <= 8; l+=2)
+    for(int i = 0; i < NB_SH; ++i)
     {
-        for(int m = -l; m <= l; ++m)
-        {
-            sum += abs(shCoeffs[drawID * NB_SH + flatten(l, m)]);
-            ret += shCoeffs[drawID * NB_SH + flatten(l, m)]
-                 * shFuncs[sphVertID * NB_SH + flatten(l, m)];
-        }
+        sum += abs(shCoeffs[voxID * NB_SH + i]);
+            ret += shCoeffs[voxID * NB_SH + i]
+                 * shFuncs[sphVertID * NB_SH + i];
     }
     if(sum > 0.0)
     {
-        return ret / sum;
+        return ret; // / sum;
     }
     return 0.0;
 }
@@ -91,7 +90,7 @@ void updateNormals(uint firstNormalID)
         c = allVertices[indices[i + 2] + firstNormalID].xyz;
         ab = b - a;
         ac = c - a;
-        if(length(ab) > 1e-4 && length(ac) > 1e-4)
+        if(length(ab) > FLOAT_EPS && length(ac) > FLOAT_EPS)
         {
             ab = normalize(ab);
             ac = normalize(ac);
@@ -106,12 +105,39 @@ void updateNormals(uint firstNormalID)
     }
 }
 
+uint convertIndex3DToVoxID(uint i, uint j, uint k)
+{
+    return k * gridDims.x * gridDims.y + j * gridDims.x + i;
+}
+
+uint convertInvocationIDToVoxID(uint invocationID)
+{
+    if(invocationID < gridDims.x * gridDims.y)
+    {
+        // XY-slice
+        const uint j = invocationID / gridDims.x;
+        const uint i = invocationID - j * gridDims.x;
+        return convertIndex3DToVoxID(i, j, sliceIndex.z);
+    }
+    if(invocationID < gridDims.x * gridDims.y + gridDims.y * gridDims.z)
+    {
+        // YZ-slice
+        const uint j = (invocationID - gridDims.x * gridDims.y) /gridDims.z;
+        const uint k = invocationID - gridDims.x * gridDims.y - j * gridDims.z;
+        return convertIndex3DToVoxID(sliceIndex.x, j, k);
+    }
+    // XZ-slice
+    const uint k = (invocationID - gridDims.x * gridDims.y - gridDims.y * gridDims.z) / gridDims.x;
+    const uint i = invocationID - gridDims.x * gridDims.y - gridDims.y * gridDims.z - k * gridDims.x;
+    return convertIndex3DToVoxID(i, sliceIndex.y, k);
+}
+
 void main()
 {
-    // voxel index; all unit scales one sphere
-    const uint voxID = gl_GlobalInvocationID.x;
+    const uint invocationID = gl_GlobalInvocationID.x;
     // first index of sphere in allVertices
-    const uint firstVertID = voxID * nbVertices;
+    const uint firstVertID = invocationID * nbVertices;
+    const uint voxID = convertInvocationIDToVoxID(invocationID);
 
     scaleSphere(voxID, firstVertID);
     updateNormals(firstVertID);

@@ -30,6 +30,7 @@ Camera::Camera(const Math::Coordinate::Spherical& sphCoords,
                     sizeof(GPUData::CamParams))
 {
     updateCamParams();
+    mCamParamsData.ToGPU();
 }
 
 glm::vec3 Camera::convertToCartesian(const Math::Coordinate::Spherical& coord) const
@@ -104,7 +105,7 @@ void Camera::Translate(double dx, double dy)
 
 void Camera::Refresh()
 {
-    mCamParamsData.ToGPU();
+    //mCamParamsData.ToGPU();
 }
 } // namespace Scene
 } // namespace Engine

@@ -29,6 +29,13 @@ struct SphereInfo
     unsigned int numIndices;
 };
 
+struct GridInfo
+{
+    GridInfo() = default;
+    glm::ivec4 gridDims;
+    glm::ivec4 sliceIndex;
+};
+
 class ShaderData
 {
 public:

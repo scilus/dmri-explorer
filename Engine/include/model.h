@@ -1,6 +1,5 @@
 #pragma once
 
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <vector>
 #include <memory>
@@ -27,10 +26,10 @@ struct DrawElementsIndirectCommand
     };
 
     DrawElementsIndirectCommand(uint count,
-                               uint instanceCount,
-                               uint firstIndex,
-                               uint baseVertex,
-                               uint baseInstance)
+                                uint instanceCount,
+                                uint firstIndex,
+                                uint baseVertex,
+                                uint baseInstance)
         :count(count)
         ,instanceCount(instanceCount)
         ,firstIndex(firstIndex)
@@ -58,8 +57,10 @@ public:
           const Scene::ShaderProgram& computeShader,
           uint sphereRes);
     ~Model();
-    void SendShaderDataToGPU();
     void ScaleSpheres();
+    glm::ivec4 GetSliceIndex() const;
+    void SetSliceIndex(int i, int j, int k);
+    glm::ivec4 GetGridDims() const;
     void Draw();
 private:
     void initializeArrays();
@@ -68,19 +69,21 @@ private:
     void addToVAO(const GLuint& vbo, const GPUData::BindableProperty& binding);
 
     // Image data
+    // mImage contains grid dimensions, number of voxels
     std::shared_ptr<Image::NiftiImageWrapper> mImage;
 
-    // Primitives
-    std::vector<GLuint> mIndices;
-    std::vector<glm::vec4> mAllScaledSpheres;
-    std::vector<glm::vec4> mAllNormals;
-
-    std::vector<glm::mat4> mInstanceTransforms;
-    std::vector<float> mSphHarmCoeffs;
-    std::vector<float> mSphHarmFuncs;
-
+    // Sphere topology
     Primitive::Sphere mSphere;
-    GPUData::SphereInfo mSphereInfo;
+
+    // Slicing
+    GPUData::GridInfo mGridInfo;
+    bool mSliceIsDirty;
+    uint mNbSpheres;
+
+    // Rendered primitives
+    std::vector<GLuint> mIndices;
+    std::vector<glm::vec4> mAllSpheresVertices;
+    std::vector<glm::vec4> mAllSpheresNormals;
 
     // GPU bindings
     GLuint mVAO = 0;
@@ -90,17 +93,23 @@ private:
     Scene::ShaderProgram mComputeShader;
 
     // Shader uniforms
+    std::vector<glm::mat4> mInstanceTransforms;
+    std::vector<float> mSphHarmCoeffs;
+    std::vector<float> mSphHarmFuncs;
+    GPUData::SphereInfo mSphereInfo;
+
     GPUData::ShaderData mInstanceTransformsData;
     GPUData::ShaderData mSphHarmCoeffsData;
     GPUData::ShaderData mSphHarmFuncsData;
+    GPUData::ShaderData mGridInfoData;
 
-    // data on topology of ONE sphere
+    // Data on topology of ONE sphere
     GPUData::ShaderData mSphereVerticesData;
     GPUData::ShaderData mSphereNormalsData;
     GPUData::ShaderData mSphereIndicesData;
     GPUData::ShaderData mSphereInfoData;
 
-    // empty arrays to fill in compute shader pass
+    // Empty arrays to fill in compute shader pass
     GPUData::ShaderData mAllSpheresVerticesData;
     GPUData::ShaderData mAllSpheresNormalsData;
 

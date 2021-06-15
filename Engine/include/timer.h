@@ -1,3 +1,4 @@
+#pragma once
 #include <chrono>
 #include <string>
 
@@ -21,7 +22,7 @@ public:
     Timer(const std::string& label);
     ~Timer() = default;
     void Start();
-    void Stop();
+    double Stop();
 private:
     std::chrono::high_resolution_clock::time_point mStart;
     std::string mLabel;

@@ -1,11 +1,14 @@
 #include "model.h"
 #include <utils.hpp>
+#include <glad/glad.h>
 
 #include <iostream>
 #include <stdexcept>
 #include <cstdint>
 #include <glm/gtc/matrix_transform.hpp>
 #include <spherical_harmonic.h>
+
+#include <timer.h>
 
 namespace
 {
@@ -21,12 +24,13 @@ Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image,
              uint sphereRes)
     :mImage(image)
     ,mIndices()
-    ,mAllScaledSpheres()
-    ,mAllNormals()
+    ,mAllSpheresVertices()
+    ,mAllSpheresNormals()
     ,mInstanceTransforms()
     ,mSphHarmCoeffs()
     ,mSphHarmFuncs()
     ,mSphere(sphereRes)
+    ,mNbSpheres(0)
     ,mSphereInfo()
     ,mVAO(0)
     ,mIndicesBO(0)
@@ -42,6 +46,8 @@ Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image,
     ,mAllSpheresVerticesData()
     ,mAllSpheresNormalsData()
     ,mIndirectCmd()
+    ,mGridInfo()
+    ,mSliceIsDirty(true)
 {
     initializeArrays();
     initializeGPUData();
@@ -58,48 +64,56 @@ Model::~Model()
 
 void Model::initializeArrays()
 {
+    // offset to substract from model to center image on (0, 0, 0)
     const glm::vec3 gridCenter((mImage->dims().x - 1) / 2.0f,
                                (mImage->dims().y - 1) / 2.0f,
                                (mImage->dims().z - 1) / 2.0f);
 
+    glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), -gridCenter);
+
     mSphereInfo.numVertices = mSphere.getPoints().size();
     mSphereInfo.numIndices = mSphere.getIndices().size();
 
-    glm::mat4 modelMat = glm::translate(glm::mat4(1.0f),
-                                        glm::vec3(-gridCenter.x,
-                                                  -gridCenter.y,
-                                                  -gridCenter.z));
+    mGridInfo.gridDims = mImage->dims();
+    mGridInfo.sliceIndex = mGridInfo.gridDims / 2;
 
-    mIndices.reserve(mImage->nbVox() * mSphereInfo.numIndices);
+    mNbSpheres = mImage->dims().x * mImage->dims().y  // Z-slice
+               + mImage->dims().x * mImage->dims().z  // Y-slice
+               + mImage->dims().y * mImage->dims().z; // X-slice
+
     mSphHarmCoeffs.reserve(mImage->length());
     mInstanceTransforms.reserve(mImage->nbVox());
     mIndirectCmd.reserve(mImage->nbVox());
 
-    // zero-initialized arrays (will be filled in compute shader call)
-    mAllScaledSpheres.resize(mImage->nbVox() * mSphereInfo.numVertices);
-    mAllNormals.resize(mImage->nbVox() * mSphereInfo.numVertices);
-
+    // Fill SH coefficients and model matrix
     for(uint flatIndex = 0; flatIndex < mImage->nbVox(); ++flatIndex)
     {
-        glm::vec<3, uint> indice3D = mImage->unravelIndex3d(flatIndex);
+        glm::vec<3, uint> id3D = mImage->unravelIndex3d(flatIndex);
+        //logVec3(id3D, "Indice 3D");
 
         // Fill SH coefficients table
         for(int k = 0; k < NB_SH; ++k)
         {
-            mSphHarmCoeffs.push_back(
-                static_cast<float>(
-                    mImage->at(indice3D.x, indice3D.y, indice3D.z, k)));
+            mSphHarmCoeffs.push_back(static_cast<float>(mImage->at(id3D.x, id3D.y, id3D.z, k)));
         }
 
+        // Add transform associated to current grid position
+        mInstanceTransforms.push_back(glm::translate(modelMat, glm::vec3(id3D)));
+    }
+
+    // zero-initialized arrays (will be filled in compute shader call)
+    mAllSpheresVertices.resize(mNbSpheres * mSphereInfo.numVertices);
+    mAllSpheresNormals.resize(mNbSpheres * mSphereInfo.numVertices);
+    mIndices.reserve(mNbSpheres * mSphereInfo.numIndices);
+
+    // Prepare draw command
+    for(uint i = 0; i < mNbSpheres; ++i)
+    {
         // Add sphere faces
         for(const uint& i: mSphere.getIndices())
         {
             mIndices.push_back(i);
         }
-
-        // Add transform associated to current sphere (grid position)
-        mInstanceTransforms.push_back(glm::translate(modelMat,
-            glm::vec3(indice3D.x, indice3D.y, indice3D.z)));
 
         // Add indirect draw command for current sphere
         mIndirectCmd.push_back(
@@ -116,13 +130,13 @@ void Model::initializeArrays()
 
 void Model::initializeGPUData()
 {
-    mAllSpheresVerticesData = GPUData::ShaderData(mAllScaledSpheres.data(),
-                                                  GPUData::BindableProperty::allScaledSpheres,
-                                                  sizeof(glm::vec4) * mAllScaledSpheres.size(),
+    mAllSpheresVerticesData = GPUData::ShaderData(mAllSpheresVertices.data(),
+                                                  GPUData::BindableProperty::allSpheresVertices,
+                                                  sizeof(glm::vec4) * mAllSpheresVertices.size(),
                                                   GL_DYNAMIC_DRAW);
-    mAllSpheresNormalsData = GPUData::ShaderData(mAllNormals.data(),
-                                                 GPUData::BindableProperty::allNormals,
-                                                 sizeof(glm::vec4) * mAllNormals.size(),
+    mAllSpheresNormalsData = GPUData::ShaderData(mAllSpheresNormals.data(),
+                                                 GPUData::BindableProperty::allSpheresNormals,
+                                                 sizeof(glm::vec4) * mAllSpheresNormals.size(),
                                                  GL_DYNAMIC_DRAW);
     mInstanceTransformsData = GPUData::ShaderData(mInstanceTransforms.data(),
                                                   GPUData::BindableProperty::modelTransform,
@@ -145,6 +159,20 @@ void Model::initializeGPUData()
     mSphereInfoData = GPUData::ShaderData(&mSphereInfo,
                                           GPUData::BindableProperty::sphereInfo,
                                           sizeof(GPUData::SphereInfo));
+    mGridInfoData = GPUData::ShaderData(&mGridInfo,
+                                        GPUData::BindableProperty::gridInfo,
+                                        sizeof(GPUData::GridInfo));
+    // push all data to GPU
+    mInstanceTransformsData.ToGPU();
+    mSphHarmCoeffsData.ToGPU();
+    mSphHarmFuncsData.ToGPU();
+    mSphereVerticesData.ToGPU();
+    mSphereNormalsData.ToGPU();
+    mSphereIndicesData.ToGPU();
+    mSphereInfoData.ToGPU();
+    mAllSpheresVerticesData.ToGPU();
+    mAllSpheresNormalsData.ToGPU();
+    mGridInfoData.ToGPU();
 }
 
 template <typename T>
@@ -173,25 +201,49 @@ void Model::addToVAO(const GLuint& vbo, const GPUData::BindableProperty& binding
     glVertexArrayAttribBinding(mVAO, bindingLocation, bindingLocation);
 }
 
-void Model::SendShaderDataToGPU()
+glm::ivec4 Model::GetSliceIndex() const
 {
-    mInstanceTransformsData.ToGPU();
-    mSphHarmCoeffsData.ToGPU();
-    mSphHarmFuncsData.ToGPU();
-    mSphereVerticesData.ToGPU();
-    mSphereNormalsData.ToGPU();
-    mSphereIndicesData.ToGPU();
-    mSphereInfoData.ToGPU();
-    mAllSpheresVerticesData.ToGPU();
-    mAllSpheresNormalsData.ToGPU();
+    return mGridInfo.sliceIndex;
+}
+
+void Model::SetSliceIndex(int i, int j, int k)
+{
+    const glm::ivec4 newSliceIndex = glm::ivec4(i, j, k, 0);
+    if(newSliceIndex.x != mGridInfo.sliceIndex.x
+    || newSliceIndex.y != mGridInfo.sliceIndex.y
+    || newSliceIndex.z != mGridInfo.sliceIndex.z)
+    {
+        Utilities::Timer timer("Slice index");
+        timer.Start();
+        mGridInfo.sliceIndex = glm::ivec4(i, j, k, 0);
+        mGridInfoData.ModifySubData(sizeof(glm::ivec4),
+                                    sizeof(glm::ivec4),
+                                    &mGridInfo.sliceIndex);
+        mGridInfoData.ToGPU();
+        mSliceIsDirty = true;
+        timer.Stop();
+    }
+}
+
+glm::ivec4 Model::GetGridDims() const
+{
+    return mGridInfo.gridDims;
 }
 
 void Model::ScaleSpheres()
 {
+    if(!mSliceIsDirty)
+    {
+        return;
+    }
+    Utilities::Timer timer("Scaling");
+    timer.Start();
     glUseProgram(mComputeShader.ID());
-    glDispatchCompute((GLuint)mImage->nbVox(), 1, 1);
+    glDispatchCompute(mNbSpheres, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     glUseProgram(0);
+    mSliceIsDirty = false;
+    timer.Stop();
 }
 
 void Model::Draw()

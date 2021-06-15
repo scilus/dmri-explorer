@@ -15,7 +15,13 @@ layout(std430, binding=2) buffer instanceTransformsBuffer
     mat4 modelMatrix[];
 };
 
-layout(std430, binding=9) buffer cameraBuffer
+layout(std430, binding=9) buffer gridInfoBuffer
+{
+    ivec4 gridDims;
+    ivec4 sliceIndex;
+};
+
+layout(std430, binding=10) buffer cameraBuffer
 {
     vec4 eye;
     mat4 viewMatrix;
@@ -33,11 +39,39 @@ out vec4 v_eye;
 // Constants
 const int NB_SH = 45;
 
+uint convertIndex3DToVoxID(uint i, uint j, uint k)
+{
+    return k * gridDims.x * gridDims.y + j * gridDims.x + i;
+}
+
+uint convertInvocationIDToVoxID(uint invocationID)
+{
+    if(invocationID < gridDims.x * gridDims.y)
+    {
+        // XY-slice
+        const uint j = invocationID / gridDims.x;
+        const uint i = invocationID - j * gridDims.x;
+        return convertIndex3DToVoxID(i, j, sliceIndex.z);
+    }
+    if(invocationID < gridDims.x * gridDims.y + gridDims.y * gridDims.z)
+    {
+        // YZ-slice
+        const uint j = (invocationID - gridDims.x * gridDims.y) /gridDims.z;
+        const uint k = invocationID - gridDims.x * gridDims.y - j * gridDims.z;
+        return convertIndex3DToVoxID(sliceIndex.x, j, k);
+    }
+    // XZ-slice
+    const uint k = (invocationID - gridDims.x * gridDims.y - gridDims.y * gridDims.z) / gridDims.x;
+    const uint i = invocationID - gridDims.x * gridDims.y - gridDims.y * gridDims.z - k * gridDims.x;
+    return convertIndex3DToVoxID(i, sliceIndex.y, k);
+}
+
 void main()
 {
+    const uint voxID = convertInvocationIDToVoxID(gl_DrawID);
     gl_Position = projectionMatrix
                 * viewMatrix
-                * modelMatrix[gl_DrawID]
+                * modelMatrix[voxID]
                 * allVertices[gl_VertexID];
 
     v_normal = normalize(allNormals[gl_VertexID].xyz);
