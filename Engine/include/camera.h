@@ -18,7 +18,6 @@ public:
            const glm::vec3& center,
            const float& fov, const float& aspect,
            const float& near, const float& far);
-    void Refresh();
     void Resize(const float& aspect);
     void Zoom(double delta);
     void RotateAroundCenter(double dPhi, double dTheta);

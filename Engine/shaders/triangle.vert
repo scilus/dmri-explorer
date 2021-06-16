@@ -12,13 +12,19 @@ layout(std430, binding=1) buffer allNormalsBuffer
 
 layout(std430, binding=2) buffer instanceTransformsBuffer
 {
-    mat4 modelMatrix[];
+    mat4 instanceMatrix[];
+};
+
+layout(std430, binding=11) buffer modelTransformsBuffer
+{
+    mat4 modelMatrix;
 };
 
 layout(std430, binding=9) buffer gridInfoBuffer
 {
     ivec4 gridDims;
     ivec4 sliceIndex;
+    ivec4 isSliceDirty;
 };
 
 layout(std430, binding=10) buffer cameraBuffer
@@ -33,7 +39,7 @@ out gl_PerVertex{
     vec4 gl_Position;
 };
 out vec3 v_color;
-out vec3 v_normal;
+out vec4 v_normal;
 out vec4 v_eye;
 
 // Constants
@@ -71,10 +77,13 @@ void main()
     const uint voxID = convertInvocationIDToVoxID(gl_DrawID);
     gl_Position = projectionMatrix
                 * viewMatrix
-                * modelMatrix[voxID]
+                * modelMatrix
+                * instanceMatrix[voxID]
                 * allVertices[gl_VertexID];
 
-    v_normal = normalize(allNormals[gl_VertexID].xyz);
+    v_normal = modelMatrix
+             * instanceMatrix[voxID]
+             * allNormals[gl_VertexID];
     v_color = abs(normalize(allVertices[gl_VertexID].xyz));
     v_eye = normalize(eye);
 }

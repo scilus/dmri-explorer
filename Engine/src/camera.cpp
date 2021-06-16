@@ -102,10 +102,5 @@ void Camera::Translate(double dx, double dy)
     mCenter = mCenter + (float)TRANSLATION_SPEED * (horizontalAxis * (float)dx + verticalAxis * (float)dy);
     updateCamParams();
 }
-
-void Camera::Refresh()
-{
-    //mCamParamsData.ToGPU();
-}
 } // namespace Scene
 } // namespace Engine

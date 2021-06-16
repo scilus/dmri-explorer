@@ -27,6 +27,8 @@ struct SphereInfo
     SphereInfo() = default;
     unsigned int numVertices;
     unsigned int numIndices;
+    unsigned int isNormalized; // bool
+    float sh0Threshold;
 };
 
 struct GridInfo
@@ -34,6 +36,7 @@ struct GridInfo
     GridInfo() = default;
     glm::ivec4 gridDims;
     glm::ivec4 sliceIndex;
+    glm::ivec4 isSliceDirty;
 };
 
 class ShaderData

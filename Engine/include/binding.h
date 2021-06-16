@@ -8,7 +8,7 @@ enum class BindableProperty
 {
     allSpheresVertices = 0,
     allSpheresNormals = 1,
-    modelTransform = 2,
+    instanceTransform = 2,
     shCoeffs = 3,
     shFunctions = 4,
     sphereVertices = 5,
@@ -17,6 +17,7 @@ enum class BindableProperty
     sphereInfo = 8,
     gridInfo = 9,
     camera = 10,
+    modelTransform = 11,
     none = 30
 };
 } // namespace GPUData

@@ -16,12 +16,15 @@ UIManager::UIManager()
 {
 }
 
-UIManager::UIManager(GLFWwindow* window, Scene::Model* model,
+UIManager::UIManager(GLFWwindow* window, std::shared_ptr<Scene::Model> model,
                      const std::string& glslVersion)
     :mWindow(window)
     ,mIO(nullptr)
     ,mModel(model)
-    ,mShowDemoWindow(true)
+    ,mShowDemoWindow(false)
+    ,mShowSlicers(true)
+    ,mShowSphereOptions(false)
+    ,mShowControls(false)
 {
     // Initialize imgui
     IMGUI_CHECKVERSION();
@@ -39,12 +42,14 @@ UIManager::UIManager(GLFWwindow* window, Scene::Model* model,
 
 void UIManager::DrawInterface()
 {
-    // imgui thingy
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    ImGui::ShowDemoWindow(&mShowDemoWindow);
-    drawSlicers();
+    drawMainMenuBar();
+    drawDemoWindow();
+    drawSlicersWindow();
+    drawControlsWindow();
+    drawSphereOptionsWindow();
 
     // Rendering
     ImGui::Render();
@@ -64,20 +69,102 @@ bool UIManager::WantCaptureMouse() const
     return mIO->WantCaptureMouse;
 }
 
-void UIManager::drawSlicers()
+void UIManager::drawMainMenuBar()
 {
+    ImGui::BeginMainMenuBar();
+    if(ImGui::BeginMenu("Options"))
+    {
+        ImGui::MenuItem("Show slicers window", NULL, &mShowSlicers);
+        ImGui::MenuItem("Show camera options", NULL, &mShowControls);
+        ImGui::MenuItem("Show sphere options", NULL, &mShowSphereOptions);
+        ImGui::Separator();
+        ImGui::MenuItem("Show demo window", NULL, &mShowDemoWindow);
+        ImGui::EndMenu();
+    }
+    ImGui::EndMainMenuBar();
+}
+
+void UIManager::drawSlicersWindow()
+{
+    if(!mShowSlicers)
+        return;
+
     ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(350.f, 200.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(250.f, 100.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
-    ImGui::Begin("Slices");
+
+    ImGui::Begin("Slicers", &mShowSlicers);
     glm::ivec4 sliceIndex = mModel->GetSliceIndex();
     const glm::ivec4 gridDims = mModel->GetGridDims();
-    ImGui::SliderInt("X-slice", &sliceIndex.x, 0, gridDims.x - 1);
-    ImGui::SliderInt("Y-slice", &sliceIndex.y, 0, gridDims.y - 1);
-    ImGui::SliderInt("Z-slice", &sliceIndex.z, 0, gridDims.z - 1);
-    mModel->SetSliceIndex(sliceIndex.x, sliceIndex.y, sliceIndex.z);
-    ImGui::Spacing();
+    bool updateSliceIndex = false;
+    updateSliceIndex |= ImGui::SliderInt("X-slice", &sliceIndex.x, 0, gridDims.x - 1);
+    updateSliceIndex |= ImGui::SliderInt("Y-slice", &sliceIndex.y, 0, gridDims.y - 1);
+    updateSliceIndex |= ImGui::SliderInt("Z-slice", &sliceIndex.z, 0, gridDims.z - 1);
     ImGui::End();
+    if(updateSliceIndex)
+    {
+        mModel->SetSliceIndex(sliceIndex.x, sliceIndex.y, sliceIndex.z);
+    }
+}
+
+void UIManager::drawControlsWindow()
+{
+    if(!mShowControls)
+        return;
+
+    ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(272.f, 120.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
+
+    ImGui::Begin("Controls", &mShowControls);
+    ImGui::Text("Speed");
+    float tSpeed = mModel->GetTranslationSpeed();
+    float rSpeed = mModel->GetRotationSpeed();
+    float sSpeed = mModel->GetScalingSpeed();
+    if(ImGui::InputFloat("Translation", &tSpeed, 0.001f, 0.05f))
+    {
+        mModel->SetTranslationSpeed(tSpeed);
+    }
+    if(ImGui::InputFloat("Rotation", &rSpeed, 0.001f, 0.05f))
+    {
+        mModel->SetRotationSpeed(rSpeed);
+    }
+    if(ImGui::InputFloat("Scaling", &sSpeed, 0.001f, 0.05f))
+    {
+        mModel->SetScalingSpeed(sSpeed);
+    }
+    ImGui::End();
+}
+
+void UIManager::drawSphereOptionsWindow()
+{
+    if(!mShowSphereOptions)
+        return;
+
+    ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(272.f, 120.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
+
+    ImGui::Begin("Sphere options", &mShowSphereOptions);
+    bool normalize = mModel->GetNormalized();
+    float normThreshold = mModel->GetSH0Threshold();
+    if(ImGui::Checkbox("Fit to voxel", &normalize))
+    {
+        mModel->SetNormalized(normalize);
+    }
+    if(ImGui::InputFloat("SH0 threshold", &normThreshold, 0.01f, 0.5f))
+    {
+        mModel->SetSH0Threshold(normThreshold);
+    }
+    ImGui::End();
+}
+
+void UIManager::drawDemoWindow()
+{
+    if(!mShowDemoWindow)
+        return;
+
+    ImGui::ShowDemoWindow(&mShowDemoWindow);
 }
 } // namespace GUI
 } // namespace Engine

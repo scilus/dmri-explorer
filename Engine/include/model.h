@@ -9,6 +9,7 @@
 #include <image.h>
 #include <sphere.h>
 #include <shader.h>
+#include <mutex>
 
 namespace Engine
 {
@@ -61,12 +62,35 @@ public:
     glm::ivec4 GetSliceIndex() const;
     void SetSliceIndex(int i, int j, int k);
     glm::ivec4 GetGridDims() const;
+    void RotateModel(double deltaX, double deltaY);
+    void TranslateModel(double deltaX, double deltaY);
+    void ScaleModel(double deltaS);
+    float GetRotationSpeed() const;
+    float GetTranslationSpeed() const;
+    float GetScalingSpeed() const;
+    void SetRotationSpeed(float speed);
+    void SetTranslationSpeed(float speed);
+    void SetScalingSpeed(float speed);
+    bool GetNormalized() const;
+    void SetNormalized(bool isNormalized);
+    float GetSH0Threshold() const;
+    void SetSH0Threshold(float threshold);
     void Draw();
 private:
-    void initializeArrays();
+    void initializeMembers();
     void initializeGPUData();
+    void initializePerVoxelAttributes();
+    void initializePerSphereAttributes();
     template<typename T> GLuint genVBO(const std::vector<T>& data) const;
-    void addToVAO(const GLuint& vbo, const GPUData::BindableProperty& binding);
+    bool isAnySliceDirty() const;
+
+    // multithreading
+    std::mutex mMutex;
+
+    // model orientation parameters
+    float mRotationSpeed;
+    float mScalingSpeed;
+    float mTranslationSpeed;
 
     // Image data
     // mImage contains grid dimensions, number of voxels
@@ -77,7 +101,6 @@ private:
 
     // Slicing
     GPUData::GridInfo mGridInfo;
-    bool mSliceIsDirty;
     uint mNbSpheres;
 
     // Rendered primitives
@@ -94,11 +117,13 @@ private:
 
     // Shader uniforms
     std::vector<glm::mat4> mInstanceTransforms;
+    glm::mat4 mModelMatrix;
     std::vector<float> mSphHarmCoeffs;
     std::vector<float> mSphHarmFuncs;
     GPUData::SphereInfo mSphereInfo;
 
     GPUData::ShaderData mInstanceTransformsData;
+    GPUData::ShaderData mModelMatrixData;
     GPUData::ShaderData mSphHarmCoeffsData;
     GPUData::ShaderData mSphHarmFuncsData;
     GPUData::ShaderData mGridInfoData;
