@@ -31,12 +31,12 @@ Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image,
     ,mAllSpheresVertices()
     ,mAllSpheresNormals()
     ,mInstanceTransforms()
-    ,mModelMatrix()
+    ,mModelMatrix(1.0f)
     ,mSphHarmCoeffs()
     ,mSphHarmFuncs()
     ,mSphere(sphereRes)
     ,mNbSpheres(0)
-    ,mSphereInfo()
+    ,mSphereInfo(mSphere)
     ,mVAO(0)
     ,mIndicesBO(0)
     ,mIndirectBO(0)
@@ -52,7 +52,7 @@ Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image,
     ,mAllSpheresVerticesData()
     ,mAllSpheresNormalsData()
     ,mIndirectCmd()
-    ,mGridInfo()
+    ,mGridInfo(mImage->dims())
 {
     initializeMembers();
     initializeGPUData();
@@ -69,20 +69,10 @@ Model::~Model()
 
 void Model::initializeMembers()
 {
-    mSphereInfo.numVertices = mSphere.getPoints().size();
-    mSphereInfo.numIndices = mSphere.getIndices().size();
-    mSphereInfo.isNormalized = 0;
-    mSphereInfo.sh0Threshold = 0.0f;
-
-    mGridInfo.gridDims = mImage->dims();
-    mGridInfo.sliceIndex = mGridInfo.gridDims / 2;
-    mGridInfo.isSliceDirty = glm::ivec4(1, 1, 1, 0);
-
     mNbSpheres = mImage->dims().x * mImage->dims().y  // Z-slice
                + mImage->dims().x * mImage->dims().z  // Y-slice
                + mImage->dims().y * mImage->dims().z; // X-slice
-
-    mModelMatrix = glm::identity<glm::mat4>();
+    std::cout << "Nb spheres: " << mNbSpheres << std::endl;
 
     std::thread initVoxThread(&Model::initializePerVoxelAttributes, this);
     std::thread initSpheresThread(&Model::initializePerSphereAttributes, this);

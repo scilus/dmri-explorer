@@ -124,6 +124,8 @@ void Sphere::genUnitSphere()
         mIndices.push_back(mCoordinates.size() - 1);
         mIndices.push_back((flatIndex + maxThetaSteps - 2) % (mCoordinates.size() - 2));
     }
+    std::cout << "Nb vertices: " << mPoints.size() << std::endl;
+    std::cout << "Nb triangles: " << mIndices.size() / 3 << std::endl;
 }
 } // Primitive
 } // Engine

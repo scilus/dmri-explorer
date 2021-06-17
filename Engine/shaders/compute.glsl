@@ -75,16 +75,14 @@ float evaluateSH(uint voxID, uint sphVertID)
     return 0.0;
 }
 
-bool scaleSphere(uint voxID, uint firstVertID)
+void scaleSphere(uint voxID, uint firstVertID, bool isVisible)
 {
     float r;
-    const bool showSphere = shCoeffs[voxID * NB_SH] > sh0Threshold;
     for(uint i = 0; i < nbVertices; ++i)
     {
-        r = showSphere ? evaluateSH(voxID, i) : 0.0f;
+        r = isVisible ? evaluateSH(voxID, i) : 0.0f;
         allVertices[firstVertID + i] = vec4(r * vertices[i].xyz, 1.0);
     }
-    return showSphere;
 }
 
 void updateNormals(uint firstNormalID)
@@ -170,6 +168,7 @@ void main()
     // first index of sphere in allVertices
     const uint firstVertID = invocationID * nbVertices;
 
+    // condition is slice needs redraw and current processed sphere belongs to said slice
     bool evaluateVoxel = (isSliceDirty.x > 0 && belongsToXSlice(invocationID)) ||
                          (isSliceDirty.y > 0 && belongsToYSlice(invocationID)) ||
                          (isSliceDirty.z > 0 && belongsToZSlice(invocationID));
@@ -178,6 +177,13 @@ void main()
        return; // skip heavy computations
 
     const uint voxID = convertInvocationIDToVoxID(invocationID);
-    if(scaleSphere(voxID, firstVertID))
+
+    bool isVisible = shCoeffs[voxID * NB_SH] > sh0Threshold;
+
+    scaleSphere(voxID, firstVertID, isVisible);
+    if(isVisible)
+    {
+        // skip normal computations for non-visible voxels
         updateNormals(firstVertID);
+    }
 }

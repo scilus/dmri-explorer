@@ -93,13 +93,14 @@ void UIManager::drawSlicersWindow()
     ImGui::SetNextWindowSize(ImVec2(250.f, 100.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
-    ImGui::Begin("Slicers", &mShowSlicers);
+    ImGui::Begin("Slices options", &mShowSlicers);
     glm::ivec4 sliceIndex = mModel->GetSliceIndex();
     const glm::ivec4 gridDims = mModel->GetGridDims();
     bool updateSliceIndex = false;
     updateSliceIndex |= ImGui::SliderInt("X-slice", &sliceIndex.x, 0, gridDims.x - 1);
     updateSliceIndex |= ImGui::SliderInt("Y-slice", &sliceIndex.y, 0, gridDims.y - 1);
     updateSliceIndex |= ImGui::SliderInt("Z-slice", &sliceIndex.z, 0, gridDims.z - 1);
+    ImGui::Spacing();
     ImGui::End();
     if(updateSliceIndex)
     {
@@ -142,7 +143,7 @@ void UIManager::drawSphereOptionsWindow()
         return;
 
     ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(272.f, 120.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(310.f, 120.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
     ImGui::Begin("Sphere options", &mShowSphereOptions);

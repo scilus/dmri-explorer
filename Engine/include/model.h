@@ -58,10 +58,13 @@ public:
           const Scene::ShaderProgram& computeShader,
           uint sphereRes);
     ~Model();
-    void ScaleSpheres();
+    glm::ivec4 GetGridDims() const;
+
+    // slice display options
     glm::ivec4 GetSliceIndex() const;
     void SetSliceIndex(int i, int j, int k);
-    glm::ivec4 GetGridDims() const;
+
+    // orientation methods
     void RotateModel(double deltaX, double deltaY);
     void TranslateModel(double deltaX, double deltaY);
     void ScaleModel(double deltaS);
@@ -71,10 +74,15 @@ public:
     void SetRotationSpeed(float speed);
     void SetTranslationSpeed(float speed);
     void SetScalingSpeed(float speed);
+
+    // sphere display options
     bool GetNormalized() const;
     void SetNormalized(bool isNormalized);
     float GetSH0Threshold() const;
     void SetSH0Threshold(float threshold);
+
+    // frame rendering methods
+    void ScaleSpheres();
     void Draw();
 private:
     void initializeMembers();

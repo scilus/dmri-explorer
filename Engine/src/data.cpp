@@ -15,6 +15,21 @@ CamParams::CamParams(const glm::mat4& view,
     this->eye = glm::vec4(eye.x, eye.y, eye.z, 1.0f);
 }
 
+SphereInfo::SphereInfo(const Primitive::Sphere& sphere)
+    :numVertices(sphere.getNbVertices())
+    ,numIndices(sphere.getIndices().size())
+    ,isNormalized(0)
+    ,sh0Threshold(0.0f)
+{
+}
+
+GridInfo::GridInfo(const glm::ivec4& dims)
+    :gridDims(dims)
+    ,sliceIndex(gridDims / 2)
+    ,isSliceDirty(1, 1, 1, 0)
+{
+}
+
 ShaderData::ShaderData()
     :mBinding(BindableProperty::none)
     ,mData(nullptr)

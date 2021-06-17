@@ -8,7 +8,7 @@ out vec4 color;
 void main()
 {
     vec3 n = normalize(v_normal.xyz);
-    vec3 diffuse = v_color * dot(n, v_eye.xyz) * 0.7;
+    vec3 diffuse = v_color * abs(dot(n, v_eye.xyz)) * 0.7;
     vec3 ambient = v_color * 0.3;
 
     color = vec4(ambient + diffuse, 1.0);

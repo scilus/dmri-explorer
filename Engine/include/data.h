@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "binding.h"
+#include <sphere.h>
 
 namespace Engine
 {
@@ -25,6 +26,7 @@ struct CamParams
 struct SphereInfo
 {
     SphereInfo() = default;
+    SphereInfo(const Primitive::Sphere& sphere);
     unsigned int numVertices;
     unsigned int numIndices;
     unsigned int isNormalized; // bool
@@ -34,6 +36,7 @@ struct SphereInfo
 struct GridInfo
 {
     GridInfo() = default;
+    GridInfo(const glm::ivec4& dims);
     glm::ivec4 gridDims;
     glm::ivec4 sliceIndex;
     glm::ivec4 isSliceDirty;
