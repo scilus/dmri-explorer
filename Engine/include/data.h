@@ -31,6 +31,7 @@ struct SphereInfo
     unsigned int numIndices;
     unsigned int isNormalized; // bool
     float sh0Threshold;
+    float scaling;
 };
 
 struct GridInfo

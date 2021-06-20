@@ -20,6 +20,7 @@ SphereInfo::SphereInfo(const Primitive::Sphere& sphere)
     ,numIndices(sphere.getIndices().size())
     ,isNormalized(0)
     ,sh0Threshold(0.0f)
+    ,scaling(1.0f)
 {
 }
 

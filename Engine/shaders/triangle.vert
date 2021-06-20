@@ -41,6 +41,7 @@ out gl_PerVertex{
 out vec3 v_color;
 out vec4 v_normal;
 out vec4 v_eye;
+out vec4 v_slice_orientation;
 
 // Constants
 const int NB_SH = 45;
@@ -72,6 +73,22 @@ uint convertInvocationIDToVoxID(uint invocationID)
     return convertIndex3DToVoxID(i, sliceIndex.y, k);
 }
 
+bool belongsToXSlice(uint invocationID)
+{
+    return invocationID >= gridDims.x * gridDims.y &&
+           invocationID < gridDims.x * gridDims.y + gridDims.y * gridDims.z;
+}
+
+bool belongsToYSlice(uint invocationID)
+{
+    return invocationID >= gridDims.x * gridDims.y + gridDims.y * gridDims.z;
+}
+
+bool belongsToZSlice(uint invocationID)
+{
+    return invocationID < gridDims.x * gridDims.y;
+}
+
 void main()
 {
     const uint voxID = convertInvocationIDToVoxID(gl_DrawID);
@@ -86,4 +103,12 @@ void main()
              * allNormals[gl_VertexID];
     v_color = abs(normalize(allVertices[gl_VertexID].xyz));
     v_eye = normalize(eye);
+
+    vec4 slice_orientation = vec4(float(belongsToXSlice(gl_DrawID)),
+                                  float(belongsToYSlice(gl_DrawID)),
+                                  float(belongsToZSlice(gl_DrawID)),
+                                  0.0f);
+    v_slice_orientation = modelMatrix
+                        * instanceMatrix[voxID]
+                        * slice_orientation;
 }

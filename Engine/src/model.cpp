@@ -219,9 +219,9 @@ glm::ivec4 Model::GetSliceIndex() const
 void Model::SetSliceIndex(int i, int j, int k)
 {
     const glm::ivec4 sliceIndex(i, j, k, 0);
-    const glm::ivec4 isDirtySlice((int)(sliceIndex.x != mGridInfo.sliceIndex.x),
-                                  (int)(sliceIndex.y != mGridInfo.sliceIndex.y),
-                                  (int)(sliceIndex.z != mGridInfo.sliceIndex.z),
+    const glm::ivec4 isDirtySlice((int)(sliceIndex.x != mGridInfo.sliceIndex.x || mGridInfo.isSliceDirty.x > 0),
+                                  (int)(sliceIndex.y != mGridInfo.sliceIndex.y || mGridInfo.isSliceDirty.y > 0),
+                                  (int)(sliceIndex.z != mGridInfo.sliceIndex.z || mGridInfo.isSliceDirty.z > 0),
                                   0);
     mGridInfo.sliceIndex = sliceIndex;
     mGridInfo.isSliceDirty = isDirtySlice;
@@ -256,6 +256,19 @@ float Model::GetSH0Threshold() const
 void Model::SetSH0Threshold(float threshold)
 {
     mSphereInfo.sh0Threshold = threshold;
+    mGridInfo.isSliceDirty = glm::ivec4(1, 1, 1, 0); // all slices dirty
+    mGridInfoData.ModifySubData(0, sizeof(GPUData::GridInfo), &mGridInfo);
+    mSphereInfoData.ModifySubData(0, sizeof(GPUData::SphereInfo), &mSphereInfo);
+}
+
+float Model::GetSphereScaling() const
+{
+    return mSphereInfo.scaling;
+}
+
+void Model::SetSphereScaling(float scaling)
+{
+    mSphereInfo.scaling = scaling;
     mGridInfo.isSliceDirty = glm::ivec4(1, 1, 1, 0); // all slices dirty
     mGridInfoData.ModifySubData(0, sizeof(GPUData::GridInfo), &mGridInfo);
     mSphereInfoData.ModifySubData(0, sizeof(GPUData::SphereInfo), &mSphereInfo);

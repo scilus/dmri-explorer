@@ -149,6 +149,7 @@ void UIManager::drawSphereOptionsWindow()
     ImGui::Begin("Sphere options", &mShowSphereOptions);
     bool normalize = mModel->GetNormalized();
     float normThreshold = mModel->GetSH0Threshold();
+    float scaling = mModel->GetSphereScaling();
     if(ImGui::Checkbox("Fit to voxel", &normalize))
     {
         mModel->SetNormalized(normalize);
@@ -156,6 +157,10 @@ void UIManager::drawSphereOptionsWindow()
     if(ImGui::InputFloat("SH0 threshold", &normThreshold, 0.01f, 0.5f))
     {
         mModel->SetSH0Threshold(normThreshold);
+    }
+    if(ImGui::InputFloat("Scaling", &scaling, 0.01f, 0.5f))
+    {
+        mModel->SetSphereScaling(scaling);
     }
     ImGui::End();
 }

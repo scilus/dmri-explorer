@@ -21,7 +21,7 @@
 
 namespace
 {
-const int SPHERE_RESOLUTION = 25;
+const int DEFAULT_SPHERE_RESOLUTION = 25;
 }
 
 namespace Engine
@@ -30,6 +30,7 @@ struct CLArgs
 {
     std::string absWorkingDir = "";
     std::string imagePath = "";
+    int sphereRes = DEFAULT_SPHERE_RESOLUTION;
 };
 
 State::Mouse mouseState;
@@ -158,14 +159,14 @@ int main(const CLArgs& args)
     // create our model
     Utilities::Timer timer("MODEL INIT");
     timer.Start();
-    model.reset(new Scene::Model(image, computeShader, SPHERE_RESOLUTION));
+    model.reset(new Scene::Model(image, computeShader, args.sphereRes));
     timer.Stop();
 
     // Initialize imgui
     UI = GUI::UIManager(window, model, "#version 460");
 
     // create our camera
-    Math::Coordinate::Spherical position(10.0, M_PI / 2.0, 0.0);
+    Math::Coordinate::Spherical position(100.0, M_PI / 2.0, 0.0);
     Math::Coordinate::Spherical upVector(1.0, 0.0, 0.0);
     camera = Scene::Camera(position, upVector,
                            glm::vec3(0.0f, 0.0f, 0.0f),
@@ -178,6 +179,9 @@ int main(const CLArgs& args)
     glCullFace(GL_BACK);
 
     // Rendering loop
+    std::vector<double> deltaT;
+    double t0 = glfwGetTime();
+    double t1;
     while (!glfwWindowShouldClose(window))
     {
         // Handle events
@@ -192,7 +196,21 @@ int main(const CLArgs& args)
         UI.DrawInterface();
 
         glfwSwapBuffers(window);
+
+        t1 = glfwGetTime();
+        deltaT.push_back(t1 - t0);
+        t0 = t1;
     }
+
+    double meandt = 0.0;
+    for(double dt: deltaT)
+    {
+        meandt += dt;
+    }
+    meandt /= double(deltaT.size());
+    std::cout << "Mean delta T (s): " << meandt << std::endl;
+    std::cout << "Mean framerate (fps): " << 1.0 / meandt << std::endl;
+    std::cout << "Number of frames: " << deltaT.size() << std::endl;
 
     // imgui cleanup
     UI.Terminate();
@@ -212,6 +230,10 @@ Engine::CLArgs parseArguments(int argc, char** argv)
     Engine::CLArgs args;
     args.absWorkingDir = extractPath(argv[0]);
     args.imagePath = argv[1];
+    if(argc > 2)
+    {
+        args.sphereRes = atoi(argv[2]);
+    }
     return args;
 }
 

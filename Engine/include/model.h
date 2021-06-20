@@ -80,6 +80,8 @@ public:
     void SetNormalized(bool isNormalized);
     float GetSH0Threshold() const;
     void SetSH0Threshold(float threshold);
+    float GetSphereScaling() const;
+    void SetSphereScaling(float scaling);
 
     // frame rendering methods
     void ScaleSpheres();
