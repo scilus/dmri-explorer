@@ -177,6 +177,7 @@ int main(const CLArgs& args)
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+    glfwSwapInterval(0);
 
     // Rendering loop
     std::vector<double> deltaT;

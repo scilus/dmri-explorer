@@ -2,7 +2,6 @@
 in vec3 v_color;
 in vec4 v_normal;
 in vec4 v_eye;
-in vec4 v_slice_orientation;
 
 out vec4 color;
 
@@ -19,8 +18,6 @@ void main()
     vec3 diffuse = v_color * abs(dot(n, v_eye.xyz)) * kd;
     vec3 ambient = v_color * ka;
     vec3 specular = vec3(1.0, 1.0, 1.0) * dot(r, eye) * ks;
-
-    vec3 slice_orientation = normalize(v_slice_orientation.xyz);
 
     float alpha = 1.0f;
     color = vec4(ambient + diffuse + specular, alpha);

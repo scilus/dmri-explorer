@@ -82,7 +82,7 @@ void scaleSphere(uint voxID, uint firstVertID, bool isVisible)
     for(uint i = 0; i < nbVertices; ++i)
     {
         r = isVisible ? evaluateSH(voxID, i) : 0.0f;
-        allVertices[firstVertID + i] = vec4(r * scaling * vertices[i].xyz, 1.0);
+        allVertices[firstVertID + i] = vec4(r * vertices[i].xyz, 1.0);
     }
 }
 

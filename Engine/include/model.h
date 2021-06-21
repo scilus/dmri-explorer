@@ -126,13 +126,11 @@ private:
     Scene::ShaderProgram mComputeShader;
 
     // Shader uniforms
-    std::vector<glm::mat4> mInstanceTransforms;
     glm::mat4 mModelMatrix;
     std::vector<float> mSphHarmCoeffs;
     std::vector<float> mSphHarmFuncs;
     GPUData::SphereInfo mSphereInfo;
 
-    GPUData::ShaderData mInstanceTransformsData;
     GPUData::ShaderData mModelMatrixData;
     GPUData::ShaderData mSphHarmCoeffsData;
     GPUData::ShaderData mSphHarmFuncsData;

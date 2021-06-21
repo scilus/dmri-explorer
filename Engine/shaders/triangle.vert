@@ -10,11 +10,6 @@ layout(std430, binding=1) buffer allNormalsBuffer
     vec4 allNormals[];
 };
 
-layout(std430, binding=2) buffer instanceTransformsBuffer
-{
-    mat4 instanceMatrix[];
-};
-
 layout(std430, binding=11) buffer modelTransformsBuffer
 {
     mat4 modelMatrix;
@@ -34,6 +29,15 @@ layout(std430, binding=10) buffer cameraBuffer
     mat4 projectionMatrix;
 };
 
+layout(std430, binding=8) buffer sphereInfoBuffer
+{
+    uint nbVertices;
+    uint nbIndices;
+    uint isNormalized; // bool
+    float sh0Threshold;
+    float scaling;
+};
+
 // Outputs
 out gl_PerVertex{
     vec4 gl_Position;
@@ -41,7 +45,6 @@ out gl_PerVertex{
 out vec3 v_color;
 out vec4 v_normal;
 out vec4 v_eye;
-out vec4 v_slice_orientation;
 
 // Constants
 const int NB_SH = 45;
@@ -73,42 +76,50 @@ uint convertInvocationIDToVoxID(uint invocationID)
     return convertIndex3DToVoxID(i, sliceIndex.y, k);
 }
 
-bool belongsToXSlice(uint invocationID)
+ivec3 convertInvocationIDToIndex3D(uint invocationID)
 {
-    return invocationID >= gridDims.x * gridDims.y &&
-           invocationID < gridDims.x * gridDims.y + gridDims.y * gridDims.z;
-}
-
-bool belongsToYSlice(uint invocationID)
-{
-    return invocationID >= gridDims.x * gridDims.y + gridDims.y * gridDims.z;
-}
-
-bool belongsToZSlice(uint invocationID)
-{
-    return invocationID < gridDims.x * gridDims.y;
+    if(invocationID < gridDims.x * gridDims.y)
+    {
+        // XY-slice
+        const uint j = invocationID / gridDims.x;
+        const uint i = invocationID - j * gridDims.x;
+        return ivec3(i, j, sliceIndex.z);
+    }
+    if(invocationID < gridDims.x * gridDims.y + gridDims.y * gridDims.z)
+    {
+        // YZ-slice
+        const uint j = (invocationID - gridDims.x * gridDims.y) /gridDims.z;
+        const uint k = invocationID - gridDims.x * gridDims.y - j * gridDims.z;
+        return ivec3(sliceIndex.x, j, k);
+    }
+    // XZ-slice
+    const uint k = (invocationID - gridDims.x * gridDims.y - gridDims.y * gridDims.z) / gridDims.x;
+    const uint i = invocationID - gridDims.x * gridDims.y - gridDims.y * gridDims.z - k * gridDims.x;
+    return ivec3(i, sliceIndex.y, k);
 }
 
 void main()
 {
-    const uint voxID = convertInvocationIDToVoxID(gl_DrawID);
+    const ivec3 index3d = convertInvocationIDToIndex3D(gl_DrawID);
+    const uint voxID = convertIndex3DToVoxID(index3d.x, index3d.y, index3d.z);
+    mat4 trMat;
+    trMat[0][0] = scaling;
+    trMat[1][1] = scaling;
+    trMat[2][2] = scaling;
+    trMat[3][0] = float(index3d.x - gridDims.x / 2);
+    trMat[3][1] = float(index3d.y - gridDims.y / 2);
+    trMat[3][2] = float(index3d.z - gridDims.z / 2);
+    trMat[3][3] = 1.0;
+
     gl_Position = projectionMatrix
                 * viewMatrix
                 * modelMatrix
-                * instanceMatrix[voxID]
+                * trMat
                 * allVertices[gl_VertexID];
 
     v_normal = modelMatrix
-             * instanceMatrix[voxID]
+             * trMat
              * allNormals[gl_VertexID];
     v_color = abs(normalize(allVertices[gl_VertexID].xyz));
     v_eye = normalize(eye);
-
-    vec4 slice_orientation = vec4(float(belongsToXSlice(gl_DrawID)),
-                                  float(belongsToYSlice(gl_DrawID)),
-                                  float(belongsToZSlice(gl_DrawID)),
-                                  0.0f);
-    v_slice_orientation = modelMatrix
-                        * instanceMatrix[voxID]
-                        * slice_orientation;
 }

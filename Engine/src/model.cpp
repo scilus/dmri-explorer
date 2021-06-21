@@ -30,7 +30,6 @@ Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image,
     ,mIndices()
     ,mAllSpheresVertices()
     ,mAllSpheresNormals()
-    ,mInstanceTransforms()
     ,mModelMatrix(1.0f)
     ,mSphHarmCoeffs()
     ,mSphHarmFuncs()
@@ -41,7 +40,6 @@ Model::Model(std::shared_ptr<Image::NiftiImageWrapper> image,
     ,mIndicesBO(0)
     ,mIndirectBO(0)
     ,mComputeShader(computeShader)
-    ,mInstanceTransformsData()
     ,mModelMatrixData()
     ,mSphHarmCoeffsData()
     ,mSphHarmFuncsData()
@@ -82,20 +80,12 @@ void Model::initializeMembers()
 
 void Model::initializePerVoxelAttributes()
 {
-    // offset to substract from model to center image on (0, 0, 0)
-    const glm::vec3 gridCenter((mImage->dims().x - 1) / 2.0f,
-                               (mImage->dims().y - 1) / 2.0f,
-                               (mImage->dims().z - 1) / 2.0f);
-
-    glm::mat4 instanceMat = glm::translate(-gridCenter);
-
     Utilities::Timer voxelLoopTimer("Foreach voxel");
     voxelLoopTimer.Start();
 
     // safety when allocating shared memory
     mMutex.lock();
     mSphHarmCoeffs.reserve(mImage->length());
-    mInstanceTransforms.reserve(mImage->nbVox());
     mMutex.unlock();
 
     // Fill SH coefficients and model matrix
@@ -109,8 +99,6 @@ void Model::initializePerVoxelAttributes()
             mSphHarmCoeffs.push_back(static_cast<float>(mImage->at(id3D.x, id3D.y, id3D.z, k)));
         }
 
-        // Add transform associated to current grid position
-        mInstanceTransforms.push_back(glm::translate(instanceMat, glm::vec3(id3D)));
     }
     voxelLoopTimer.Stop();
 }
@@ -160,9 +148,6 @@ void Model::initializeGPUData()
                                                  GPUData::BindableProperty::allSpheresNormals,
                                                  sizeof(glm::vec4) * mAllSpheresNormals.size(),
                                                  GL_DYNAMIC_DRAW);
-    mInstanceTransformsData = GPUData::ShaderData(mInstanceTransforms.data(),
-                                                  GPUData::BindableProperty::instanceTransform,
-                                                  sizeof(glm::mat4) * mInstanceTransforms.size());
     mModelMatrixData = GPUData::ShaderData(&mModelMatrix,
                                            GPUData::BindableProperty::modelTransform,
                                            sizeof(glm::mat4));
@@ -189,7 +174,6 @@ void Model::initializeGPUData()
                                         sizeof(GPUData::GridInfo));
 
     // push all data to GPU
-    mInstanceTransformsData.ToGPU();
     mModelMatrixData.ToGPU();
     mSphHarmCoeffsData.ToGPU();
     mSphHarmFuncsData.ToGPU();
