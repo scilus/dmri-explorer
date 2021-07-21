@@ -49,33 +49,6 @@ out vec4 v_eye;
 // Constants
 const int NB_SH = 45;
 
-uint convertIndex3DToVoxID(uint i, uint j, uint k)
-{
-    return k * gridDims.x * gridDims.y + j * gridDims.x + i;
-}
-
-uint convertInvocationIDToVoxID(uint invocationID)
-{
-    if(invocationID < gridDims.x * gridDims.y)
-    {
-        // XY-slice
-        const uint j = invocationID / gridDims.x;
-        const uint i = invocationID - j * gridDims.x;
-        return convertIndex3DToVoxID(i, j, sliceIndex.z);
-    }
-    if(invocationID < gridDims.x * gridDims.y + gridDims.y * gridDims.z)
-    {
-        // YZ-slice
-        const uint j = (invocationID - gridDims.x * gridDims.y) /gridDims.z;
-        const uint k = invocationID - gridDims.x * gridDims.y - j * gridDims.z;
-        return convertIndex3DToVoxID(sliceIndex.x, j, k);
-    }
-    // XZ-slice
-    const uint k = (invocationID - gridDims.x * gridDims.y - gridDims.y * gridDims.z) / gridDims.x;
-    const uint i = invocationID - gridDims.x * gridDims.y - gridDims.y * gridDims.z - k * gridDims.x;
-    return convertIndex3DToVoxID(i, sliceIndex.y, k);
-}
-
 ivec3 convertInvocationIDToIndex3D(uint invocationID)
 {
     if(invocationID < gridDims.x * gridDims.y)
@@ -101,7 +74,6 @@ ivec3 convertInvocationIDToIndex3D(uint invocationID)
 void main()
 {
     const ivec3 index3d = convertInvocationIDToIndex3D(gl_DrawID);
-    const uint voxID = convertIndex3DToVoxID(index3d.x, index3d.y, index3d.z);
     mat4 trMat;
     trMat[0][0] = scaling;
     trMat[1][1] = scaling;
