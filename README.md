@@ -1,9 +1,11 @@
-# stunning-succotash
-White matter fiber ODF viewer using `OpenGL 4.6`.
+# RTfODFSlicer
+A real-time fiber ODF slicing application for Linux using `OpenGL 4.6`.
 
 ## Installation
 
-To build the project:
+`Cmake` minimum version 3.11 is required for installing the application.
+
+To build the project using `GNU Make`:
 ```
 mkdir build
 cd build
@@ -13,16 +15,7 @@ make
 
 To run the executable:
 ```
-./build/Engine/main path/to/image.nii.gz
+./build/Engine/rtfodfslicer path/to/image.nii.gz
 ```
 
-## TODO
-* [x] Shader program class
-* [x] Program pipeline class
-* [x] Indices buffer
-* [x] Uniform buffers management (SSBO): `glBindBufferBase`
-* [x] Struct for uniforms
-* [x] Instancing with `glMultiDrawElementsIndirect`
-* [ ] Includes in shaders: `glNamedStringARB`, `glCompileShaderIncludeARB`
-* [ ] SSBO definition in shader include
-* [x] Load data from nifti
+If you experience problems with the installation, make sure you have `git` installed; it is used for fetching the [`nifticlib`](https://github.com/NIFTI-Imaging/nifti_clib) library.
