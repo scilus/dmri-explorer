@@ -97,9 +97,54 @@ void UIManager::drawSlicersWindow()
     glm::ivec4 sliceIndex = mModel->GetSliceIndex();
     const glm::ivec4 gridDims = mModel->GetGridDims();
     bool updateSliceIndex = false;
-    updateSliceIndex |= ImGui::SliderInt("X-slice", &sliceIndex.x, 0, gridDims.x - 1);
-    updateSliceIndex |= ImGui::SliderInt("Y-slice", &sliceIndex.y, 0, gridDims.y - 1);
-    updateSliceIndex |= ImGui::SliderInt("Z-slice", &sliceIndex.z, 0, gridDims.z - 1);
+
+    ImGui::Text("X-Slice");
+    ImGui::SameLine();
+    updateSliceIndex |= ImGui::SliderInt("##slicerx", &sliceIndex.x, 0, gridDims.x - 1);
+    ImGui::SameLine();
+    if(ImGui::ArrowButton("##left0", ImGuiDir_Left))
+    {
+        sliceIndex.x = std::max(0, sliceIndex.x - 1);
+        updateSliceIndex = true;
+    }
+    ImGui::SameLine();
+    if(ImGui::ArrowButton("##right0", ImGuiDir_Right))
+    {
+        sliceIndex.x = std::min(gridDims.x - 1, sliceIndex.x + 1);
+        updateSliceIndex = true;
+    }
+
+    ImGui::Text("Y-Slice");
+    ImGui::SameLine();
+    updateSliceIndex |= ImGui::SliderInt("##slicery", &sliceIndex.y, 0, gridDims.y - 1);
+    ImGui::SameLine();
+    if(ImGui::ArrowButton("##left1", ImGuiDir_Left))
+    {
+        sliceIndex.y = std::max(0, sliceIndex.y - 1);
+        updateSliceIndex = true;
+    }
+    ImGui::SameLine();
+    if(ImGui::ArrowButton("##right1", ImGuiDir_Right))
+    {
+        sliceIndex.y = std::min(gridDims.y - 1, sliceIndex.y + 1);
+        updateSliceIndex = true;
+    }
+
+    ImGui::Text("Z-Slice");
+    ImGui::SameLine();
+    updateSliceIndex |= ImGui::SliderInt("##slicerz", &sliceIndex.z, 0, gridDims.z - 1);
+    ImGui::SameLine();
+    if(ImGui::ArrowButton("##left2", ImGuiDir_Left))
+    {
+        sliceIndex.z = std::max(0, sliceIndex.z - 1);
+        updateSliceIndex = true;
+    }
+    ImGui::SameLine();
+    if(ImGui::ArrowButton("##right2", ImGuiDir_Right))
+    {
+        sliceIndex.z = std::min(gridDims.z - 1, sliceIndex.z + 1);
+        updateSliceIndex = true;
+    }
     ImGui::Spacing();
     ImGui::End();
     if(updateSliceIndex)
