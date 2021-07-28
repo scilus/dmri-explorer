@@ -1,9 +1,10 @@
+set(CMAKE_GENERATOR "Unix Makefiles")
 set(CMAKE_TOOLCHAIN_FILE ./third/vcpkg-export-20210512-131839/scripts/buildsystems/vcpkg.cmake)
 
 #========== Global Configurations =============#
 #----------------------------------------------#
 cmake_minimum_required(VERSION 3.11)
-project(stunningsuccotash)
+project(rtfodfslicer)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 

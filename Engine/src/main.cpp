@@ -19,6 +19,10 @@
 #include <timer.h>
 #include <gui.h>
 
+#ifndef RTFODFSLICER_SHADERS_DIR
+    #error "RTFODFSLICER_SHADERS_DIR PREPROCESSOR DEFINITION NOT FOUND."
+#endif
+
 namespace
 {
 const int DEFAULT_SPHERE_RESOLUTION = 25;
@@ -31,6 +35,7 @@ struct CLArgs
     std::string absWorkingDir = "";
     std::string imagePath = "";
     int sphereRes = DEFAULT_SPHERE_RESOLUTION;
+    bool success = true;
 };
 
 State::Mouse mouseState;
@@ -122,7 +127,7 @@ int main(const CLArgs& args)
     const int height = 600;
     const float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
 
-    GLFWwindow* window = glfwCreateWindow(width, height, "stunning-succotash", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(width, height, "RTfODF Slicer", NULL, NULL);
     glfwMakeContextCurrent(window);
     glfwSetWindowUserPointer(window, NULL);
 
@@ -141,8 +146,8 @@ int main(const CLArgs& args)
     }
 
     // vertex+fragment shaders
-    const std::string absPathVS = args.absWorkingDir + "shaders/triangle.vert";
-    const std::string absPathFS = args.absWorkingDir + "shaders/triangle.frag";
+    const std::string absPathVS = std::string(RTFODFSLICER_SHADERS_DIR) + "/triangle.vert";
+    const std::string absPathFS = std::string(RTFODFSLICER_SHADERS_DIR) + "/triangle.frag";
 
     std::vector<Scene::ShaderProgram> shaders;
     shaders.push_back(Scene::ShaderProgram(absPathVS, GL_VERTEX_SHADER));
@@ -150,7 +155,7 @@ int main(const CLArgs& args)
     Scene::ProgramPipeline programPipeline(shaders);
 
     // compute shader
-    std::string absPathCS = args.absWorkingDir + "shaders/compute.glsl";
+    std::string absPathCS = std::string(RTFODFSLICER_SHADERS_DIR) + "/compute.glsl";
     Scene::ShaderProgram computeShader(absPathCS, GL_COMPUTE_SHADER);
 
     // load our image
@@ -224,11 +229,13 @@ int main(const CLArgs& args)
 
 Engine::CLArgs parseArguments(int argc, char** argv)
 {
+    Engine::CLArgs args;
     if(argc < 2)
     {
-        throw std::runtime_error("Missing required argument: imagePath.");
+        std::cout << "Missing mandatory argument: [imagePath]" << std::endl;
+        args.success = false;
+        return args;
     }
-    Engine::CLArgs args;
     args.absWorkingDir = extractPath(argv[0]);
     args.imagePath = argv[1];
     if(argc > 2)
@@ -241,5 +248,9 @@ Engine::CLArgs parseArguments(int argc, char** argv)
 int main(int argc, char** argv)
 {
     Engine::CLArgs args = parseArguments(argc, argv);
+    if(!args.success)
+    {
+        return -1;
+    }
     return Engine::main(args);
 }
