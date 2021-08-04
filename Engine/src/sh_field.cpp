@@ -140,14 +140,6 @@ void SHField::initializePerSphereAttributes()
     Utilities::Timer sphereLoopTimer("Foreach sphere");
     sphereLoopTimer.Start();
 
-    /*
-    int sphereRes;
-    Options::Instance().GetInt("sphere.resolution", &sphereRes);
-
-    mSphere = Primitive::Sphere(sphereRes);
-    mSphereInfo = GPUData::SphereInfo(mSphere);
-    */
-
     // safety when allocating shared memory
     mMutex.lock();
     // zero-initialized arrays (will be filled in compute shader call)
