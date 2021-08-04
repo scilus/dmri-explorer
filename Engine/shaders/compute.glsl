@@ -53,23 +53,42 @@ layout(std430, binding=9) buffer gridInfoBuffer
 };
 
 const uint NB_SH = 45;
+const uint MAX_ORDER = 8;
 const float FLOAT_EPS = 1e-4;
+const float PI = 3.14159265358979323;
+
+const float L[45] = {
+    0,
+    2, 2, 2, 2, 2,
+    4, 4, 4, 4, 4, 4, 4, 4, 4,
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8};
+const float M[45] = {
+    0,
+    -2, -1, 0, 1, 2,
+    -4, -3, -2, -1, 0, 1, 2, 3, 4,
+    -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6,
+    -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8};
 
 float evaluateSH(uint voxID, uint sphVertID)
 {
     float ret = 0.0f;
     float sum = 0.0f;
+    float rmax = 0.0f;
     for(int i = 0; i < NB_SH; ++i)
     {
         sum += abs(shCoeffs[voxID * NB_SH + i]);
-            ret += shCoeffs[voxID * NB_SH + i]
-                 * shFuncs[sphVertID * NB_SH + i];
+        ret += shCoeffs[voxID * NB_SH + i]
+                * shFuncs[sphVertID * NB_SH + i];
+        rmax += (2.0f * L[i] + 1) / 4.0f / PI * pow(shCoeffs[voxID * NB_SH + i], 2);
     }
     if(sum > 0.0)
     {
         if(isNormalized > 0)
         {
-            return ret / sum;
+            rmax = sqrt(rmax);
+            rmax *= sqrt(0.5f * float(MAX_ORDER) + 1);
+            return ret / rmax;
         }
         return ret;
     }

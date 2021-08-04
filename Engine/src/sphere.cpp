@@ -8,8 +8,6 @@ namespace
 const uint MAX_SH_ORDER = 8;
 }
 
-namespace Engine
-{
 namespace Primitive
 {
 Sphere::Sphere()
@@ -128,4 +126,3 @@ void Sphere::genUnitSphere()
     std::cout << "Nb triangles: " << mIndices.size() / 3 << std::endl;
 }
 } // Primitive
-} // Engine

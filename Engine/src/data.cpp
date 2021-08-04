@@ -1,8 +1,6 @@
 #include "data.h"
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace Engine
-{
 namespace GPUData
 {
 
@@ -41,40 +39,64 @@ ShaderData::ShaderData()
 
 ShaderData::ShaderData(void* data, BindableProperty binding, size_t sizeofT)
 {
-    this->mData = data;
-    this->mBinding = binding;
-    this->isDirty = true;
-    glCreateBuffers(1, &this->mSSBO);
+    mData = data;
+    mBinding = binding;
+    isDirty = true;
+    glCreateBuffers(1, &mSSBO);
 
-    glNamedBufferData(this->mSSBO, sizeofT, this->mData, GL_STATIC_READ);
+    glNamedBufferData(mSSBO, sizeofT, mData, GL_STATIC_READ);
 };
 
 ShaderData::ShaderData(void* data, BindableProperty binding, size_t sizeofT, GLenum usage)
 {
-    this->mData = data;
-    this->mBinding = binding;
-    this->isDirty = true;
-    glCreateBuffers(1, &this->mSSBO);
+    mData = data;
+    mBinding = binding;
+    isDirty = true;
+    glCreateBuffers(1, &mSSBO);
 
-    glNamedBufferData(this->mSSBO, sizeofT, this->mData, usage);
+    glNamedBufferData(mSSBO, sizeofT, mData, usage);
 };
 
-void ShaderData::ModifySubData(GLintptr offset, GLsizeiptr size, const void* data)
+ShaderData::ShaderData(BindableProperty binding, GLenum usage)
+:mData(nullptr)
 {
-    this->isDirty = true;
-    glNamedBufferSubData(this->mSSBO, offset, size, data);
+    mBinding = binding;
+    mUsage = usage;
+    glCreateBuffers(1, &mSSBO);
+}
+
+ShaderData::ShaderData(BindableProperty binding)
+:mData(nullptr)
+{
+    mBinding = binding;
+    mUsage = GL_DYNAMIC_DRAW;
+    glCreateBuffers(1, &mSSBO);
+}
+
+void ShaderData::Update(GLintptr offset, GLsizeiptr size, void* data)
+{
+    bool isInit = mData != nullptr;
+    mData = data;
+    isDirty = true;
+    if(!isInit)
+    {
+        glNamedBufferData(mSSBO, size, mData, mUsage);
+    }
+    else
+    {
+        glNamedBufferSubData(mSSBO, offset, size, data);
+    }
 };
 
 void ShaderData::ToGPU()
 {
     // Copy SSBO data to GPU
-    if(!this->isDirty)
+    if(!isDirty)
     {
         return;
     }
-    GLuint index = static_cast<GLuint>(this->mBinding);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, this->mSSBO);
-    this->isDirty = false;
+    GLuint index = static_cast<GLuint>(mBinding);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, mSSBO);
+    isDirty = false;
 };
 } // namespace GPUData
-} // namespce Engine

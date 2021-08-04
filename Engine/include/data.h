@@ -8,8 +8,6 @@
 #include "binding.h"
 #include <sphere.h>
 
-namespace Engine
-{
 namespace GPUData
 {
 struct CamParams
@@ -49,13 +47,15 @@ public:
     ShaderData();
     ShaderData(void* data, BindableProperty binding, size_t sizeofT);
     ShaderData(void* data, BindableProperty binding, size_t sizeofT, GLenum usage);
-    void ModifySubData(GLintptr offset, GLsizeiptr size, const void* data);
+    ShaderData(BindableProperty binding, GLenum usage);
+    ShaderData(BindableProperty binding);
+    void Update(GLintptr offset, GLsizeiptr size, void* data);
     void ToGPU();
 private:
     GLuint mSSBO = 0;
+    GLenum mUsage;
     BindableProperty mBinding;
     bool isDirty = true;
     void* mData;
 };
 } // namespace GPUData
-} // namespace Engine

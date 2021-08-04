@@ -1,7 +1,5 @@
 # pragma once
 
-namespace Engine
-{
 namespace GPUData
 {
 enum class BindableProperty
@@ -21,4 +19,3 @@ enum class BindableProperty
     none = 30
 };
 } // namespace GPUData
-} // namespace Engine

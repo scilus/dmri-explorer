@@ -6,8 +6,6 @@
 #include <spherical_harmonic.h>
 #include <spherical_coordinates.h>
 
-namespace Engine
-{
 namespace Primitive
 {
 class Sphere
@@ -37,4 +35,3 @@ private:
     unsigned int mResolution;
 };
 } // Primitive
-} // Engine

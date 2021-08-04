@@ -4,103 +4,63 @@
 #include <glm/gtx/norm.hpp>
 #include <math.h>
 #include <iostream>
+#include <options.h>
 
-namespace Engine
+namespace
 {
-namespace Scene
-{
-const double ROT_SPEED = 0.05;
-const double TRANSLATION_SPEED = 0.5;
+const float TRANSLATION_SPEED = 0.02f;
+}
 
-Camera::Camera(const Math::Coordinate::Spherical& sphCoords,
-               const Math::Coordinate::Spherical& upVector,
-               const glm::vec3& center,
+Camera::Camera(const glm::vec3& position,
+               const glm::vec3& upVector,
+               const glm::vec3& lookat,
                const float& fov, const float& aspect,
                const float& near, const float& far)
-    :mCenter(center)
-    ,mSphCoords(sphCoords)
+    :mLookAt(lookat)
+    ,mPosition(position)
     ,mUpVector(upVector)
     ,mFov(fov)
     ,mNear(near)
     ,mFar(far)
     ,mAspect(aspect)
     ,mCamParams()
-    ,mCamParamsData(&mCamParams,
-                    GPUData::BindableProperty::camera,
-                    sizeof(GPUData::CamParams))
+    ,mCamParamsData(GPUData::BindableProperty::camera)
 {
-    updateCamParams();
-    mCamParamsData.ToGPU();
-}
-
-glm::vec3 Camera::convertToCartesian(const Math::Coordinate::Spherical& coord) const
-{
-    glm::vec3 pos;
-    pos.x = coord.r * sin(coord.phi) * sin(coord.theta);
-    pos.y = coord.r * cos(coord.theta);
-    pos.z = coord.r * cos(coord.phi) * sin(coord.theta);
-
-    return pos;
-}
-
-glm::vec3 Camera::getPosition(const Math::Coordinate::Spherical& coord) const
-{
-    return convertToCartesian(coord) + mCenter;
-}
-
-glm::vec3 Camera::getDirection(const Math::Coordinate::Spherical& coord) const
-{
-    return convertToCartesian(coord);
-}
-
-void Camera::updateCamParams()
-{
-    const glm::vec3 eye = convertToCartesian(mSphCoords);
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
-    mViewMatrix = glm::lookAt(getPosition(mSphCoords), mCenter, getDirection(mUpVector));
-    mCamParams = GPUData::CamParams(mViewMatrix, mProjectionMatrix, eye);
-    mCamParamsData.ModifySubData(0, sizeof(GPUData::CamParams), &mCamParams);
+    mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
+    Options::Instance().SetFloat("camera.translation.speed", TRANSLATION_SPEED);
+}
+
+void Camera::Update()
+{
+    mCamParams = GPUData::CamParams(mViewMatrix, mProjectionMatrix, mPosition);
+    mCamParamsData.Update(0, sizeof(GPUData::CamParams), &mCamParams);
+    mCamParamsData.ToGPU();
 }
 
 void Camera::Resize(const float& aspect)
 {
     mAspect = aspect;
-    updateCamParams();
+    mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
 }
 
-void Camera::RotateAroundCenter(double dPhi, double dTheta)
+void Camera::TranslateZ(double delta)
 {
-    // rotate the eye
-    mSphCoords.theta += ROT_SPEED * dTheta;
-    mSphCoords.phi += ROT_SPEED * dPhi;
-
-    // rotate the up vector
-    mUpVector.theta += ROT_SPEED * dTheta;
-    mUpVector.phi += ROT_SPEED * dPhi;
-    updateCamParams();
+    const glm::vec3 direction = glm::normalize(mLookAt - mPosition);
+    mPosition = mPosition + direction * (float)delta;
+    mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
 
-void Camera::Zoom(double delta)
+void Camera::TranslateXY(double dx, double dy)
 {
-    while (delta > mSphCoords.r)
-    {
-        delta /= 2.0;
-    }
+    glm::vec3 horizontalAxis = glm::normalize(glm::cross(mUpVector, mPosition - mLookAt));
+    glm::vec3 verticalAxis = mUpVector;
 
-    mSphCoords.r -= delta;
-    mSphCoords.r = std::max(0.01f, mSphCoords.r);
+    float speed;
+    Options::Instance().GetFloat("camera.translation.speed", &speed);
 
-    updateCamParams();
+    const glm::vec3 translation = speed * (horizontalAxis * (float)dx + verticalAxis * (float)dy);
+    mPosition = mPosition + translation;
+    mLookAt = mLookAt + translation;
+    mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
-
-void Camera::Translate(double dx, double dy)
-{
-    glm::vec3 horizontalAxis = glm::normalize(glm::cross(getDirection(mUpVector),
-                                              mCenter - getPosition(mSphCoords)));
-    glm::vec3 verticalAxis = glm::normalize(glm::cross(mCenter - getPosition(mSphCoords),
-                                                       horizontalAxis));
-    mCenter = mCenter + (float)TRANSLATION_SPEED * (horizontalAxis * (float)dx + verticalAxis * (float)dy);
-    updateCamParams();
-}
-} // namespace Scene
-} // namespace Engine
