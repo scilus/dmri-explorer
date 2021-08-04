@@ -80,7 +80,7 @@ void UIManager::drawPreferencesWindow()
         return;
     
     ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(250.f, 100.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(406.f, 79.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
     ImGui::Begin("Preferences", &mShowPreferences);
@@ -110,7 +110,7 @@ void UIManager::drawSlicersWindow()
         return;
 
     ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(396.f, 132.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(417.f, 180.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
     ImGui::Begin("Slices options", &mShowSlicers);

@@ -23,8 +23,6 @@ SHField::SHField(std::shared_ptr<Image::NiftiImageWrapper> image,
     :Model()
     ,mImage(image)
     ,mIndices()
-    ,mAllSpheresVertices()
-    ,mAllSpheresNormals()
     ,mSphHarmCoeffs()
     ,mSphHarmFuncs()
     ,mSphere(sphereRes)
@@ -142,9 +140,6 @@ void SHField::initializePerSphereAttributes()
 
     // safety when allocating shared memory
     mMutex.lock();
-    // zero-initialized arrays (will be filled in compute shader call)
-    mAllSpheresVertices.resize(mNbSpheres * mSphereInfo.numVertices);
-    mAllSpheresNormals.resize(mNbSpheres * mSphereInfo.numVertices);
     mIndices.reserve(mNbSpheres * mSphereInfo.numIndices);
     mIndirectCmd.reserve(mImage->nbVox());
     mMutex.unlock();
@@ -172,13 +167,14 @@ void SHField::initializePerSphereAttributes()
 
 void SHField::initializeGPUData()
 {
-    mAllSpheresVerticesData = GPUData::ShaderData(mAllSpheresVertices.data(),
+    std::vector<glm::vec4> allVertices(mNbSpheres * mSphereInfo.numVertices);
+    mAllSpheresVerticesData = GPUData::ShaderData(allVertices.data(),
                                                   GPUData::BindableProperty::allSpheresVertices,
-                                                  sizeof(glm::vec4) * mAllSpheresVertices.size(),
+                                                  sizeof(glm::vec4) * allVertices.size(),
                                                   GL_DYNAMIC_DRAW);
-    mAllSpheresNormalsData = GPUData::ShaderData(mAllSpheresNormals.data(),
+    mAllSpheresNormalsData = GPUData::ShaderData(allVertices.data(),
                                                  GPUData::BindableProperty::allSpheresNormals,
-                                                 sizeof(glm::vec4) * mAllSpheresNormals.size(),
+                                                 sizeof(glm::vec4) * allVertices.size(),
                                                  GL_DYNAMIC_DRAW);
     mSphHarmCoeffsData = GPUData::ShaderData(mSphHarmCoeffs.data(),
                                              GPUData::BindableProperty::shCoeffs,

@@ -94,8 +94,6 @@ private:
 
     // Rendered primitives
     std::vector<GLuint> mIndices;
-    std::vector<glm::vec4> mAllSpheresVertices;
-    std::vector<glm::vec4> mAllSpheresNormals;
 
     // GPU bindings
     GLuint mVAO = 0;
