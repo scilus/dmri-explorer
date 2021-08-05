@@ -38,18 +38,18 @@ void CoordinateSystem::ResetParent(std::shared_ptr<CoordinateSystem> parent)
 
 
 WorldObject::WorldObject()
-:mTransformGPUData(GPUData::BindableProperty::modelTransform)
+:mTransformGPUData(GPU::BindableProperty::modelTransform)
 ,mCoordinateSystem()
 {
 }
 
-WorldObject::WorldObject(GPUData::BindableProperty binding)
+WorldObject::WorldObject(GPU::BindableProperty binding)
 :mTransformGPUData(binding)
 ,mCoordinateSystem()
 {
 }
 
-WorldObject::WorldObject(GPUData::BindableProperty binding,
+WorldObject::WorldObject(GPU::BindableProperty binding,
                          glm::mat4 transform,
                          std::shared_ptr<CoordinateSystem> parent)
 :mTransformGPUData(binding)

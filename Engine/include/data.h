@@ -8,7 +8,7 @@
 #include "binding.h"
 #include <sphere.h>
 
-namespace GPUData
+namespace GPU
 {
 struct CamParams
 {
@@ -41,7 +41,7 @@ struct GridInfo
     glm::ivec4 isSliceDirty;
 };
 
-class ShaderData
+class ShaderData  // we could inherit from shaderdata?
 {
 public:
     ShaderData();
@@ -58,4 +58,4 @@ private:
     bool isDirty = true;
     void* mData;
 };
-} // namespace GPUData
+} // namespace GPU

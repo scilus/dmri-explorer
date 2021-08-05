@@ -24,7 +24,7 @@ Camera::Camera(const glm::vec3& position,
     ,mFar(far)
     ,mAspect(aspect)
     ,mCamParams()
-    ,mCamParamsData(GPUData::BindableProperty::camera)
+    ,mCamParamsData(GPU::BindableProperty::camera)
 {
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
@@ -33,8 +33,8 @@ Camera::Camera(const glm::vec3& position,
 
 void Camera::Update()
 {
-    mCamParams = GPUData::CamParams(mViewMatrix, mProjectionMatrix, mPosition);
-    mCamParamsData.Update(0, sizeof(GPUData::CamParams), &mCamParams);
+    mCamParams = GPU::CamParams(mViewMatrix, mProjectionMatrix, mPosition);
+    mCamParamsData.Update(0, sizeof(GPU::CamParams), &mCamParams);
     mCamParamsData.ToGPU();
 }
 

@@ -1,11 +1,6 @@
 #version 460
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-layout(std430, binding=0) buffer allSpheresVerticesBuffer
-{
-    vec4 allVertices[];
-};
-
 layout(std430, binding=1) buffer allSpheresNormalsBuffer
 {
     vec4 allNormals[];
@@ -50,6 +45,11 @@ layout(std430, binding=9) buffer gridInfoBuffer
     ivec4 gridDims;
     ivec4 sliceIndex;
     ivec4 isSliceDirty;
+};
+
+layout(std430, binding=0) buffer allRadiisBuffer
+{
+    float allRadiis[];
 };
 
 const uint NB_SH = 45;
@@ -100,8 +100,7 @@ void scaleSphere(uint voxID, uint firstVertID, bool isVisible)
     float r;
     for(uint i = 0; i < nbVertices; ++i)
     {
-        r = isVisible ? evaluateSH(voxID, i) : 0.0f;
-        allVertices[firstVertID + i] = vec4(r * vertices[i].xyz, 1.0);
+        allRadiis[firstVertID + i] = isVisible ? evaluateSH(voxID, i) : 0.0f;
     }
 }
 
@@ -118,9 +117,9 @@ void updateNormals(uint firstNormalID)
 
     for(uint i = 0; i < nbIndices; i += 3)
     {
-        a = allVertices[indices[i] + firstNormalID].xyz;
-        b = allVertices[indices[i + 1] + firstNormalID].xyz;
-        c = allVertices[indices[i + 2] + firstNormalID].xyz;
+        a = allRadiis[indices[i] + firstNormalID] * vertices[indices[i]].xyz;
+        b = allRadiis[indices[i + 1] + firstNormalID] * vertices[indices[i + 1]].xyz;
+        c = allRadiis[indices[i + 2] + firstNormalID] * vertices[indices[i + 2]].xyz;
         ab = b - a;
         ac = c - a;
         if(length(ab) > FLOAT_EPS && length(ac) > FLOAT_EPS)
@@ -185,7 +184,7 @@ void main()
 {
     // current compute shader unit index
     const uint invocationID = gl_GlobalInvocationID.x;
-    // first index of sphere in allVertices
+    // first index of sphere in allRadiis and allNormals
     const uint firstVertID = invocationID * nbVertices;
 
     // condition is slice needs redraw and current processed sphere belongs to said slice

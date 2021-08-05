@@ -89,7 +89,7 @@ private:
     Primitive::Sphere mSphere;
 
     // Slicing
-    GPUData::GridInfo mGridInfo;
+    GPU::GridInfo mGridInfo;
     uint mNbSpheres;
 
     // Rendered primitives
@@ -106,21 +106,21 @@ private:
     // Shader uniforms
     std::vector<float> mSphHarmCoeffs;
     std::vector<float> mSphHarmFuncs;
-    GPUData::SphereInfo mSphereInfo;
+    GPU::SphereInfo mSphereInfo;
 
-    GPUData::ShaderData mSphHarmCoeffsData;
-    GPUData::ShaderData mSphHarmFuncsData;
-    GPUData::ShaderData mGridInfoData;
+    GPU::ShaderData mSphHarmCoeffsData;
+    GPU::ShaderData mSphHarmFuncsData;
+    GPU::ShaderData mGridInfoData;
 
     // Data on topology of ONE sphere
-    GPUData::ShaderData mSphereVerticesData;
-    GPUData::ShaderData mSphereNormalsData;
-    GPUData::ShaderData mSphereIndicesData;
-    GPUData::ShaderData mSphereInfoData;
+    GPU::ShaderData mSphereVerticesData;
+    GPU::ShaderData mSphereNormalsData;
+    GPU::ShaderData mSphereIndicesData;
+    GPU::ShaderData mSphereInfoData;
 
     // Empty arrays to fill in compute shader pass
-    GPUData::ShaderData mAllSpheresVerticesData;
-    GPUData::ShaderData mAllSpheresNormalsData;
+    GPU::ShaderData mAllRadiisData;
+    GPU::ShaderData mAllSpheresNormalsData;
 
     std::vector<DrawElementsIndirectCommand> mIndirectCmd;
 };

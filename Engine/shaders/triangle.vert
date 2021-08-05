@@ -1,13 +1,13 @@
 #version 460
 
-layout(std430, binding=0) buffer allScaledSpheresBuffer
-{
-    vec4 allVertices[];
-};
-
 layout(std430, binding=1) buffer allNormalsBuffer
 {
     vec4 allNormals[];
+};
+
+layout(std430, binding=5) buffer sphereVerticesBuffer
+{
+    vec4 vertices[];
 };
 
 layout(std430, binding=11) buffer modelTransformsBuffer
@@ -36,6 +36,11 @@ layout(std430, binding=8) buffer sphereInfoBuffer
     uint isNormalized; // bool
     float sh0Threshold;
     float scaling;
+};
+
+layout(std430, binding=0) buffer allRadiisBuffer
+{
+    float allRadiis[];
 };
 
 // Outputs
@@ -83,15 +88,15 @@ void main()
     trMat[3][2] = float(index3d.z - gridDims.z / 2);
     trMat[3][3] = 1.0;
 
+    vec4 currentVertex = vec4(vertices[gl_VertexID%nbVertices].xyz * allRadiis[gl_VertexID], 1.0f);
     gl_Position = projectionMatrix
                 * viewMatrix
                 * modelMatrix
                 * trMat
-                * allVertices[gl_VertexID];
+                * currentVertex;
 
     v_normal = modelMatrix
-             * trMat
              * allNormals[gl_VertexID];
-    v_color = abs(normalize(allVertices[gl_VertexID].xyz));
+    v_color = abs(normalize(currentVertex.xyz));
     v_eye = normalize(eye);
 }

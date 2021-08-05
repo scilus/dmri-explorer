@@ -22,8 +22,8 @@ class WorldObject
 {
 public:
     WorldObject();
-    WorldObject(GPUData::BindableProperty binding);
-    WorldObject(GPUData::BindableProperty binding,
+    WorldObject(GPU::BindableProperty binding);
+    WorldObject(GPU::BindableProperty binding,
                 glm::mat4 transform,
                 std::shared_ptr<CoordinateSystem> parent);
     ~WorldObject();
@@ -31,6 +31,6 @@ protected:
     void resetCS(std::shared_ptr<CoordinateSystem> cs);
     void uploadTransformToGPU();
 private:
-    GPUData::ShaderData mTransformGPUData;
+    GPU::ShaderData mTransformGPUData;
     std::shared_ptr<CoordinateSystem> mCoordinateSystem;
 };

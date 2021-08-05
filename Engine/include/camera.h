@@ -31,6 +31,6 @@ private:
     glm::mat4 mProjectionMatrix;
     glm::mat4 mViewMatrix;
 
-    GPUData::CamParams mCamParams;
-    GPUData::ShaderData mCamParamsData;
+    GPU::CamParams mCamParams;
+    GPU::ShaderData mCamParamsData;
 };

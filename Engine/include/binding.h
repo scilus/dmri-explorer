@@ -1,10 +1,10 @@
 # pragma once
 
-namespace GPUData
+namespace GPU
 {
 enum class BindableProperty
 {
-    allSpheresVertices = 0,
+    allRadiis = 0,
     allSpheresNormals = 1,
     instanceTransform = 2,
     shCoeffs = 3,
@@ -18,4 +18,4 @@ enum class BindableProperty
     modelTransform = 11,
     none = 30
 };
-} // namespace GPUData
+} // namespace GPU

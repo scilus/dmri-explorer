@@ -3,7 +3,7 @@
 #include <iostream>
 
 Model::Model()
-:WorldObject(GPUData::BindableProperty::modelTransform)
+:WorldObject(GPU::BindableProperty::modelTransform)
 {
 }
 

@@ -1,7 +1,7 @@
 #include "data.h"
 #include <glm/gtc/matrix_transform.hpp>
 
-namespace GPUData
+namespace GPU
 {
 
 CamParams::CamParams(const glm::mat4& view,
@@ -99,4 +99,4 @@ void ShaderData::ToGPU()
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, mSSBO);
     isDirty = false;
 };
-} // namespace GPUData
+} // namespace GPU

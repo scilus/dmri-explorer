@@ -37,7 +37,6 @@ SHField::SHField(std::shared_ptr<Image::NiftiImageWrapper> image,
     ,mSphereNormalsData()
     ,mSphereIndicesData()
     ,mSphereInfoData()
-    ,mAllSpheresVerticesData()
     ,mAllSpheresNormalsData()
     ,mIndirectCmd()
     ,mGridInfo(mImage->dims())
@@ -167,36 +166,40 @@ void SHField::initializePerSphereAttributes()
 
 void SHField::initializeGPUData()
 {
+    // temporary zero-filled array for all spheres vertices and normals
     std::vector<glm::vec4> allVertices(mNbSpheres * mSphereInfo.numVertices);
-    mAllSpheresVerticesData = GPUData::ShaderData(allVertices.data(),
-                                                  GPUData::BindableProperty::allSpheresVertices,
-                                                  sizeof(glm::vec4) * allVertices.size(),
-                                                  GL_DYNAMIC_DRAW);
-    mAllSpheresNormalsData = GPUData::ShaderData(allVertices.data(),
-                                                 GPUData::BindableProperty::allSpheresNormals,
+    mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(),
+                                                 GPU::BindableProperty::allSpheresNormals,
                                                  sizeof(glm::vec4) * allVertices.size(),
                                                  GL_DYNAMIC_DRAW);
-    mSphHarmCoeffsData = GPUData::ShaderData(mSphHarmCoeffs.data(),
-                                             GPUData::BindableProperty::shCoeffs,
+
+    std::vector<float> allRadiis(mNbSpheres * mSphereInfo.numVertices);
+    mAllRadiisData = GPU::ShaderData(allRadiis.data(),
+                                         GPU::BindableProperty::allRadiis,
+                                         sizeof(float) * allRadiis.size(),
+                                         GL_DYNAMIC_DRAW);
+
+    mSphHarmCoeffsData = GPU::ShaderData(mSphHarmCoeffs.data(),
+                                             GPU::BindableProperty::shCoeffs,
                                              sizeof(float)* mSphHarmCoeffs.size());
-    mSphHarmFuncsData = GPUData::ShaderData(mSphere.getSHFuncs().data(),
-                                            GPUData::BindableProperty::shFunctions,
+    mSphHarmFuncsData = GPU::ShaderData(mSphere.getSHFuncs().data(),
+                                            GPU::BindableProperty::shFunctions,
                                             sizeof(float) * mSphere.getSHFuncs().size());
-    mSphereVerticesData = GPUData::ShaderData(mSphere.getPoints().data(),
-                                              GPUData::BindableProperty::sphereVertices,
+    mSphereVerticesData = GPU::ShaderData(mSphere.getPoints().data(),
+                                              GPU::BindableProperty::sphereVertices,
                                               sizeof(glm::vec4) * mSphere.getNbVertices());
-    mSphereNormalsData = GPUData::ShaderData(mSphere.getPoints().data(),
-                                             GPUData::BindableProperty::sphereNormals,
+    mSphereNormalsData = GPU::ShaderData(mSphere.getPoints().data(),
+                                             GPU::BindableProperty::sphereNormals,
                                              sizeof(glm::vec4) * mSphere.getNbVertices());
-    mSphereIndicesData = GPUData::ShaderData(mSphere.getIndices().data(),
-                                             GPUData::BindableProperty::sphereIndices,
+    mSphereIndicesData = GPU::ShaderData(mSphere.getIndices().data(),
+                                             GPU::BindableProperty::sphereIndices,
                                              sizeof(uint) * mSphere.getIndices().size());
-    mSphereInfoData = GPUData::ShaderData(&mSphereInfo,
-                                          GPUData::BindableProperty::sphereInfo,
-                                          sizeof(GPUData::SphereInfo));
-    mGridInfoData = GPUData::ShaderData(&mGridInfo,
-                                        GPUData::BindableProperty::gridInfo,
-                                        sizeof(GPUData::GridInfo));
+    mSphereInfoData = GPU::ShaderData(&mSphereInfo,
+                                          GPU::BindableProperty::sphereInfo,
+                                          sizeof(GPU::SphereInfo));
+    mGridInfoData = GPU::ShaderData(&mGridInfo,
+                                        GPU::BindableProperty::gridInfo,
+                                        sizeof(GPU::GridInfo));
 
     // push all data to GPU
     mSphHarmCoeffsData.ToGPU();
@@ -205,9 +208,9 @@ void SHField::initializeGPUData()
     mSphereNormalsData.ToGPU();
     mSphereIndicesData.ToGPU();
     mSphereInfoData.ToGPU();
-    mAllSpheresVerticesData.ToGPU();
     mAllSpheresNormalsData.ToGPU();
     mGridInfoData.ToGPU();
+    mAllRadiisData.ToGPU();
 }
 
 template <typename T>
@@ -234,7 +237,7 @@ void SHField::SetSliceIndex()
                                   0);
     mGridInfo.sliceIndex = sliceIndex;
     mGridInfo.isSliceDirty = isDirtySlice;
-    mGridInfoData.Update(0, sizeof(GPUData::GridInfo), &mGridInfo);
+    mGridInfoData.Update(0, sizeof(GPU::GridInfo), &mGridInfo);
 }
 
 bool SHField::isAnySliceDirty() const
@@ -250,8 +253,8 @@ void SHField::SetNormalized()
     Options::Instance().GetBool("sphere.normalized", &isNormalized);
     mSphereInfo.isNormalized = (int)isNormalized;
     mGridInfo.isSliceDirty = glm::ivec4(1, 1, 1, 0);
-    mGridInfoData.Update(0, sizeof(GPUData::GridInfo), &mGridInfo);
-    mSphereInfoData.Update(0, sizeof(GPUData::SphereInfo), &mSphereInfo);
+    mGridInfoData.Update(0, sizeof(GPU::GridInfo), &mGridInfo);
+    mSphereInfoData.Update(0, sizeof(GPU::SphereInfo), &mSphereInfo);
 }
 
 
@@ -259,8 +262,8 @@ void SHField::SetSH0Threshold()
 {
     Options::Instance().GetFloat("sphere.sh0.threshold", &mSphereInfo.sh0Threshold);
     mGridInfo.isSliceDirty = glm::ivec4(1, 1, 1, 0); // all slices dirty
-    mGridInfoData.Update(0, sizeof(GPUData::GridInfo), &mGridInfo);
-    mSphereInfoData.Update(0, sizeof(GPUData::SphereInfo), &mSphereInfo);
+    mGridInfoData.Update(0, sizeof(GPU::GridInfo), &mGridInfo);
+    mSphereInfoData.Update(0, sizeof(GPU::SphereInfo), &mSphereInfo);
 }
 
 
@@ -268,8 +271,8 @@ void SHField::SetSphereScaling()
 {
     Options::Instance().GetFloat("sphere.scaling", &mSphereInfo.scaling);
     mGridInfo.isSliceDirty = glm::ivec4(1, 1, 1, 0); // all slices dirty
-    mGridInfoData.Update(0, sizeof(GPUData::GridInfo), &mGridInfo);
-    mSphereInfoData.Update(0, sizeof(GPUData::SphereInfo), &mSphereInfo);
+    mGridInfoData.Update(0, sizeof(GPU::GridInfo), &mGridInfo);
+    mSphereInfoData.Update(0, sizeof(GPU::SphereInfo), &mSphereInfo);
 }
 
 void SHField::drawSpecific()
