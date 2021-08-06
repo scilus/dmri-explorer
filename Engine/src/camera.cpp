@@ -48,6 +48,7 @@ void Camera::TranslateZ(double delta)
 {
     const glm::vec3 direction = glm::normalize(mLookAt - mPosition);
     mPosition = mPosition + direction * (float)delta;
+    mLookAt = mLookAt + direction * (float)delta;
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
 
