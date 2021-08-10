@@ -1,5 +1,10 @@
 #version 460
 
+layout(std430, binding=0) buffer allRadiisBuffer
+{
+    float allRadiis[];
+};
+
 layout(std430, binding=1) buffer allNormalsBuffer
 {
     vec4 allNormals[];
@@ -10,26 +15,7 @@ layout(std430, binding=5) buffer sphereVerticesBuffer
     vec4 vertices[];
 };
 
-layout(std430, binding=11) buffer modelTransformsBuffer
-{
-    mat4 modelMatrix;
-};
-
-layout(std430, binding=9) buffer gridInfoBuffer
-{
-    ivec4 gridDims;
-    ivec4 sliceIndex;
-    ivec4 isSliceDirty;
-};
-
-layout(std430, binding=10) buffer cameraBuffer
-{
-    vec4 eye;
-    mat4 viewMatrix;
-    mat4 projectionMatrix;
-};
-
-layout(std430, binding=8) buffer sphereInfoBuffer
+layout(std430, binding=7) buffer sphereInfoBuffer
 {
     uint nbVertices;
     uint nbIndices;
@@ -38,9 +24,23 @@ layout(std430, binding=8) buffer sphereInfoBuffer
     float scaling;
 };
 
-layout(std430, binding=0) buffer allRadiisBuffer
+layout(std430, binding=8) buffer gridInfoBuffer
 {
-    float allRadiis[];
+    ivec4 gridDims;
+    ivec4 sliceIndex;
+    ivec4 isSliceDirty;
+};
+
+layout(std430, binding=9) buffer cameraBuffer
+{
+    vec4 eye;
+    mat4 viewMatrix;
+    mat4 projectionMatrix;
+};
+
+layout(std430, binding=10) buffer modelTransformsBuffer
+{
+    mat4 modelMatrix;
 };
 
 // Outputs

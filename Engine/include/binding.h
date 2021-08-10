@@ -12,11 +12,11 @@ enum class Binding
     shCoeffs = 3,
     shFunctions = 4,
     sphereVertices = 5,
-    sphereIndices = 7,
-    sphereInfo = 8,
-    gridInfo = 9,
-    camera = 10,
-    modelTransform = 11,
+    sphereIndices = 6,
+    sphereInfo = 7,
+    gridInfo = 8,
+    camera = 9,
+    modelTransform = 10,
     none = 30
 };
 } // namespace GPU

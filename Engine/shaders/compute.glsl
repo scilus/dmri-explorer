@@ -1,6 +1,11 @@
 #version 460
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
+layout(std430, binding=0) buffer allRadiisBuffer
+{
+    float allRadiis[];
+};
+
 layout(std430, binding=1) buffer allSpheresNormalsBuffer
 {
     vec4 allNormals[];
@@ -21,12 +26,12 @@ layout(std430, binding=5) buffer sphereVerticesBuffer
     vec4 vertices[];
 };
 
-layout(std430, binding=7) buffer sphereIndicesBuffer
+layout(std430, binding=6) buffer sphereIndicesBuffer
 {
     uint indices[];
 };
 
-layout(std430, binding=8) buffer sphereInfoBuffer
+layout(std430, binding=7) buffer sphereInfoBuffer
 {
     uint nbVertices;
     uint nbIndices;
@@ -35,16 +40,11 @@ layout(std430, binding=8) buffer sphereInfoBuffer
     float scaling;
 };
 
-layout(std430, binding=9) buffer gridInfoBuffer
+layout(std430, binding=8) buffer gridInfoBuffer
 {
     ivec4 gridDims;
     ivec4 sliceIndex;
     ivec4 isSliceDirty;
-};
-
-layout(std430, binding=0) buffer allRadiisBuffer
-{
-    float allRadiis[];
 };
 
 const uint NB_SH = 45;
