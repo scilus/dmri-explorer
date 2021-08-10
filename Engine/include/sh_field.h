@@ -69,6 +69,7 @@ protected:
     void drawSpecific() override;
     void initOptions() override;
     void initOptionsCallbacks() override;
+    void initProgramPipeline() override;
 
 private:
     void initializeMembers();
@@ -101,7 +102,6 @@ private:
     GLuint mIndirectBO = 0;
 
     ShaderProgram mComputeShader;
-    ProgramPipeline mProgramPipeline;
 
     // Shader uniforms
     std::vector<float> mSphHarmCoeffs;

@@ -21,11 +21,6 @@ layout(std430, binding=5) buffer sphereVerticesBuffer
     vec4 vertices[];
 };
 
-layout(std430, binding=6) buffer sphereNormalsBuffer
-{
-    vec4 normals[];
-};
-
 layout(std430, binding=7) buffer sphereIndicesBuffer
 {
     uint indices[];

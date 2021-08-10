@@ -3,8 +3,9 @@
 #include <coordinate_system.h>
 #include <memory>
 #include <data.h>
+#include <shader.h>
 
-class Model : public WorldObject
+class Model
 {
 public:
     Model();
@@ -12,7 +13,16 @@ public:
 
     void Draw();
 protected:
+    void initializeModel();
     virtual void drawSpecific() = 0;
     virtual void initOptions() = 0;
     virtual void initOptionsCallbacks() = 0;
+    virtual void initProgramPipeline() = 0;
+    void resetCS(std::shared_ptr<CoordinateSystem> cs);
+    ProgramPipeline mProgramPipeline;
+private:
+    void uploadTransformToGPU();
+    GPU::ShaderData mTransformGPUData;
+    std::shared_ptr<CoordinateSystem> mCoordinateSystem;
+    bool mIsInit;
 };

@@ -17,20 +17,3 @@ private:
     glm::mat4 mTransformMatrix;
     std::shared_ptr<CoordinateSystem> mParentCS;
 };
-
-class WorldObject
-{
-public:
-    WorldObject();
-    WorldObject(GPU::BindableProperty binding);
-    WorldObject(GPU::BindableProperty binding,
-                glm::mat4 transform,
-                std::shared_ptr<CoordinateSystem> parent);
-    ~WorldObject();
-protected:
-    void resetCS(std::shared_ptr<CoordinateSystem> cs);
-    void uploadTransformToGPU();
-private:
-    GPU::ShaderData mTransformGPUData;
-    std::shared_ptr<CoordinateSystem> mCoordinateSystem;
-};
