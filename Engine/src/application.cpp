@@ -9,6 +9,8 @@ const unsigned int WIN_HEIGHT = 600;
 const std::string WIN_TITLE = "RT fODF Slicer";
 }
 
+namespace Slicer
+{
 Application::Application(CLArgs args)
 :mWidth(WIN_WIDTH)
 ,mHeight(WIN_HEIGHT)
@@ -147,3 +149,4 @@ void Application::onWindowResize(GLFWwindow* window, int width, int height)
     app->mScene->GetCameraPtr()->Resize(aspect);
     glViewport(0, 0, width, height);
 }
+} // namespace Slicer

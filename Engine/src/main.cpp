@@ -5,6 +5,8 @@
     #error "RTFODFSLICER_SHADERS_DIR PREPROCESSOR DEFINITION NOT FOUND."
 #endif
 
+namespace Slicer
+{
 CLArgs parseArguments(int argc, char** argv)
 {
     CLArgs args;
@@ -21,14 +23,15 @@ CLArgs parseArguments(int argc, char** argv)
     }
     return args;
 }
+} // namespace Slicer
 
 int main(int argc, char** argv)
 {
-    auto args = parseArguments(argc, argv);
+    auto args = Slicer::parseArguments(argc, argv);
     if(!args.success)
         return -1;
 
-    Application app(args);
+    Slicer::Application app(args);
     app.Run();
     return 0;
 }

@@ -4,6 +4,8 @@
 #include <vector>
 #include <coordinate_system.h>
 
+namespace Slicer
+{
 class Scene
 {
 public:
@@ -17,3 +19,4 @@ private:
     Camera mCamera;
     std::vector<Model*> mModels;
 };
+} // namespace Slicer

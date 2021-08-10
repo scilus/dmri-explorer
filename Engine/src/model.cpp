@@ -2,8 +2,10 @@
 #include <utils.hpp>
 #include <iostream>
 
+namespace Slicer
+{
 Model::Model()
-:mTransformGPUData(GPU::BindableProperty::modelTransform)
+:mTransformGPUData(GPU::Binding::modelTransform)
 ,mCoordinateSystem()
 ,mIsInit(false)
 {
@@ -25,9 +27,9 @@ void Model::Draw()
 {
     if(!mIsInit)
     {
-        throw std::runtime_error(
-            "Model is not initialized. Initialize first by calling Model::initializeModel()."
-        );
+        std::string msg = "Model is not initialized.\n";
+        msg += "Initialize first by calling Model::initializeModel().";
+        throw std::runtime_error(msg);
     }
     uploadTransformToGPU();
     mProgramPipeline.Bind();
@@ -45,3 +47,4 @@ void Model::resetCS(std::shared_ptr<CoordinateSystem> cs)
 {
     mCoordinateSystem = cs;
 }
+} // namespace Slicer

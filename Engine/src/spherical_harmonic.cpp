@@ -3,6 +3,8 @@
 #include <cmath>
 #include <iostream>
 
+namespace Slicer
+{
 namespace Math
 {
 namespace SH
@@ -81,5 +83,6 @@ std::complex<float> RealSymDescoteauxBasis::computeSHFunc(uint l, int m, float t
     std::complex<float> sh = std::polar(r, m * phi);
     return sh;
 }
-} // SH
-} // Math
+} // namespace SH
+} // namespace Math
+} // namespace Slicer

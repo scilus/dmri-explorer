@@ -1,5 +1,7 @@
 #include <options.h>
 
+namespace Slicer
+{
 Options::Options()
 {
 }
@@ -175,3 +177,4 @@ void Options::dispatchCallbacks(const std::string& key) const
         cb();
     }
 }
+} // namespace Slicer

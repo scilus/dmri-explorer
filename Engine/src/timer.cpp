@@ -1,6 +1,8 @@
 #include <timer.h>
 #include <iostream>
 
+namespace Slicer
+{
 namespace Utilities
 {
 AutoTimer::AutoTimer()
@@ -47,3 +49,4 @@ double Timer::Stop()
     return duration.count();
 }
 } // namespace Utilities
+} // namespace Slicer

@@ -3,16 +3,17 @@
 #include <glm/gtx/transform.hpp>
 #include <utils.hpp>
 #include <options.h>
+
 namespace
 {
 const float ROTATION_SPEED = 0.005f;
 }
 
+namespace Slicer
+{
 Scene::Scene(unsigned int width, unsigned int height)
 {
     mCoordinateSystem.reset(new CoordinateSystem());
-    Math::Coordinate::Spherical position(100.0, M_PI / 2.0, 0.0);
-    Math::Coordinate::Spherical upVector(1.0, 0.0, 0.0);
     const float aspectRatio = (float)width / (float)height;
     mCamera = Camera(glm::vec3(0.0f, 0.0f, 10.0f), // position
                      glm::vec3(0.0f, 1.0f, 0.0f),  // upvector
@@ -23,7 +24,7 @@ Scene::Scene(unsigned int width, unsigned int height)
     int sphereRes;
     Options::Instance().GetString("image.path", &imagePath);
     Options::Instance().GetInt("sphere.resolution", &sphereRes);
-    std::shared_ptr<Image::NiftiImageWrapper> image(new Image::NiftiImageWrapper(imagePath));
+    std::shared_ptr<NiftiImageWrapper> image(new NiftiImageWrapper(imagePath));
     SHField* shField = new SHField(image, sphereRes, mCoordinateSystem);
     mModels.push_back(shField);
 
@@ -60,3 +61,4 @@ void Scene::RotateCS(const glm::vec2& vec)
     transform = glm::rotate(dy, glm::vec3(1.0, 0.0, 0.0)) * transform;
     mCoordinateSystem->ApplyTransform(transform);
 }
+} // namespace Slicer

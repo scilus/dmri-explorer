@@ -4,6 +4,8 @@
 #include <binding.h>
 #include <data.h>
 
+namespace Slicer
+{
 class CoordinateSystem
 {
 public:
@@ -17,3 +19,4 @@ private:
     glm::mat4 mTransformMatrix;
     std::shared_ptr<CoordinateSystem> mParentCS;
 };
+} // namespace Slicer

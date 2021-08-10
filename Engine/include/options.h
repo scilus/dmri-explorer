@@ -4,6 +4,8 @@
 #include <vector>
 #include <functional>
 
+namespace Slicer
+{
 class Options
 {
 public:
@@ -41,3 +43,4 @@ private:
 
     std::unordered_map<std::string, std::vector<std::function<void()>>> mCallbacks;
 };
+} // namespace Slicer

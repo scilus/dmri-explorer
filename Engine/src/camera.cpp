@@ -11,6 +11,8 @@ namespace
 const float TRANSLATION_SPEED = 0.02f;
 }
 
+namespace Slicer
+{
 Camera::Camera(const glm::vec3& position,
                const glm::vec3& upVector,
                const glm::vec3& lookat,
@@ -24,7 +26,7 @@ Camera::Camera(const glm::vec3& position,
     ,mFar(far)
     ,mAspect(aspect)
     ,mCamParams()
-    ,mCamParamsData(GPU::BindableProperty::camera)
+    ,mCamParamsData(GPU::Binding::camera)
 {
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
@@ -65,3 +67,4 @@ void Camera::TranslateXY(double dx, double dy)
     mLookAt = mLookAt + translation;
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
+} // namespace Slicer

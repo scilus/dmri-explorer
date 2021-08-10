@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 
+namespace Slicer
+{
 class ShaderProgram
 {
 public:
@@ -28,3 +30,4 @@ private:
     const GLbitfield convertShaderTypeToGLbitfield(const GLenum shaderType) const;
     GLuint mPipelineID = 0;
 };
+} // namespace Slicer

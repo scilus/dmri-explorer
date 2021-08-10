@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include "nifti1_io.h"
 
-namespace Image
+namespace Slicer
 {
 enum class DataType
 {
@@ -53,4 +53,4 @@ private:
     uint mNbVox;
     uint mLength;
 };
-} // Image
+} // namespace Slicer

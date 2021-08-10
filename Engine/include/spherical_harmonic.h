@@ -6,6 +6,8 @@
 
 #include <image.h>
 
+namespace Slicer
+{
 namespace Math
 {
 namespace SH
@@ -26,5 +28,6 @@ private:
     uint mMaxOrder = 8;
 };
 
-} // SH
-} // Math
+} // namespace SH
+} // namespace Math
+} // namespace Slicer

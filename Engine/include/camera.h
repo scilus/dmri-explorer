@@ -6,6 +6,8 @@
 #include <spherical_coordinates.h>
 #include <coordinate_system.h>
 
+namespace Slicer
+{
 class Camera
 {
 public:
@@ -19,8 +21,8 @@ public:
     void TranslateZ(double delta);
     void TranslateXY(double dx, double dy);
     void Update();
-private:
 
+private:
     glm::vec3 mPosition;
     glm::vec3 mLookAt;
     glm::vec3 mUpVector;
@@ -34,3 +36,4 @@ private:
     GPU::CamParams mCamParams;
     GPU::ShaderData mCamParamsData;
 };
+} // namespace Slicer

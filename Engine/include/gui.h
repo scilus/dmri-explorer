@@ -6,14 +6,8 @@
 #include <memory>
 #include <GLFW/glfw3.h>
 
-namespace Engine
+namespace Slicer
 {
-namespace Scene
-{
-class Model;
-}
-}
-
 class UIManager
 {
 public:
@@ -34,3 +28,4 @@ private:
     bool mShowSlicers = false;
     bool mShowPreferences = false;
 };
+} // namespace Slicer

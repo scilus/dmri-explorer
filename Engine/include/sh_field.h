@@ -12,6 +12,8 @@
 #include <mutex>
 #include <model.h>
 
+namespace Slicer
+{
 struct DrawElementsIndirectCommand
 {
     DrawElementsIndirectCommand()
@@ -51,7 +53,7 @@ struct DrawElementsIndirectCommand
 class SHField : public Model
 {
 public:
-    SHField(std::shared_ptr<Image::NiftiImageWrapper> image,
+    SHField(std::shared_ptr<NiftiImageWrapper> image,
             int sphereRes,
             std::shared_ptr<CoordinateSystem> parent);
     ~SHField();
@@ -84,7 +86,7 @@ private:
 
     // Image data
     // mImage contains grid dimensions, number of voxels
-    std::shared_ptr<Image::NiftiImageWrapper> mImage;
+    std::shared_ptr<NiftiImageWrapper> mImage;
 
     // Sphere topology
     Primitive::Sphere mSphere;
@@ -114,7 +116,6 @@ private:
 
     // Data on topology of ONE sphere
     GPU::ShaderData mSphereVerticesData;
-    GPU::ShaderData mSphereNormalsData;
     GPU::ShaderData mSphereIndicesData;
     GPU::ShaderData mSphereInfoData;
 
@@ -124,3 +125,4 @@ private:
 
     std::vector<DrawElementsIndirectCommand> mIndirectCmd;
 };
+} // namespace Slicer

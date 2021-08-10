@@ -8,6 +8,8 @@
 #include "binding.h"
 #include <sphere.h>
 
+namespace Slicer
+{
 namespace GPU
 {
 struct CamParams
@@ -45,17 +47,18 @@ class ShaderData  // we could inherit from shaderdata?
 {
 public:
     ShaderData();
-    ShaderData(void* data, BindableProperty binding, size_t sizeofT);
-    ShaderData(void* data, BindableProperty binding, size_t sizeofT, GLenum usage);
-    ShaderData(BindableProperty binding, GLenum usage);
-    ShaderData(BindableProperty binding);
+    ShaderData(void* data, Binding binding, size_t sizeofT);
+    ShaderData(void* data, Binding binding, size_t sizeofT, GLenum usage);
+    ShaderData(Binding binding, GLenum usage);
+    ShaderData(Binding binding);
     void Update(GLintptr offset, GLsizeiptr size, void* data);
     void ToGPU();
 private:
     GLuint mSSBO = 0;
     GLenum mUsage;
-    BindableProperty mBinding;
+    Binding mBinding;
     bool isDirty = true;
     void* mData;
 };
 } // namespace GPU
+} //namespace Slicer

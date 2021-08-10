@@ -1,7 +1,7 @@
 #include <image.h>
 #include <stdexcept>
 
-namespace Image
+namespace Slicer
 {
 NiftiImageWrapper::NiftiImageWrapper(const std::string& path)
     :mImage(nifti_image_read(path.c_str(), true))
@@ -109,4 +109,4 @@ DataType NiftiImageWrapper::dtype() const
         return DataType::unknown;
     }
 }
-} // Image
+} // namespace Slicer

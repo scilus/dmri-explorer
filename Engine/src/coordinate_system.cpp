@@ -1,5 +1,7 @@
 #include <coordinate_system.h>
 
+namespace Slicer
+{
 CoordinateSystem::CoordinateSystem()
 :mTransformMatrix(1.0f)
 ,mParentCS(nullptr)
@@ -35,3 +37,4 @@ void CoordinateSystem::ResetParent(std::shared_ptr<CoordinateSystem> parent)
 {
     mParentCS = parent;
 }
+} // namespace Slicer

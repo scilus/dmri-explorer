@@ -9,6 +9,8 @@
 #include <scene.h>
 #include <command_line.h>
 
+namespace Slicer
+{
 class Application
 {
 public:
@@ -38,3 +40,4 @@ private:
     unsigned int mHeight;
     std::string mTitle;
 };
+} // namespace Slicer

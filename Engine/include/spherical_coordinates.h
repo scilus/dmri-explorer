@@ -1,5 +1,7 @@
 #pragma once
 
+namespace Slicer
+{
 namespace Math
 {
 namespace Coordinate
@@ -12,5 +14,6 @@ struct Spherical
     float theta = 0.0;
     float phi = 0.0;
 };
-} // namespace Coordinates
+} // namespace Coordinate
 } // namespace Math
+} // namespace Slicer

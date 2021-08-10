@@ -5,6 +5,8 @@
 #include <data.h>
 #include <shader.h>
 
+namespace Slicer
+{
 class Model
 {
 public:
@@ -26,3 +28,4 @@ private:
     std::shared_ptr<CoordinateSystem> mCoordinateSystem;
     bool mIsInit;
 };
+} // namespace Slcier

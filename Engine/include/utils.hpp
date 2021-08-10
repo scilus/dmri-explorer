@@ -9,6 +9,8 @@
 #include <cmath>
 #include <iostream>
 
+namespace Slicer
+{
 const float DEG2RAD_FACTOR = 0.0174532925199f;
 const float RAD2DEG_FACTOR = 57.2957795131f;
 const int MAX_FACTORIAL = 17;
@@ -128,4 +130,5 @@ static inline void print(const glm::mat4& mat, const std::string& m)
     std::cout << mat[1][0] << " " << mat[1][1] << " " << mat[1][2] << " " << mat[1][3] << " " <<std::endl;
     std::cout << mat[2][0] << " " << mat[2][1] << " " << mat[2][2] << " " << mat[2][3] << " " <<std::endl;
     std::cout << mat[3][0] << " " << mat[3][1] << " " << mat[3][2] << " " << mat[3][3] << " " <<std::endl;
+}
 }

@@ -6,6 +6,8 @@
 #include <spherical_harmonic.h>
 #include <spherical_coordinates.h>
 
+namespace Slicer
+{
 namespace Primitive
 {
 class Sphere
@@ -34,4 +36,5 @@ private:
     Math::SH::RealSymDescoteauxBasis mSHBasis;
     unsigned int mResolution;
 };
-} // Primitive
+} // namespace Primitive
+} // namespace Slicer

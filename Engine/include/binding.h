@@ -1,8 +1,10 @@
 # pragma once
 
+namespace Slicer
+{
 namespace GPU
 {
-enum class BindableProperty
+enum class Binding
 {
     allRadiis = 0,
     allSpheresNormals = 1,
@@ -10,7 +12,6 @@ enum class BindableProperty
     shCoeffs = 3,
     shFunctions = 4,
     sphereVertices = 5,
-    sphereNormals = 6,
     sphereIndices = 7,
     sphereInfo = 8,
     gridInfo = 9,
@@ -19,3 +20,4 @@ enum class BindableProperty
     none = 30
 };
 } // namespace GPU
+} // namespace Slicer

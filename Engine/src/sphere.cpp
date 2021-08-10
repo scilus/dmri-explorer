@@ -8,6 +8,8 @@ namespace
 const uint MAX_SH_ORDER = 8;
 }
 
+namespace Slicer
+{
 namespace Primitive
 {
 Sphere::Sphere()
@@ -125,4 +127,5 @@ void Sphere::genUnitSphere()
     std::cout << "Nb vertices: " << mPoints.size() << std::endl;
     std::cout << "Nb triangles: " << mIndices.size() / 3 << std::endl;
 }
-} // Primitive
+} // namespace Primitive
+} // namespace Slicer

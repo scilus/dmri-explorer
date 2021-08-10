@@ -17,7 +17,9 @@ namespace
 const size_t NB_SH = 45;
 }
 
-SHField::SHField(std::shared_ptr<Image::NiftiImageWrapper> image,
+namespace Slicer
+{
+SHField::SHField(std::shared_ptr<NiftiImageWrapper> image,
                  int sphereRes,
                  std::shared_ptr<CoordinateSystem> parent)
     :Model()
@@ -34,7 +36,6 @@ SHField::SHField(std::shared_ptr<Image::NiftiImageWrapper> image,
     ,mSphHarmCoeffsData()
     ,mSphHarmFuncsData()
     ,mSphereVerticesData()
-    ,mSphereNormalsData()
     ,mSphereIndicesData()
     ,mSphereInfoData()
     ,mAllSpheresNormalsData()
@@ -171,38 +172,37 @@ void SHField::initializeGPUData()
     // temporary zero-filled array for all spheres vertices and normals
     std::vector<glm::vec4> allVertices(mNbSpheres * mSphereInfo.numVertices);
     mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(),
-                                             GPU::BindableProperty::allSpheresNormals,
+                                             GPU::Binding::allSpheresNormals,
                                              sizeof(glm::vec4) * allVertices.size());
 
     std::vector<float> allRadiis(mNbSpheres * mSphereInfo.numVertices);
     mAllRadiisData = GPU::ShaderData(allRadiis.data(),
-                                     GPU::BindableProperty::allRadiis,
+                                     GPU::Binding::allRadiis,
                                      sizeof(float) * allRadiis.size());
 
     mSphHarmCoeffsData = GPU::ShaderData(mSphHarmCoeffs.data(),
-                                         GPU::BindableProperty::shCoeffs,
+                                         GPU::Binding::shCoeffs,
                                          sizeof(float)* mSphHarmCoeffs.size());
     mSphHarmFuncsData = GPU::ShaderData(mSphere.getSHFuncs().data(),
-                                        GPU::BindableProperty::shFunctions,
+                                        GPU::Binding::shFunctions,
                                         sizeof(float) * mSphere.getSHFuncs().size());
     mSphereVerticesData = GPU::ShaderData(mSphere.getPoints().data(),
-                                          GPU::BindableProperty::sphereVertices,
+                                          GPU::Binding::sphereVertices,
                                           sizeof(glm::vec4) * mSphere.getNbVertices());
     mSphereIndicesData = GPU::ShaderData(mSphere.getIndices().data(),
-                                         GPU::BindableProperty::sphereIndices,
+                                         GPU::Binding::sphereIndices,
                                          sizeof(uint) * mSphere.getIndices().size());
     mSphereInfoData = GPU::ShaderData(&mSphereInfo,
-                                      GPU::BindableProperty::sphereInfo,
+                                      GPU::Binding::sphereInfo,
                                       sizeof(GPU::SphereInfo));
     mGridInfoData = GPU::ShaderData(&mGridInfo,
-                                    GPU::BindableProperty::gridInfo,
+                                    GPU::Binding::gridInfo,
                                     sizeof(GPU::GridInfo));
 
     // push all data to GPU
     mSphHarmCoeffsData.ToGPU();
     mSphHarmFuncsData.ToGPU();
     mSphereVerticesData.ToGPU();
-    mSphereNormalsData.ToGPU();
     mSphereIndicesData.ToGPU();
     mSphereInfoData.ToGPU();
     mAllSpheresNormalsData.ToGPU();
@@ -294,3 +294,4 @@ void SHField::ScaleSpheres()
     glUseProgram(0);
     mGridInfo.isSliceDirty = glm::ivec4(0, 0, 0, 0);
 }
+} // namespace Slicer

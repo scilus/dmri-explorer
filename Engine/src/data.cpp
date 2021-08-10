@@ -1,9 +1,10 @@
 #include "data.h"
 #include <glm/gtc/matrix_transform.hpp>
 
+namespace Slicer
+{
 namespace GPU
 {
-
 CamParams::CamParams(const glm::mat4& view,
                      const glm::mat4& projection,
                      const glm::vec3& eye)
@@ -30,14 +31,14 @@ GridInfo::GridInfo(const glm::ivec4& dims)
 }
 
 ShaderData::ShaderData()
-    :mBinding(BindableProperty::none)
+    :mBinding(Binding::none)
     ,mData(nullptr)
     ,isDirty(false)
     ,mSSBO(0)
 {
 };
 
-ShaderData::ShaderData(void* data, BindableProperty binding, size_t sizeofT)
+ShaderData::ShaderData(void* data, Binding binding, size_t sizeofT)
 {
     mData = data;
     mBinding = binding;
@@ -47,7 +48,7 @@ ShaderData::ShaderData(void* data, BindableProperty binding, size_t sizeofT)
     glNamedBufferData(mSSBO, sizeofT, mData, GL_STATIC_READ);
 };
 
-ShaderData::ShaderData(void* data, BindableProperty binding, size_t sizeofT, GLenum usage)
+ShaderData::ShaderData(void* data, Binding binding, size_t sizeofT, GLenum usage)
 {
     mData = data;
     mBinding = binding;
@@ -57,7 +58,7 @@ ShaderData::ShaderData(void* data, BindableProperty binding, size_t sizeofT, GLe
     glNamedBufferData(mSSBO, sizeofT, mData, usage);
 };
 
-ShaderData::ShaderData(BindableProperty binding, GLenum usage)
+ShaderData::ShaderData(Binding binding, GLenum usage)
 :mData(nullptr)
 {
     mBinding = binding;
@@ -65,7 +66,7 @@ ShaderData::ShaderData(BindableProperty binding, GLenum usage)
     glCreateBuffers(1, &mSSBO);
 }
 
-ShaderData::ShaderData(BindableProperty binding)
+ShaderData::ShaderData(Binding binding)
 :mData(nullptr)
 {
     mBinding = binding;
@@ -100,3 +101,4 @@ void ShaderData::ToGPU()
     isDirty = false;
 };
 } // namespace GPU
+} // namespace Slicer

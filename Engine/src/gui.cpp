@@ -5,6 +5,8 @@
 #include <model.h>
 #include <options.h>
 
+namespace Slicer
+{
 UIManager::UIManager()
     :mWindow(nullptr)
     ,mIO(nullptr)
@@ -218,3 +220,4 @@ void UIManager::drawDemoWindow()
 
     ImGui::ShowDemoWindow(&mShowDemoWindow);
 }
+} // namespace Slicer
