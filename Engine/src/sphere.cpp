@@ -13,19 +13,19 @@ namespace Slicer
 namespace Primitive
 {
 Sphere::Sphere()
-    :mResolution(10)
-    ,mIndices()
-    ,mSHBasis(MAX_SH_ORDER)
-    ,mSphHarmFunc()
+:mResolution(10)
+,mIndices()
+,mSHBasis(MAX_SH_ORDER)
+,mSphHarmFunc()
 {
     genUnitSphere();
 }
 
 Sphere::Sphere(unsigned int resolution)
-    :mResolution(resolution)
-    ,mIndices()
-    ,mSHBasis(MAX_SH_ORDER)
-    ,mSphHarmFunc()
+:mResolution(resolution)
+,mIndices()
+,mSHBasis(MAX_SH_ORDER)
+,mSphHarmFunc()
 {
     genUnitSphere();
 }
@@ -45,11 +45,11 @@ Sphere& Sphere::operator=(const Sphere& s)
 }
 
 Sphere::Sphere(const Sphere& sphere)
-    :mResolution(sphere.mResolution)
-    ,mIndices(sphere.mIndices)
-    ,mSHBasis(sphere.mSHBasis)
-    ,mCoordinates(sphere.mCoordinates)
-    ,mSphHarmFunc(sphere.mSphHarmFunc)
+:mResolution(sphere.mResolution)
+,mIndices(sphere.mIndices)
+,mSHBasis(sphere.mSHBasis)
+,mCoordinates(sphere.mCoordinates)
+,mSphHarmFunc(sphere.mSphHarmFunc)
 {
 }
 

@@ -18,15 +18,15 @@ Camera::Camera(const glm::vec3& position,
                const glm::vec3& lookat,
                const float& fov, const float& aspect,
                const float& near, const float& far)
-    :mLookAt(lookat)
-    ,mPosition(position)
-    ,mUpVector(upVector)
-    ,mFov(fov)
-    ,mNear(near)
-    ,mFar(far)
-    ,mAspect(aspect)
-    ,mCamParams()
-    ,mCamParamsData(GPU::Binding::camera)
+:mLookAt(lookat)
+,mPosition(position)
+,mUpVector(upVector)
+,mFov(fov)
+,mNear(near)
+,mFar(far)
+,mAspect(aspect)
+,mCamParams()
+,mCamParamsData(GPU::Binding::camera)
 {
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);

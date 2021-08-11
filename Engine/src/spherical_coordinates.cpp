@@ -7,9 +7,9 @@ namespace Math
 namespace Coordinate
 {
 Spherical::Spherical(float r, float theta, float phi)
-    :r(r)
-    ,theta(theta)
-    ,phi(phi)
+:r(r)
+,theta(theta)
+,phi(phi)
 {
 }
 } // namespace Coordinate

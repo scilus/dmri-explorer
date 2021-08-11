@@ -18,15 +18,15 @@ double legendre(int l, int m, double x)
 }
 
 RealSymDescoteauxBasis::RealSymDescoteauxBasis()
-    :mMaxOrder(8)
-    ,mScaling()
+:mMaxOrder(8)
+,mScaling()
 {
     computeScaling();
 }
 
 RealSymDescoteauxBasis::RealSymDescoteauxBasis(uint maxOrder)
-    :mMaxOrder(maxOrder)
-    ,mScaling()
+:mMaxOrder(maxOrder)
+,mScaling()
 {
     computeScaling();
 }

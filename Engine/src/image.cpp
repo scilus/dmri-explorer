@@ -4,10 +4,10 @@
 namespace Slicer
 {
 NiftiImageWrapper::NiftiImageWrapper(const std::string& path)
-    :mImage(nifti_image_read(path.c_str(), true))
-    ,mDims(mImage->nx, mImage->ny, mImage->nz, mImage->nt)
-    ,mLength(mImage->nvox)
-    ,mNbVox(mDims.x * mDims.y * mDims.z)
+:mImage(nifti_image_read(path.c_str(), true))
+,mDims(mImage->nx, mImage->ny, mImage->nz, mImage->nt)
+,mLength(mImage->nvox)
+,mNbVox(mDims.x * mDims.y * mDims.z)
 {
 }
 

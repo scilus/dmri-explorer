@@ -8,17 +8,17 @@
 namespace Slicer
 {
 UIManager::UIManager()
-    :mWindow(nullptr)
-    ,mIO(nullptr)
-    ,mShowDemoWindow(true)
+:mWindow(nullptr)
+,mIO(nullptr)
+,mShowDemoWindow(true)
 {
 }
 
 UIManager::UIManager(GLFWwindow* window, const std::string& glslVersion)
-    :mWindow(window)
-    ,mIO(nullptr)
-    ,mShowDemoWindow(false)
-    ,mShowSlicers(true)
+:mWindow(window)
+,mIO(nullptr)
+,mShowDemoWindow(false)
+,mShowSlicers(true)
 {
     // Initialize imgui
     IMGUI_CHECKVERSION();

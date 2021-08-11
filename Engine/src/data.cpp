@@ -15,26 +15,26 @@ CamParams::CamParams(const glm::mat4& view,
 }
 
 SphereInfo::SphereInfo(const Primitive::Sphere& sphere)
-    :numVertices(sphere.getNbVertices())
-    ,numIndices(sphere.getIndices().size())
-    ,isNormalized(0)
-    ,sh0Threshold(0.0f)
-    ,scaling(1.0f)
+:numVertices(sphere.getNbVertices())
+,numIndices(sphere.getIndices().size())
+,isNormalized(0)
+,sh0Threshold(0.0f)
+,scaling(1.0f)
 {
 }
 
 GridInfo::GridInfo(const glm::ivec4& dims)
-    :gridDims(dims)
-    ,sliceIndex(gridDims / 2)
-    ,isSliceDirty(1, 1, 1, 0)
+:gridDims(dims)
+,sliceIndex(gridDims / 2)
+,isSliceDirty(1, 1, 1, 0)
 {
 }
 
 ShaderData::ShaderData()
-    :mBinding(Binding::none)
-    ,mData(nullptr)
-    ,isDirty(false)
-    ,mSSBO(0)
+:mBinding(Binding::none)
+,mData(nullptr)
+,isDirty(false)
+,mSSBO(0)
 {
 };
 
