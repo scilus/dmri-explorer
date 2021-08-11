@@ -8,6 +8,7 @@
 #include <memory>
 #include <scene.h>
 #include <command_line.h>
+#include <options.h>
 
 namespace Slicer
 {
@@ -36,6 +37,7 @@ private:
     int mLastModifier;
     std::shared_ptr<Scene> mScene;
     std::shared_ptr<UIManager> mUI;
+    std::shared_ptr<ApplicationState> mState;
     unsigned int mWidth;
     unsigned int mHeight;
     std::string mTitle;

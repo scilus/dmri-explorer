@@ -3,6 +3,14 @@
 
 namespace Slicer
 {
+NiftiImageWrapper::NiftiImageWrapper()
+:mImage(nullptr)
+,mDims()
+,mLength(0)
+,mNbVox(0)
+{
+}
+
 NiftiImageWrapper::NiftiImageWrapper(const std::string& path)
 :mImage(nifti_image_read(path.c_str(), true))
 ,mDims(mImage->nx, mImage->ny, mImage->nz, mImage->nt)

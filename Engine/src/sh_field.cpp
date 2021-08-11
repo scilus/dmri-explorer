@@ -47,8 +47,7 @@ SHField::SHField(std::shared_ptr<NiftiImageWrapper> image,
     resetCS(std::shared_ptr<CoordinateSystem>(new CoordinateSystem(glm::mat4(1.0f), parent)));
 
     const std::string csPath = RTFODFSLICER_SHADERS_DIR + std::string("/compute.glsl");
-    mComputeShader = ShaderProgram(RTFODFSLICER_SHADERS_DIR + std::string("/compute.glsl"),
-                                   GL_COMPUTE_SHADER);
+    mComputeShader = ShaderProgram(csPath, GL_COMPUTE_SHADER);
 
     // Bind primitives to GPU
     glCreateVertexArrays(1, &mVAO);

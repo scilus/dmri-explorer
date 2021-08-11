@@ -33,6 +33,7 @@ enum class DataType
 class NiftiImageWrapper
 {
 public:
+    NiftiImageWrapper();
     NiftiImageWrapper(const std::string& path);
     ~NiftiImageWrapper();
     std::shared_ptr<nifti_image> getNiftiImage() const;

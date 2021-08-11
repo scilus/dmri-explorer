@@ -16,6 +16,8 @@ Application::Application(CLArgs args)
 ,mHeight(WIN_HEIGHT)
 ,mTitle(WIN_TITLE)
 ,mUI(nullptr)
+,mState(nullptr)
+,mScene(nullptr)
 ,mCursorPos(-1, -1)
 {
     initOptions(args);
@@ -62,18 +64,18 @@ void Application::initialize()
         return;
     }
 
-    mUI.reset(new UIManager(mWindow, "#version 460"));
+    // OpenGL render parameters
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    //glfwSwapInterval(0);
 
-    mScene.reset(new Scene(mWidth, mHeight));
+    mState.reset(new ApplicationState());
+    mUI.reset(new UIManager(mWindow, "#version 460", mState));
+    mScene.reset(new Scene(mWidth, mHeight, mState));
 }
 
 void Application::initOptions(CLArgs args)
 {
-    std::cout << args.imagePath << std::endl;
     Options::Instance().SetString("image.path", args.imagePath);
     Options::Instance().SetInt("sphere.resolution", args.sphereRes);
 }

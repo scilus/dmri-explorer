@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include <vector>
 #include <functional>
+#include <glm/glm.hpp>
+#include <image.h>
 
 namespace Slicer
 {
@@ -42,5 +44,76 @@ private:
     std::unordered_map<std::string, std::string> mStringField;
 
     std::unordered_map<std::string, std::vector<std::function<void()>>> mCallbacks;
+};
+
+template <typename T>
+class ApplicationParameter
+{
+public:
+    ApplicationParameter()
+    :mValue()
+    ,mCallbacks()
+    ,mIsInit(false)
+    {};
+
+    ApplicationParameter(const T& value)
+    :mValue(value)
+    ,mCallbacks()
+    ,mIsInit(true)
+    {};
+
+    ApplicationParameter(const T& value, const std::function<void(T)>& callback)
+    :mValue(value)
+    ,mCallbacks(1, callback)
+    ,mIsInit(true)
+    {};
+
+    void RegisterCallback(const std::function<void(T)>& callback)
+    {
+        mCallbacks.push_back(callback);
+    };
+
+    void Update(const T& value)
+    {
+        if(!mIsInit)
+        {
+            mIsInit = true;
+        }
+        mValue = value;
+        onChange();
+    };
+
+    T Get() const
+    {
+        return mValue;
+    };
+
+    inline bool IsInit() const { return mIsInit; };
+
+private:
+    void onChange() const
+    {
+        for(auto cb : mCallbacks)
+        {
+            cb(mValue);
+        }
+    };
+
+    bool mIsInit;
+    T mValue;
+    std::vector<std::function<void(T)>> mCallbacks;
+};
+
+class ApplicationState
+{
+public:
+    ApplicationState();
+
+    ApplicationParameter<glm::ivec3> SliceIndices;
+    ApplicationParameter<glm::ivec3> VolumeShape;
+    ApplicationParameter<float> SphereScaling;
+    ApplicationParameter<float> SH0Threshold;
+    ApplicationParameter<bool> IsSphereNormalized;
+    ApplicationParameter<NiftiImageWrapper> FODFImage;
 };
 } // namespace Slicer

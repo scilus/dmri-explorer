@@ -11,7 +11,9 @@ const float ROTATION_SPEED = 0.005f;
 
 namespace Slicer
 {
-Scene::Scene(unsigned int width, unsigned int height)
+Scene::Scene(unsigned int width, unsigned int height,
+             const std::shared_ptr<ApplicationState>& state)
+:mState(state)
 {
     mCoordinateSystem.reset(new CoordinateSystem());
     const float aspectRatio = (float)width / (float)height;

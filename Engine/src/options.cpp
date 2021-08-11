@@ -177,4 +177,14 @@ void Options::dispatchCallbacks(const std::string& key) const
         cb();
     }
 }
+
+ApplicationState::ApplicationState()
+:SliceIndices()
+,VolumeShape()
+,SphereScaling()
+,SH0Threshold()
+,IsSphereNormalized()
+,FODFImage()
+{
+}
 } // namespace Slicer
