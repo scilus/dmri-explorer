@@ -19,15 +19,12 @@ const size_t NB_SH = 45;
 
 namespace Slicer
 {
-SHField::SHField(std::shared_ptr<NiftiImageWrapper> image,
-                 int sphereRes,
+SHField::SHField(const std::shared_ptr<ApplicationState>& state,
                  std::shared_ptr<CoordinateSystem> parent)
-:Model()
-,mImage(image)
+:Model(state)
 ,mIndices()
 ,mSphHarmCoeffs()
 ,mSphHarmFuncs()
-,mSphere(sphereRes)
 ,mNbSpheres(0)
 ,mSphereInfo(mSphere)
 ,mVAO(0)
@@ -44,7 +41,7 @@ SHField::SHField(std::shared_ptr<NiftiImageWrapper> image,
 {
     initializeMembers();
     initializeGPUData();
-    resetCS(std::shared_ptr<CoordinateSystem>(new CoordinateSystem(glm::mat4(1.0f), parent)));
+    resetCS(std::make_shared<CoordinateSystem>(new CoordinateSystem(glm::mat4(1.0f), parent)));
 
     const std::string csPath = RTFODFSLICER_SHADERS_DIR + std::string("/compute.glsl");
     mComputeShader = ShaderProgram(csPath, GL_COMPUTE_SHADER);
@@ -64,7 +61,6 @@ SHField::~SHField()
 void SHField::initOptions()
 {
     Options& options = Options::Instance();
-    ;
     options.SetInt("slice.x", mImage->dims().x / 2);
     options.SetInt("slice.y", mImage->dims().y / 2);
     options.SetInt("slice.z", mImage->dims().z / 2);
@@ -99,9 +95,10 @@ void SHField::initProgramPipeline()
 
 void SHField::initializeMembers()
 {
-    mNbSpheres = mImage->dims().x * mImage->dims().y  // Z-slice
-               + mImage->dims().x * mImage->dims().z  // Y-slice
-               + mImage->dims().y * mImage->dims().z; // X-slice
+    const auto& image = mState->FODFImage.Get();
+    mNbSpheres = image.dims().x * image.dims().y  // Z-slice
+               + image.dims().x * image.dims().z  // Y-slice
+               + image.dims().y * image.dims().z; // X-slice
 
     std::thread initVoxThread(&SHField::initializePerVoxelAttributes, this);
     std::thread initSpheresThread(&SHField::initializePerSphereAttributes, this);
@@ -114,20 +111,21 @@ void SHField::initializePerVoxelAttributes()
     Utilities::Timer voxelLoopTimer("Foreach voxel");
     voxelLoopTimer.Start();
 
+    const auto& image = mState->FODFImage.Get();
     // safety when allocating shared memory
     mMutex.lock();
-    mSphHarmCoeffs.reserve(mImage->length());
+    mSphHarmCoeffs.reserve(image.length());
     mMutex.unlock();
 
     // Fill SH coefficients and model matrix
-    for(uint flatIndex = 0; flatIndex < mImage->nbVox(); ++flatIndex)
+    for(uint flatIndex = 0; flatIndex < image.nbVox(); ++flatIndex)
     {
-        glm::vec<3, uint> id3D = mImage->unravelIndex3d(flatIndex);
+        glm::vec<3, uint> id3D = image.unravelIndex3d(flatIndex);
 
         // Fill SH coefficients table
         for(int k = 0; k < NB_SH; ++k)
         {
-            mSphHarmCoeffs.push_back(static_cast<float>(mImage->at(id3D.x, id3D.y, id3D.z, k)));
+            mSphHarmCoeffs.push_back(static_cast<float>(image.at(id3D.x, id3D.y, id3D.z, k)));
         }
 
     }

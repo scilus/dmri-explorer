@@ -104,16 +104,50 @@ private:
     std::vector<std::function<void(T)>> mCallbacks;
 };
 
+namespace State
+{
+struct Grid
+{
+    Grid()
+    :SliceIndices()
+    ,VolumeShape(){};
+
+    ApplicationParameter<glm::ivec3> SliceIndices;
+    ApplicationParameter<glm::ivec3> VolumeShape;
+};
+
+struct Sphere
+{
+    Sphere()
+    :Scaling()
+    ,SH0Threshold()
+    ,IsNormalized()
+    ,Resolution(){};
+
+    ApplicationParameter<float> Scaling;
+    ApplicationParameter<float> SH0Threshold;
+    ApplicationParameter<bool> IsNormalized;
+    ApplicationParameter<int> Resolution;
+};
+
+struct Window
+{
+    Window()
+    :Width()
+    ,Height(){};
+
+    ApplicationParameter<int> Width;
+    ApplicationParameter<int> Height;
+};
+} // namespace State
+
 class ApplicationState
 {
 public:
     ApplicationState();
-
-    ApplicationParameter<glm::ivec3> SliceIndices;
-    ApplicationParameter<glm::ivec3> VolumeShape;
-    ApplicationParameter<float> SphereScaling;
-    ApplicationParameter<float> SH0Threshold;
-    ApplicationParameter<bool> IsSphereNormalized;
+    State::Grid VoxelGrid;
+    State::Sphere Sphere;
+    State::Window Window;
     ApplicationParameter<NiftiImageWrapper> FODFImage;
 };
 } // namespace Slicer

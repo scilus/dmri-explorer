@@ -11,7 +11,8 @@ UIManager::UIManager()
 :mWindow(nullptr)
 ,mIO(nullptr)
 ,mState(nullptr)
-,mShowDemoWindow(true)
+,mShowDemoWindow(false)
+,mShowSlicers(false)
 {
 }
 
@@ -20,7 +21,7 @@ UIManager::UIManager(GLFWwindow* window, const std::string& glslVersion,
 :mWindow(window)
 ,mIO(nullptr)
 ,mShowDemoWindow(false)
-,mShowSlicers(true)
+,mShowSlicers(false)
 ,mState(state)
 {
     // Initialize imgui

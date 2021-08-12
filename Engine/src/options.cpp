@@ -179,11 +179,9 @@ void Options::dispatchCallbacks(const std::string& key) const
 }
 
 ApplicationState::ApplicationState()
-:SliceIndices()
-,VolumeShape()
-,SphereScaling()
-,SH0Threshold()
-,IsSphereNormalized()
+:VoxelGrid()
+,Sphere()
+,Window()
 ,FODFImage()
 {
 }

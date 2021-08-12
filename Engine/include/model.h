@@ -4,13 +4,14 @@
 #include <memory>
 #include <data.h>
 #include <shader.h>
+#include <options.h>
 
 namespace Slicer
 {
 class Model
 {
 public:
-    Model();
+    Model(const std::shared_ptr<ApplicationState>& state);
     ~Model();
 
     void Draw();
@@ -22,6 +23,7 @@ protected:
     virtual void initProgramPipeline() = 0;
     void resetCS(std::shared_ptr<CoordinateSystem> cs);
     ProgramPipeline mProgramPipeline;
+    std::shared_ptr<ApplicationState> mState;
 private:
     void uploadTransformToGPU();
     GPU::ShaderData mTransformGPUData;

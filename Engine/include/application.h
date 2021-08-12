@@ -22,7 +22,8 @@ public:
     void Run();
 private:
     void initialize();
-    void initOptions(CLArgs args);
+    void initApplicationState(const CLArgs& args);
+    void initOptions(const CLArgs& args);
 
     /// GLFW callbacks
     static void onMouseButton(GLFWwindow* window, int button, int action, int mod);
@@ -38,8 +39,6 @@ private:
     std::shared_ptr<Scene> mScene;
     std::shared_ptr<UIManager> mUI;
     std::shared_ptr<ApplicationState> mState;
-    unsigned int mWidth;
-    unsigned int mHeight;
     std::string mTitle;
 };
 } // namespace Slicer

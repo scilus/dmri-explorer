@@ -12,15 +12,14 @@ const std::string WIN_TITLE = "RT fODF Slicer";
 namespace Slicer
 {
 Application::Application(CLArgs args)
-:mWidth(WIN_WIDTH)
-,mHeight(WIN_HEIGHT)
-,mTitle(WIN_TITLE)
+:mTitle(WIN_TITLE)
+,mState(new ApplicationState())
 ,mUI(nullptr)
-,mState(nullptr)
 ,mScene(nullptr)
 ,mCursorPos(-1, -1)
 {
     initOptions(args);
+    initApplicationState(args);
     initialize();
 }
 
@@ -46,7 +45,9 @@ void Application::initialize()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    mWindow = glfwCreateWindow(mWidth, mHeight, mTitle.c_str(), NULL, NULL);
+    const auto& width = mState->Window.Width.Get();
+    const auto& height = mState->Window.Height.Get();
+    mWindow = glfwCreateWindow(width, height, mTitle.c_str(), NULL, NULL);
     glfwMakeContextCurrent(mWindow);
     glfwSetWindowUserPointer(mWindow, this);
 
@@ -69,15 +70,24 @@ void Application::initialize()
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    mState.reset(new ApplicationState());
     mUI.reset(new UIManager(mWindow, "#version 460", mState));
-    mScene.reset(new Scene(mWidth, mHeight, mState));
+    mScene.reset(new Scene(mState));
 }
 
-void Application::initOptions(CLArgs args)
+void Application::initOptions(const CLArgs& args)
 {
     Options::Instance().SetString("image.path", args.imagePath);
     Options::Instance().SetInt("sphere.resolution", args.sphereRes);
+}
+
+void Application::initApplicationState(const CLArgs& args)
+{
+    mState->FODFImage.Update(NiftiImageWrapper(args.imagePath));
+    mState->Sphere.Resolution.Update(args.sphereRes);
+    mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().dims());
+    mState->VoxelGrid.SliceIndices.Update(mState->VoxelGrid.VolumeShape.Get() / 2);
+    mState->Window.Height.Update(WIN_HEIGHT);
+    mState->Window.Width.Update(WIN_WIDTH);
 }
 
 void Application::Run()
@@ -150,5 +160,7 @@ void Application::onWindowResize(GLFWwindow* window, int width, int height)
     Application* app = (Application*)glfwGetWindowUserPointer(window);
     app->mScene->GetCameraPtr()->Resize(aspect);
     glViewport(0, 0, width, height);
+    app->mState->Window.Width.Update(width);
+    app->mState->Window.Height.Update(height);
 }
 } // namespace Slicer

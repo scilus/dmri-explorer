@@ -4,8 +4,9 @@
 
 namespace Slicer
 {
-Model::Model()
-:mTransformGPUData(GPU::Binding::modelTransform)
+Model::Model(const std::shared_ptr<ApplicationState>& state)
+:mState(state)
+,mTransformGPUData(GPU::Binding::modelTransform)
 ,mCoordinateSystem()
 ,mIsInit(false)
 {
@@ -31,8 +32,8 @@ void Model::Draw()
         msg += "Initialize first by calling Model::initializeModel().";
         throw std::runtime_error(msg);
     }
-    uploadTransformToGPU();
     mProgramPipeline.Bind();
+    uploadTransformToGPU();
     drawSpecific();
 }
 

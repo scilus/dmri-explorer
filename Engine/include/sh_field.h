@@ -53,8 +53,7 @@ struct DrawElementsIndirectCommand
 class SHField : public Model
 {
 public:
-    SHField(std::shared_ptr<NiftiImageWrapper> image,
-            int sphereRes,
+    SHField(const std::shared_ptr<ApplicationState>& state,
             std::shared_ptr<CoordinateSystem> parent);
     ~SHField();
 
@@ -83,10 +82,6 @@ private:
 
     // multithreading
     std::mutex mMutex;
-
-    // Image data
-    // mImage contains grid dimensions, number of voxels
-    std::shared_ptr<NiftiImageWrapper> mImage;
 
     // Sphere topology
     Primitive::Sphere mSphere;

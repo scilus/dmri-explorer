@@ -10,8 +10,7 @@ namespace Slicer
 class Scene
 {
 public:
-    Scene(unsigned int width, unsigned int height,
-          const std::shared_ptr<ApplicationState>& state);
+    Scene(const std::shared_ptr<ApplicationState>& state);
     ~Scene();
     void Render();
     Camera* GetCameraPtr() { return &mCamera; };
@@ -22,6 +21,6 @@ private:
 
     // scene contains camera and models
     Camera mCamera;
-    std::vector<Model*> mModels;
+    std::vector<std::shared_ptr<Model>> mModels;
 };
 } // namespace Slicer
