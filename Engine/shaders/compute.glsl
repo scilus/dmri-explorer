@@ -192,7 +192,7 @@ void main()
 
     const uint voxID = convertInvocationIDToVoxID(invocationID);
 
-    bool isVisible = shCoeffs[voxID * NB_SH] > sh0Threshold;
+    bool isVisible = shCoeffs[voxID * NB_SH] > 0.0f;
 
     scaleSphere(voxID, firstVertID, isVisible);
     if(isVisible)

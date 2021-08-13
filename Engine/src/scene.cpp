@@ -4,11 +4,6 @@
 #include <utils.hpp>
 #include <options.h>
 
-namespace
-{
-const float ROTATION_SPEED = 0.005f;
-}
-
 namespace Slicer
 {
 Scene::Scene(const std::shared_ptr<ApplicationState>& state)
@@ -22,12 +17,10 @@ Scene::Scene(const std::shared_ptr<ApplicationState>& state)
                      glm::vec3(0.0f, 1.0f, 0.0f),  // upvector
                      glm::vec3(0.0f, 0.0f, 0.0f),  //lookat
                      glm::radians(60.0f),
-                     aspectRatio, 0.5f, 500.0f);
+                     aspectRatio, 0.5f, 500.0f,
+                     mState);
 
     mModels.push_back(std::shared_ptr<SHField>(new SHField(mState, mCoordinateSystem)));
-
-    auto& options = Options::Instance();
-    options.SetFloat("scene.rotation.speed", ROTATION_SPEED);
 }
 
 Scene::~Scene()
@@ -46,9 +39,7 @@ void Scene::Render()
 
 void Scene::RotateCS(const glm::vec2& vec)
 {
-    auto& options = Options::Instance();
-    float rotationSpeed;
-    options.GetFloat("scene.rotation.speed", &rotationSpeed);
+    const float rotationSpeed = mState->Window.RotationSpeed.Get();
     const float dx = -vec.x * rotationSpeed;
     const float dy = -vec.y * rotationSpeed;
     glm::mat4 transform = glm::rotate(dx, glm::vec3(0.0, 1.0, 0.0));

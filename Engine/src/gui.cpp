@@ -93,19 +93,18 @@ void UIManager::drawPreferencesWindow()
     ImGui::Text("Rotation speed");
     ImGui::SameLine();
 
-    float rotationSpeed, translationSpeed;
-    Options::Instance().GetFloat("scene.rotation.speed", &rotationSpeed);
+    float rotationSpeed = mState->Window.RotationSpeed.Get();
+    float translationSpeed = mState->Window.TranslationSpeed.Get();
     if(ImGui::InputFloat("##rotation.speed", &rotationSpeed, 0.001f, 0.5f))
     {
-        Options::Instance().SetFloat("scene.rotation.speed", rotationSpeed);
+        mState->Window.RotationSpeed.Update(rotationSpeed);
     }
 
     ImGui::Text("Translation speed");
     ImGui::SameLine();
-    Options::Instance().GetFloat("camera.translation.speed", &translationSpeed);
     if(ImGui::InputFloat("##translation.speed", &translationSpeed, 0.001f, 0.5f))
     {
-        Options::Instance().SetFloat("camera.translation.speed", translationSpeed);
+        mState->Window.TranslationSpeed.Update(translationSpeed);
     }
     ImGui::End();
 }
@@ -115,102 +114,106 @@ void UIManager::drawSlicersWindow()
     if(!mShowSlicers)
         return;
 
+    auto& sliceParam = mState->VoxelGrid.SliceIndices;
+    auto& shapeParam = mState->VoxelGrid.VolumeShape;
+    if(!sliceParam.IsInit() || !shapeParam.IsInit())
+        return;
+
     ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(417.f, 180.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
     ImGui::Begin("Slices options", &mShowSlicers);
-    int slicex, slicey, slicez, gridx, gridy, gridz;
-    Options::Instance().GetInt("slice.x", &slicex);
-    Options::Instance().GetInt("slice.y", &slicey);
-    Options::Instance().GetInt("slice.z", &slicez);
-    Options::Instance().GetInt("grid.x", &gridx);
-    Options::Instance().GetInt("grid.y", &gridy);
-    Options::Instance().GetInt("grid.z", &gridz);
+
     bool updateSliceIndex = false;
+    glm::ivec3 slice = sliceParam.Get();
+    glm::ivec3 shape = shapeParam.Get();
 
     ImGui::Text("X-Slice");
     ImGui::SameLine();
-    updateSliceIndex |= ImGui::SliderInt("##slicerx", &slicex, 0, gridx - 1);
+    updateSliceIndex |= ImGui::SliderInt("##xslicer", &slice.x, 0, shape.x - 1);
     ImGui::SameLine();
-    if(ImGui::ArrowButton("##left0", ImGuiDir_Left))
+    if(ImGui::ArrowButton("##xleft", ImGuiDir_Left))
     {
-        slicex = std::max(0, slicex - 1);
+        slice.x = std::max(0, slice.x - 1);
         updateSliceIndex = true;
     }
     ImGui::SameLine();
-    if(ImGui::ArrowButton("##right0", ImGuiDir_Right))
+    if(ImGui::ArrowButton("##xright", ImGuiDir_Right))
     {
-        slicex = std::min(gridx - 1, slicex + 1);
+        slice.x = std::min(shape.x - 1, slice.x + 1);
         updateSliceIndex = true;
     }
 
     ImGui::Text("Y-Slice");
     ImGui::SameLine();
-    updateSliceIndex |= ImGui::SliderInt("##slicery", &slicey, 0, gridy - 1);
+    updateSliceIndex |= ImGui::SliderInt("##yslicer", &slice.y, 0, shape.y - 1);
     ImGui::SameLine();
-    if(ImGui::ArrowButton("##left1", ImGuiDir_Left))
+    if(ImGui::ArrowButton("##yleft", ImGuiDir_Left))
     {
-        slicey = std::max(0, slicey - 1);
+        slice.y = std::max(0, slice.y - 1);
         updateSliceIndex = true;
     }
     ImGui::SameLine();
-    if(ImGui::ArrowButton("##right1", ImGuiDir_Right))
+    if(ImGui::ArrowButton("##yright", ImGuiDir_Right))
     {
-        slicey = std::min(gridy - 1, slicey + 1);
+        slice.y = std::min(shape.y - 1, slice.y + 1);
         updateSliceIndex = true;
     }
 
     ImGui::Text("Z-Slice");
     ImGui::SameLine();
-    updateSliceIndex |= ImGui::SliderInt("##slicerz", &slicez, 0, gridz - 1);
+    updateSliceIndex |= ImGui::SliderInt("##zslicer", &slice.z, 0, shape.z - 1);
     ImGui::SameLine();
-    if(ImGui::ArrowButton("##left2", ImGuiDir_Left))
+    if(ImGui::ArrowButton("##zleft", ImGuiDir_Left))
     {
-        slicez = std::max(0, slicez - 1);
+        slice.z = std::max(0, slice.z - 1);
         updateSliceIndex = true;
     }
     ImGui::SameLine();
-    if(ImGui::ArrowButton("##right2", ImGuiDir_Right))
+    if(ImGui::ArrowButton("##zright", ImGuiDir_Right))
     {
-        slicez = std::min(gridz - 1, slicez + 1);
+        slice.z = std::min(shape.z - 1, slice.z + 1);
         updateSliceIndex = true;
     }
 
     if(updateSliceIndex)
     {
-        Options::Instance().SetInt("slice.x", slicex);
-        Options::Instance().SetInt("slice.y", slicey);
-        Options::Instance().SetInt("slice.z", slicez);
-        Options::Instance().SetInt("grid.x", gridx);
-        Options::Instance().SetInt("grid.y", gridy);
-        Options::Instance().SetInt("grid.z", gridz);
+        mState->VoxelGrid.SliceIndices.Update(slice);
     }
 
     ImGui::Separator();
-    float sphereScaling, sphereSH0Threshold;
-    bool sphereNormalized;
-    Options::Instance().GetFloat("sphere.scaling", &sphereScaling);
-    Options::Instance().GetFloat("sphere.sh0.threshold", &sphereSH0Threshold);
-    Options::Instance().GetBool("sphere.normalized", &sphereNormalized);
+    auto& scalingParam = mState->Sphere.Scaling;
+    auto& thresholdParam = mState->Sphere.SH0Threshold;
+    auto& normalizedParam = mState->Sphere.IsNormalized;
+    if (!scalingParam.IsInit() || !thresholdParam.IsInit() || !normalizedParam.IsInit())
+    {
+        ImGui::Spacing();
+        ImGui::End();
+        return;
+    }
+
+    float scaling = scalingParam.Get();
+    float threshold = thresholdParam.Get();
+    bool normalized = normalizedParam.Get();
 
     ImGui::Text("Sphere scaling");
     ImGui::SameLine();
-    if(ImGui::InputFloat("##sphere.scaling", &sphereScaling, 0.001f, 0.5f))
+    if(ImGui::InputFloat("##sphere.scaling", &scaling, 0.001f, 0.5f))
     {
-        Options::Instance().SetFloat("sphere.scaling", sphereScaling);
+        scalingParam.Update(scaling);
     }
     ImGui::Text("SH0 threshold");
     ImGui::SameLine();
-    if(ImGui::InputFloat("##sphere.sh0.threshold", &sphereSH0Threshold, 0.001f, 0.5f))
+    if(ImGui::InputFloat("##sphere.sh0.threshold", &threshold, 0.001f, 0.5f))
     {
-        Options::Instance().SetFloat("sphere.sh0.threshold", sphereSH0Threshold);
+        thresholdParam.Update(threshold);
     }
     ImGui::Text("Normalize per voxel");
     ImGui::SameLine();
-    if(ImGui::Checkbox("##sphere.normalized", &sphereNormalized))
+    if(ImGui::Checkbox("##sphere.normalized", &normalized))
     {
-        Options::Instance().SetBool("sphere.normalized", sphereNormalized);
+        normalizedParam.Update(normalized);
     }
 
     ImGui::Spacing();

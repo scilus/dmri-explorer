@@ -50,6 +50,7 @@ struct DrawElementsIndirectCommand
     uint baseInstance;
 };
 
+
 class SHField : public Model
 {
 public:
@@ -57,11 +58,6 @@ public:
             std::shared_ptr<CoordinateSystem> parent);
     ~SHField();
 
-    // options callbacks
-    void SetSliceIndex();
-    void SetNormalized();
-    void SetSH0Threshold();
-    void SetSphereScaling();
 
     // Compute shader pass for scaling spheres
     void ScaleSpheres();
@@ -73,12 +69,34 @@ protected:
     void initProgramPipeline() override;
 
 private:
+    struct SphereData
+    {
+        unsigned int NumVertices;
+        unsigned int NumIndices;
+        unsigned int IsNormalized;
+        float SH0threshold;
+        float Scaling;
+    };
+
+    struct GridData
+    {
+        glm::ivec4 VolumeShape;
+        glm::ivec4 SliceIndices;
+        glm::ivec4 IsSliceDirty;
+    };
+
     void initializeMembers();
     void initializeGPUData();
     void initializePerVoxelAttributes();
     void initializePerSphereAttributes();
+
+    // options callbacks
+    void SetSphereScaling(float previous, float scaling);
+    void SetSliceIndex(glm::vec3 previous, glm::vec3 indices);
+    void SetNormalized(bool previous, bool normalized);
+    void SetSH0Threshold(float previous, float threshold);
+
     template<typename T> GLuint genVBO(const std::vector<T>& data) const;
-    bool isAnySliceDirty() const;
 
     // multithreading
     std::mutex mMutex;

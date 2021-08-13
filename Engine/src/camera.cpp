@@ -6,18 +6,14 @@
 #include <iostream>
 #include <options.h>
 
-namespace
-{
-const float TRANSLATION_SPEED = 0.02f;
-}
-
 namespace Slicer
 {
 Camera::Camera(const glm::vec3& position,
                const glm::vec3& upVector,
                const glm::vec3& lookat,
                const float& fov, const float& aspect,
-               const float& near, const float& far)
+               const float& near, const float& far,
+               const std::shared_ptr<ApplicationState>& state)
 :mLookAt(lookat)
 ,mPosition(position)
 ,mUpVector(upVector)
@@ -27,10 +23,10 @@ Camera::Camera(const glm::vec3& position,
 ,mAspect(aspect)
 ,mCamParams()
 ,mCamParamsData(GPU::Binding::camera)
+,mState(state)
 {
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
-    Options::Instance().SetFloat("camera.translation.speed", TRANSLATION_SPEED);
 }
 
 void Camera::Update()
@@ -59,8 +55,7 @@ void Camera::TranslateXY(double dx, double dy)
     glm::vec3 horizontalAxis = glm::normalize(glm::cross(mUpVector, mPosition - mLookAt));
     glm::vec3 verticalAxis = mUpVector;
 
-    float speed;
-    Options::Instance().GetFloat("camera.translation.speed", &speed);
+    float speed = mState->Window.TranslationSpeed.Get();
 
     const glm::vec3 translation = speed * (horizontalAxis * (float)dx + verticalAxis * (float)dy);
     mPosition = mPosition + translation;

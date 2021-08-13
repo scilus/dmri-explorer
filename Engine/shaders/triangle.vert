@@ -10,6 +10,11 @@ layout(std430, binding=1) buffer allNormalsBuffer
     vec4 allNormals[];
 };
 
+layout(std430, binding=3) buffer shCoeffsBuffer
+{
+    float shCoeffs[];
+};
+
 layout(std430, binding=5) buffer sphereVerticesBuffer
 {
     vec4 vertices[];
@@ -50,6 +55,7 @@ out gl_PerVertex{
 out vec3 v_color;
 out vec4 v_normal;
 out vec4 v_eye;
+out float v_isVisible;
 
 // Constants
 const int NB_SH = 45;
@@ -76,9 +82,17 @@ ivec3 convertInvocationIDToIndex3D(uint invocationID)
     return ivec3(i, sliceIndex.y, k);
 }
 
+uint convertIndex3DToVoxID(uint i, uint j, uint k)
+{
+    return k * gridDims.x * gridDims.y + j * gridDims.x + i;
+}
+
 void main()
 {
     const ivec3 index3d = convertInvocationIDToIndex3D(gl_DrawID);
+    const uint voxID = convertIndex3DToVoxID(index3d.x, index3d.y, index3d.z);
+    bool isVisible = shCoeffs[voxID * NB_SH] > sh0Threshold;
+
     mat4 trMat;
     trMat[0][0] = scaling;
     trMat[1][1] = scaling;
@@ -89,6 +103,7 @@ void main()
     trMat[3][3] = 1.0;
 
     vec4 currentVertex = vec4(vertices[gl_VertexID%nbVertices].xyz * allRadiis[gl_VertexID], 1.0f);
+
     gl_Position = projectionMatrix
                 * viewMatrix
                 * modelMatrix
@@ -98,5 +113,6 @@ void main()
     v_normal = modelMatrix
              * allNormals[gl_VertexID];
     v_color = abs(normalize(currentVertex.xyz));
+    v_isVisible = isVisible ? 1.0f:0.0f;
     v_eye = normalize(eye);
 }

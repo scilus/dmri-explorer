@@ -6,6 +6,8 @@ namespace
 {
 const unsigned int WIN_WIDTH = 800;
 const unsigned int WIN_HEIGHT = 600;
+const float TRANSLATION_SPEED = 0.02f;
+const float ROTATION_SPEED = 0.005f;
 const std::string WIN_TITLE = "RT fODF Slicer";
 }
 
@@ -69,6 +71,7 @@ void Application::initialize()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+    glfwSwapInterval(0);
 
     mUI.reset(new UIManager(mWindow, "#version 460", mState));
     mScene.reset(new Scene(mState));
@@ -76,22 +79,25 @@ void Application::initialize()
 
 void Application::initOptions(const CLArgs& args)
 {
-    Options::Instance().SetString("image.path", args.imagePath);
-    Options::Instance().SetInt("sphere.resolution", args.sphereRes);
 }
 
 void Application::initApplicationState(const CLArgs& args)
 {
     mState->FODFImage.Update(NiftiImageWrapper(args.imagePath));
+
     mState->Sphere.Resolution.Update(args.sphereRes);
+    mState->Sphere.IsNormalized.Update(false);
+    mState->Sphere.Scaling.Update(0.5f);
+    mState->Sphere.SH0Threshold.Update(0.0f);
+
     mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().dims());
     mState->VoxelGrid.SliceIndices.Update(mState->VoxelGrid.VolumeShape.Get() / 2);
     mState->VoxelGrid.IsSliceDirty.Update(glm::ivec3(1, 1, 1));
 
-    // register a callback so that when slice indices are updated,
-    // corresponding slice is flagged as dirty too
     mState->Window.Height.Update(WIN_HEIGHT);
     mState->Window.Width.Update(WIN_WIDTH);
+    mState->Window.TranslationSpeed.Update(TRANSLATION_SPEED);
+    mState->Window.RotationSpeed.Update(ROTATION_SPEED);
 }
 
 void Application::Run()

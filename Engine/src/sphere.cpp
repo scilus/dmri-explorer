@@ -30,17 +30,18 @@ Sphere::Sphere(unsigned int resolution)
     genUnitSphere();
 }
 
-Sphere& Sphere::operator=(const Sphere& s)
+Sphere& Sphere::operator=(const Sphere& other)
 {
-    if(this == &s)
+    if(this == &other)
     {
         return *this;
     }
-    mResolution = s.mResolution;
-    mIndices = s.mIndices;
-    mSHBasis = s.mSHBasis;
-    mCoordinates = s.mCoordinates;
-    mSphHarmFunc = s.mSphHarmFunc;
+    mResolution = other.mResolution;
+    mIndices = other.mIndices;
+    mSHBasis = other.mSHBasis;
+    mPoints = other.mPoints;
+    mCoordinates = other.mCoordinates;
+    mSphHarmFunc = other.mSphHarmFunc;
     return *this;
 }
 
