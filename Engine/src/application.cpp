@@ -86,6 +86,10 @@ void Application::initApplicationState(const CLArgs& args)
     mState->Sphere.Resolution.Update(args.sphereRes);
     mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().dims());
     mState->VoxelGrid.SliceIndices.Update(mState->VoxelGrid.VolumeShape.Get() / 2);
+    mState->VoxelGrid.IsSliceDirty.Update(glm::ivec3(1, 1, 1));
+
+    // register a callback so that when slice indices are updated,
+    // corresponding slice is flagged as dirty too
     mState->Window.Height.Update(WIN_HEIGHT);
     mState->Window.Width.Update(WIN_WIDTH);
 }

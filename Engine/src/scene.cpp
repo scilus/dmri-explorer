@@ -24,7 +24,7 @@ Scene::Scene(const std::shared_ptr<ApplicationState>& state)
                      glm::radians(60.0f),
                      aspectRatio, 0.5f, 500.0f);
 
-    mModels.push_back(std::make_shared<SHField>(new SHField(mState, mCoordinateSystem)));
+    mModels.push_back(std::shared_ptr<SHField>(new SHField(mState, mCoordinateSystem)));
 
     auto& options = Options::Instance();
     options.SetFloat("scene.rotation.speed", ROTATION_SPEED);

@@ -87,7 +87,6 @@ private:
     Primitive::Sphere mSphere;
 
     // Slicing
-    GPU::GridInfo mGridInfo;
     uint mNbSpheres;
 
     // Rendered primitives
@@ -103,7 +102,6 @@ private:
     // Shader uniforms
     std::vector<float> mSphHarmCoeffs;
     std::vector<float> mSphHarmFuncs;
-    GPU::SphereInfo mSphereInfo;
 
     GPU::ShaderData mSphHarmCoeffsData;
     GPU::ShaderData mSphHarmFuncsData;

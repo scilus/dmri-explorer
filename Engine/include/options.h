@@ -62,13 +62,13 @@ public:
     ,mIsInit(true)
     {};
 
-    ApplicationParameter(const T& value, const std::function<void(T)>& callback)
+    ApplicationParameter(const T& value, const std::function<void(T, T)>& callback)
     :mValue(value)
     ,mCallbacks(1, callback)
     ,mIsInit(true)
     {};
 
-    void RegisterCallback(const std::function<void(T)>& callback)
+    void RegisterCallback(const std::function<void(T, T)>& callback)
     {
         mCallbacks.push_back(callback);
     };
@@ -79,8 +79,9 @@ public:
         {
             mIsInit = true;
         }
+        const T vOld = mValue;
         mValue = value;
-        onChange();
+        onChange(vOld);
     };
 
     T Get() const
@@ -91,17 +92,17 @@ public:
     inline bool IsInit() const { return mIsInit; };
 
 private:
-    void onChange() const
+    void onChange(const T& old) const
     {
         for(auto cb : mCallbacks)
         {
-            cb(mValue);
+            cb(old, mValue);
         }
     };
 
     bool mIsInit;
     T mValue;
-    std::vector<std::function<void(T)>> mCallbacks;
+    std::vector<std::function<void(T, T)>> mCallbacks;
 };
 
 namespace State
@@ -114,6 +115,7 @@ struct Grid
 
     ApplicationParameter<glm::ivec3> SliceIndices;
     ApplicationParameter<glm::ivec3> VolumeShape;
+    ApplicationParameter<glm::ivec3> IsSliceDirty;
 };
 
 struct Sphere
