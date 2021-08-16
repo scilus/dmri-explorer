@@ -6,6 +6,8 @@
 
 namespace Slicer
 {
+namespace GPU
+{
 class ShaderProgram
 {
 public:
@@ -30,4 +32,5 @@ private:
     const GLbitfield convertShaderTypeToGLbitfield(const GLenum shaderType) const;
     GLuint mPipelineID = 0;
 };
+} // namespace GPU
 } // namespace Slicer

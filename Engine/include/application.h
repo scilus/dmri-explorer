@@ -8,7 +8,8 @@
 #include <memory>
 #include <scene.h>
 #include <command_line.h>
-#include <options.h>
+#include <camera.h>
+#include <application_state.h>
 
 namespace Slicer
 {
@@ -23,7 +24,6 @@ public:
 private:
     void initialize();
     void initApplicationState(const CLArgs& args);
-    void initOptions(const CLArgs& args);
 
     /// GLFW callbacks
     static void onMouseButton(GLFWwindow* window, int button, int action, int mod);
@@ -37,6 +37,7 @@ private:
     int mLastButton;
     int mLastModifier;
     std::shared_ptr<Scene> mScene;
+    std::shared_ptr<Camera> mCamera;
     std::shared_ptr<UIManager> mUI;
     std::shared_ptr<ApplicationState> mState;
     std::string mTitle;

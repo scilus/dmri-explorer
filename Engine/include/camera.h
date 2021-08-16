@@ -1,11 +1,11 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <data.h>
+#include <shader_data.h>
 #include <memory>
 #include <spherical_coordinates.h>
 #include <coordinate_system.h>
-#include <options.h>
+#include <application_state.h>
 
 namespace Slicer
 {
@@ -21,10 +21,16 @@ public:
            const std::shared_ptr<ApplicationState>& state);
     void Resize(const float& aspect);
     void TranslateZ(double delta);
-    void TranslateXY(double dx, double dy);
     void Update();
 
 private:
+    struct CameraData
+    {
+        glm::vec4 eye;
+        glm::mat4 viewMatrix;
+        glm::mat4 projectionMatrix;
+    };
+
     glm::vec3 mPosition;
     glm::vec3 mLookAt;
     glm::vec3 mUpVector;
@@ -36,7 +42,6 @@ private:
     glm::mat4 mViewMatrix;
 
     std::shared_ptr<ApplicationState> mState;
-    GPU::CamParams mCamParams;
     GPU::ShaderData mCamParamsData;
 };
 } // namespace Slicer

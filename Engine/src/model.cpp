@@ -18,8 +18,8 @@ Model::~Model()
 
 void Model::initializeModel()
 {
-    initOptions();
-    initOptionsCallbacks();
+    updateApplicationState();
+    registerStateCallbacks();
     initProgramPipeline();
     mIsInit = true;
 }

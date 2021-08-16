@@ -5,7 +5,7 @@
 #include <model.h>
 #include <memory>
 #include <GLFW/glfw3.h>
-#include <options.h>
+#include <application_state.h>
 
 namespace Slicer
 {

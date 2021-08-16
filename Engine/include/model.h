@@ -2,9 +2,9 @@
 #include <glm/matrix.hpp>
 #include <coordinate_system.h>
 #include <memory>
-#include <data.h>
+#include <shader_data.h>
 #include <shader.h>
-#include <options.h>
+#include <application_state.h>
 
 namespace Slicer
 {
@@ -18,11 +18,11 @@ public:
 protected:
     void initializeModel();
     virtual void drawSpecific() = 0;
-    virtual void initOptions() = 0;
-    virtual void initOptionsCallbacks() = 0;
+    virtual void updateApplicationState() = 0;
+    virtual void registerStateCallbacks() = 0;
     virtual void initProgramPipeline() = 0;
     void resetCS(std::shared_ptr<CoordinateSystem> cs);
-    ProgramPipeline mProgramPipeline;
+    GPU::ProgramPipeline mProgramPipeline;
     std::shared_ptr<ApplicationState> mState;
 private:
     void uploadTransformToGPU();

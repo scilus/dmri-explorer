@@ -1,6 +1,6 @@
 #include <application.h>
 #include <iostream>
-#include <options.h>
+#include <application_state.h>
 
 namespace
 {
@@ -8,7 +8,9 @@ const unsigned int WIN_WIDTH = 800;
 const unsigned int WIN_HEIGHT = 600;
 const float TRANSLATION_SPEED = 0.02f;
 const float ROTATION_SPEED = 0.005f;
+const float ZOOM_SPEED = 1.0f;
 const std::string WIN_TITLE = "RT fODF Slicer";
+const std::string GLSL_VERSION_STR = "#version 460";
 }
 
 namespace Slicer
@@ -20,7 +22,6 @@ Application::Application(CLArgs args)
 ,mScene(nullptr)
 ,mCursorPos(-1, -1)
 {
-    initOptions(args);
     initApplicationState(args);
     initialize();
 }
@@ -47,9 +48,7 @@ void Application::initialize()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    const auto& width = mState->Window.Width.Get();
-    const auto& height = mState->Window.Height.Get();
-    mWindow = glfwCreateWindow(width, height, mTitle.c_str(), NULL, NULL);
+    mWindow = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, mTitle.c_str(), NULL, NULL);
     glfwMakeContextCurrent(mWindow);
     glfwSetWindowUserPointer(mWindow, this);
 
@@ -73,12 +72,16 @@ void Application::initialize()
     glCullFace(GL_BACK);
     glfwSwapInterval(0);
 
-    mUI.reset(new UIManager(mWindow, "#version 460", mState));
+    mUI.reset(new UIManager(mWindow, GLSL_VERSION_STR, mState));
     mScene.reset(new Scene(mState));
-}
 
-void Application::initOptions(const CLArgs& args)
-{
+    const float aspectRatio = (float)WIN_WIDTH/(float)WIN_HEIGHT;
+    mCamera.reset(new Camera(glm::vec3(0.0f, 0.0f, 10.0f), // position
+                             glm::vec3(0.0f, 1.0f, 0.0f),  // upvector
+                             glm::vec3(0.0f, 0.0f, 0.0f),  //lookat
+                             glm::radians(60.0f), aspectRatio,
+                             0.5f, 500.0f,
+                             mState));
 }
 
 void Application::initApplicationState(const CLArgs& args)
@@ -98,6 +101,7 @@ void Application::initApplicationState(const CLArgs& args)
     mState->Window.Width.Update(WIN_WIDTH);
     mState->Window.TranslationSpeed.Update(TRANSLATION_SPEED);
     mState->Window.RotationSpeed.Update(ROTATION_SPEED);
+    mState->Window.ZoomSpeed.Update(ZOOM_SPEED);
 }
 
 void Application::Run()
@@ -106,6 +110,9 @@ void Application::Run()
     {
         // Handle events
         glfwPollEvents();
+
+        // Update camera parameters
+        mCamera->Update();
 
         // Draw scene
         mScene->Render();
@@ -149,7 +156,7 @@ void Application::onMouseMove(GLFWwindow* window, double xPos, double yPos)
         }
         else if(app->mLastButton == GLFW_MOUSE_BUTTON_MIDDLE)
         {
-            app->mScene->GetCameraPtr()->TranslateXY(dx, -dy);
+            app->mScene->TranslateCS(glm::vec2(dx, dy));
             app->mCursorPos = {xPos, yPos};
         }
     }
@@ -161,14 +168,14 @@ void Application::onMouseScroll(GLFWwindow* window, double xoffset, double yoffs
     if(app->mUI->WantCaptureMouse())
         return;
 
-    app->mScene->GetCameraPtr()->TranslateZ(yoffset);
+    app->mCamera->TranslateZ(yoffset);
 }
 
 void Application::onWindowResize(GLFWwindow* window, int width, int height)
 {
     const float aspect = static_cast<float>(width) / static_cast<float>(height);
     Application* app = (Application*)glfwGetWindowUserPointer(window);
-    app->mScene->GetCameraPtr()->Resize(aspect);
+    app->mCamera->Resize(aspect);
     glViewport(0, 0, width, height);
     app->mState->Window.Width.Update(width);
     app->mState->Window.Height.Update(height);

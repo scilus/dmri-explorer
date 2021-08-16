@@ -2,7 +2,7 @@
 #include <glm/matrix.hpp>
 #include <memory>
 #include <binding.h>
-#include <data.h>
+#include <shader_data.h>
 
 namespace Slicer
 {

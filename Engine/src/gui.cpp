@@ -3,7 +3,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <model.h>
-#include <options.h>
+#include <application_state.h>
 
 namespace Slicer
 {
@@ -90,21 +90,23 @@ void UIManager::drawPreferencesWindow()
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
     ImGui::Begin("Preferences", &mShowPreferences);
-    ImGui::Text("Rotation speed");
-    ImGui::SameLine();
-
     float rotationSpeed = mState->Window.RotationSpeed.Get();
     float translationSpeed = mState->Window.TranslationSpeed.Get();
-    if(ImGui::InputFloat("##rotation.speed", &rotationSpeed, 0.001f, 0.5f))
+    float zoomSpeed = mState->Window.ZoomSpeed.Get();
+
+    if(ImGui::InputFloat("Rotation speed", &rotationSpeed, 0.001f, 0.5f))
     {
         mState->Window.RotationSpeed.Update(rotationSpeed);
     }
 
-    ImGui::Text("Translation speed");
-    ImGui::SameLine();
-    if(ImGui::InputFloat("##translation.speed", &translationSpeed, 0.001f, 0.5f))
+    if(ImGui::InputFloat("Translation speed", &translationSpeed, 0.001f, 0.5f))
     {
         mState->Window.TranslationSpeed.Update(translationSpeed);
+    }
+
+    if(ImGui::InputFloat("Zoom speed", &zoomSpeed, 0.001f, 0.5f))
+    {
+        mState->Window.ZoomSpeed.Update(zoomSpeed);
     }
     ImGui::End();
 }

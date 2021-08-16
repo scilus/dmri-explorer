@@ -1,6 +1,4 @@
 #pragma once
-#include <string>
-#include <unordered_map>
 #include <vector>
 #include <functional>
 #include <glm/glm.hpp>
@@ -76,7 +74,8 @@ struct Grid
 {
     Grid()
     :SliceIndices()
-    ,VolumeShape(){};
+    ,VolumeShape()
+    ,IsSliceDirty(){};
 
     ApplicationParameter<glm::ivec3> SliceIndices;
     ApplicationParameter<glm::ivec3> VolumeShape;
@@ -101,12 +100,16 @@ struct Window
 {
     Window()
     :Width()
-    ,Height(){};
+    ,Height()
+    ,TranslationSpeed()
+    ,RotationSpeed()
+    ,ZoomSpeed(){};
 
     ApplicationParameter<int> Width;
     ApplicationParameter<int> Height;
     ApplicationParameter<float> TranslationSpeed;
     ApplicationParameter<float> RotationSpeed;
+    ApplicationParameter<float> ZoomSpeed;
 };
 } // namespace State
 

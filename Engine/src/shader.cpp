@@ -3,6 +3,8 @@
 
 namespace Slicer
 {
+namespace GPU
+{
 ShaderProgram::ShaderProgram(const std::string& filePath, const GLenum shaderType)
 {
     std::string strShader = readFile(filePath);
@@ -65,4 +67,5 @@ void ProgramPipeline::Bind() const
 {
     glBindProgramPipeline(this->mPipelineID);
 }
+} // namespace GPU
 } // namespace Slicer

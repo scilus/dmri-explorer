@@ -5,7 +5,7 @@
 #include <memory>
 
 #include <binding.h>
-#include <data.h>
+#include <shader_data.h>
 #include <image.h>
 #include <sphere.h>
 #include <shader.h>
@@ -58,14 +58,13 @@ public:
             std::shared_ptr<CoordinateSystem> parent);
     ~SHField();
 
-
     // Compute shader pass for scaling spheres
     void ScaleSpheres();
 
 protected:
     void drawSpecific() override;
-    void initOptions() override;
-    void initOptionsCallbacks() override;
+    void updateApplicationState() override;
+    void registerStateCallbacks() override;
     void initProgramPipeline() override;
 
 private:
@@ -115,7 +114,7 @@ private:
     GLuint mIndicesBO = 0;
     GLuint mIndirectBO = 0;
 
-    ShaderProgram mComputeShader;
+    GPU::ShaderProgram mComputeShader;
 
     // Shader uniforms
     std::vector<float> mSphHarmCoeffs;

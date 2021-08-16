@@ -1,9 +1,8 @@
 #pragma once
-#include <camera.h>
 #include <model.h>
 #include <vector>
 #include <coordinate_system.h>
-#include <options.h>
+#include <application_state.h>
 
 namespace Slicer
 {
@@ -13,14 +12,13 @@ public:
     Scene(const std::shared_ptr<ApplicationState>& state);
     ~Scene();
     void Render();
-    Camera* GetCameraPtr() { return &mCamera; };
     void RotateCS(const glm::vec2& v);
+    void TranslateCS(const glm::vec2& v);
 private:
     std::shared_ptr<CoordinateSystem> mCoordinateSystem;
     std::shared_ptr<ApplicationState> mState;
 
-    // scene contains camera and models
-    Camera mCamera;
+    // scene contains models
     std::vector<std::shared_ptr<Model>> mModels;
 };
 } // namespace Slicer
