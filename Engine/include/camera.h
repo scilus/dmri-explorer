@@ -1,44 +1,46 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <data.h>
+#include <shader_data.h>
 #include <memory>
-#include <spherical_coordinates.h>
+#include <coordinate_system.h>
+#include <application_state.h>
 
-namespace Engine
-{
-namespace Scene
+namespace Slicer
 {
 class Camera
 {
 public:
     Camera() = default;
-    Camera(const Math::Coordinate::Spherical& position,
-           const Math::Coordinate::Spherical& upVector,
-           const glm::vec3& center,
+    Camera(const glm::vec3& position,
+           const glm::vec3& upVector,
+           const glm::vec3& lookat,
            const float& fov, const float& aspect,
-           const float& near, const float& far);
+           const float& near, const float& far,
+           const std::shared_ptr<ApplicationState>& state);
     void Resize(const float& aspect);
-    void Zoom(double delta);
-    void RotateAroundCenter(double dPhi, double dTheta);
-    void Translate(double dx, double dy);
-private:
-    glm::vec3 convertToCartesian(const Math::Coordinate::Spherical& coords) const;
-    glm::vec3 getPosition(const Math::Coordinate::Spherical& coords) const;
-    glm::vec3 getDirection(const Math::Coordinate::Spherical& coords) const;
-    void updateCamParams();
+    void TranslateZ(double delta);
+    void Update();
 
-    glm::vec3 mCenter;
+private:
+    struct CameraData
+    {
+        glm::vec4 eye;
+        glm::mat4 viewMatrix;
+        glm::mat4 projectionMatrix;
+    };
+
+    glm::vec3 mPosition;
+    glm::vec3 mLookAt;
+    glm::vec3 mUpVector;
     float mFov;
     float mNear;
     float mFar;
     float mAspect;
     glm::mat4 mProjectionMatrix;
     glm::mat4 mViewMatrix;
-    Math::Coordinate::Spherical mSphCoords;
-    Math::Coordinate::Spherical mUpVector;
-    GPUData::CamParams mCamParams;
-    GPUData::ShaderData mCamParamsData;
+
+    std::shared_ptr<ApplicationState> mState;
+    GPU::ShaderData mCamParamsData;
 };
-} // namespace Scene
-} // namespace Engine
+} // namespace Slicer

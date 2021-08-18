@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include "nifti1_io.h"
 
-namespace Image
+namespace Slicer
 {
 enum class DataType
 {
@@ -33,6 +33,7 @@ enum class DataType
 class NiftiImageWrapper
 {
 public:
+    NiftiImageWrapper();
     NiftiImageWrapper(const std::string& path);
     ~NiftiImageWrapper();
     std::shared_ptr<nifti_image> getNiftiImage() const;
@@ -47,33 +48,10 @@ public:
     // pixel values getters
     double at(uint i, uint j, uint k, uint l) const;
 
-    template<typename T> std::vector<T*> at(uint i, uint j, uint k) const
-    {
-        std::vector<T*> voxChannels;
-        voxChannels.resize(mDims.w);
-        for(uint l = 0; l < mDims.w; ++l)
-        {
-            voxChannels[l] = this->at<T>(i, j, k, l);
-        }
-        return voxChannels;
-    };
-
-    template<typename T> T* at(uint i, uint j, uint k, uint l) const
-    {
-        const uint flatIndex = flattenIndex(i, j, k, l);
-
-        if(flatIndex > mLength - 1)
-        {
-            throw std::runtime_error("Index is out of bound for image.");
-        }
-
-        T* v = &((T*)(mData->data))[flatIndex];
-        return v;
-    };
 private:
-    std::shared_ptr<nifti_image> mData;
+    std::shared_ptr<nifti_image> mImage;
     glm::vec<4, int> mDims;
     uint mNbVox;
     uint mLength;
 };
-} // Image
+} // namespace Slicer

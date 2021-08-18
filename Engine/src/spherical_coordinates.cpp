@@ -1,14 +1,21 @@
 #include <spherical_coordinates.h>
 
+namespace Slicer
+{
 namespace Math
 {
-namespace Coordinate
-{
-Spherical::Spherical(float r, float theta, float phi)
-    :r(r)
-    ,theta(theta)
-    ,phi(phi)
+SphericalCoordinates::SphericalCoordinates()
+:r(0.0)
+,theta(0.0)
+,phi(0.0)
 {
 }
-} // namespace Coordinate
-} // Math
+
+SphericalCoordinates::SphericalCoordinates(float r, float theta, float phi)
+:r(r)
+,theta(theta)
+,phi(phi)
+{
+}
+} // namespace Math
+} // namespace Slicer

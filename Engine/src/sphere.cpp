@@ -1,61 +1,59 @@
 #include <sphere.h>
-#include <utils.hpp>
-#include <iostream>
-#include <glm/gtx/rotate_vector.hpp>
 
 namespace
 {
 const uint MAX_SH_ORDER = 8;
 }
 
-namespace Engine
+namespace Slicer
 {
 namespace Primitive
 {
 Sphere::Sphere()
-    :mResolution(10)
-    ,mIndices()
-    ,mSHBasis(MAX_SH_ORDER)
-    ,mSphHarmFunc()
+:mResolution(10)
+,mIndices()
+,mPoints()
+,mSHBasis(MAX_SH_ORDER)
+,mSphHarmFunc()
 {
     genUnitSphere();
 }
 
 Sphere::Sphere(unsigned int resolution)
-    :mResolution(resolution)
-    ,mIndices()
-    ,mSHBasis(MAX_SH_ORDER)
-    ,mSphHarmFunc()
+:mResolution(resolution)
+,mIndices()
+,mPoints()
+,mSHBasis(MAX_SH_ORDER)
+,mSphHarmFunc()
 {
     genUnitSphere();
 }
 
-Sphere& Sphere::operator=(const Sphere& s)
+Sphere& Sphere::operator=(const Sphere& other)
 {
-    if(this == &s)
+    if(this == &other)
     {
         return *this;
     }
-    mResolution = s.mResolution;
-    mIndices = s.mIndices;
-    mSHBasis = s.mSHBasis;
-    mCoordinates = s.mCoordinates;
-    mSphHarmFunc = s.mSphHarmFunc;
+    mResolution = other.mResolution;
+    mIndices = other.mIndices;
+    mSHBasis = other.mSHBasis;
+    mPoints = other.mPoints;
+    mSphHarmFunc = other.mSphHarmFunc;
     return *this;
 }
 
-Sphere::Sphere(const Sphere& sphere)
-    :mResolution(sphere.mResolution)
-    ,mIndices(sphere.mIndices)
-    ,mSHBasis(sphere.mSHBasis)
-    ,mCoordinates(sphere.mCoordinates)
-    ,mSphHarmFunc(sphere.mSphHarmFunc)
+Sphere::Sphere(const Sphere& other)
+:mResolution(other.mResolution)
+,mIndices(other.mIndices)
+,mSHBasis(other.mSHBasis)
+,mPoints(other.mPoints)
+,mSphHarmFunc(other.mSphHarmFunc)
 {
 }
 
 void Sphere::addPoint(float theta, float phi, float r)
 {
-    mCoordinates.push_back(Math::Coordinate::Spherical(r, theta, phi));
     const glm::vec3 vecCartesian = convertToCartesian(theta, phi, r);
     mPoints.push_back(glm::vec4(vecCartesian.x, vecCartesian.y, vecCartesian.z, 1.0f));
     // evaluate SH function for all l, m up to MAX_SH_ORDER
@@ -107,25 +105,23 @@ void Sphere::genUnitSphere()
             flatIndex = i * (maxThetaSteps - 2) + j;
             mIndices.push_back(flatIndex);
             mIndices.push_back(flatIndex + 1);
-            mIndices.push_back((flatIndex + maxThetaSteps - 2) % (mCoordinates.size() - 2));
+            mIndices.push_back((flatIndex + maxThetaSteps - 2) % (mPoints.size() - 2));
             mIndices.push_back(flatIndex + 1);
-            mIndices.push_back((flatIndex + maxThetaSteps - 1) % (mCoordinates.size() - 2));
-            mIndices.push_back((flatIndex + maxThetaSteps - 2) % (mCoordinates.size() - 2));
+            mIndices.push_back((flatIndex + maxThetaSteps - 1) % (mPoints.size() - 2));
+            mIndices.push_back((flatIndex + maxThetaSteps - 2) % (mPoints.size() - 2));
         }
         // top vertice
         flatIndex = i * (maxThetaSteps - 2);
-        mIndices.push_back(mCoordinates.size() - 2);
+        mIndices.push_back(mPoints.size() - 2);
         mIndices.push_back(flatIndex);
-        mIndices.push_back((flatIndex + maxThetaSteps - 2) % (mCoordinates.size() - 2));
+        mIndices.push_back((flatIndex + maxThetaSteps - 2) % (mPoints.size() - 2));
 
         // bottom vertice
         flatIndex = (i + 1) * (maxThetaSteps - 2) - 1;
         mIndices.push_back(flatIndex);
-        mIndices.push_back(mCoordinates.size() - 1);
-        mIndices.push_back((flatIndex + maxThetaSteps - 2) % (mCoordinates.size() - 2));
+        mIndices.push_back(mPoints.size() - 1);
+        mIndices.push_back((flatIndex + maxThetaSteps - 2) % (mPoints.size() - 2));
     }
-    std::cout << "Nb vertices: " << mPoints.size() << std::endl;
-    std::cout << "Nb triangles: " << mIndices.size() / 3 << std::endl;
 }
-} // Primitive
-} // Engine
+} // namespace Primitive
+} // namespace Slicer

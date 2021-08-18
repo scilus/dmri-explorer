@@ -1,106 +1,54 @@
 #include <camera.h>
-#include <utils.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/norm.hpp>
 #include <math.h>
-#include <iostream>
+#include <application_state.h>
 
-namespace Engine
+namespace Slicer
 {
-namespace Scene
-{
-const double ROT_SPEED = 0.05;
-const double TRANSLATION_SPEED = 0.5;
-
-Camera::Camera(const Math::Coordinate::Spherical& sphCoords,
-               const Math::Coordinate::Spherical& upVector,
-               const glm::vec3& center,
+Camera::Camera(const glm::vec3& position,
+               const glm::vec3& upVector,
+               const glm::vec3& lookat,
                const float& fov, const float& aspect,
-               const float& near, const float& far)
-    :mCenter(center)
-    ,mSphCoords(sphCoords)
-    ,mUpVector(upVector)
-    ,mFov(fov)
-    ,mNear(near)
-    ,mFar(far)
-    ,mAspect(aspect)
-    ,mCamParams()
-    ,mCamParamsData(&mCamParams,
-                    GPUData::BindableProperty::camera,
-                    sizeof(GPUData::CamParams))
+               const float& near, const float& far,
+               const std::shared_ptr<ApplicationState>& state)
+:mLookAt(lookat)
+,mPosition(position)
+,mUpVector(upVector)
+,mFov(fov)
+,mNear(near)
+,mFar(far)
+,mAspect(aspect)
+,mCamParamsData(GPU::Binding::camera)
+,mState(state)
 {
-    updateCamParams();
-    mCamParamsData.ToGPU();
-}
-
-glm::vec3 Camera::convertToCartesian(const Math::Coordinate::Spherical& coord) const
-{
-    glm::vec3 pos;
-    pos.x = coord.r * sin(coord.phi) * sin(coord.theta);
-    pos.y = coord.r * cos(coord.theta);
-    pos.z = coord.r * cos(coord.phi) * sin(coord.theta);
-
-    return pos;
-}
-
-glm::vec3 Camera::getPosition(const Math::Coordinate::Spherical& coord) const
-{
-    return convertToCartesian(coord) + mCenter;
-}
-
-glm::vec3 Camera::getDirection(const Math::Coordinate::Spherical& coord) const
-{
-    return convertToCartesian(coord);
-}
-
-void Camera::updateCamParams()
-{
-    const glm::vec3 eye = convertToCartesian(mSphCoords);
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
-    mViewMatrix = glm::lookAt(getPosition(mSphCoords), mCenter, getDirection(mUpVector));
-    mCamParams = GPUData::CamParams(mViewMatrix, mProjectionMatrix, eye);
-    mCamParamsData.ModifySubData(0, sizeof(GPUData::CamParams), &mCamParams);
+    mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
+}
+
+void Camera::Update()
+{
+    CameraData cameraData;
+    cameraData.eye = glm::vec4(mPosition, 1.0f);
+    cameraData.viewMatrix = mViewMatrix;
+    cameraData.projectionMatrix = mProjectionMatrix;
+
+    mCamParamsData.Update(0, sizeof(CameraData), &cameraData);
+    mCamParamsData.ToGPU();
 }
 
 void Camera::Resize(const float& aspect)
 {
     mAspect = aspect;
-    updateCamParams();
+    mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
 }
 
-void Camera::RotateAroundCenter(double dPhi, double dTheta)
+void Camera::TranslateZ(double delta)
 {
-    // rotate the eye
-    mSphCoords.theta += ROT_SPEED * dTheta;
-    mSphCoords.phi += ROT_SPEED * dPhi;
-
-    // rotate the up vector
-    mUpVector.theta += ROT_SPEED * dTheta;
-    mUpVector.phi += ROT_SPEED * dPhi;
-    updateCamParams();
+    const float& speed = mState->Window.ZoomSpeed.Get();
+    const glm::vec3 direction = speed * glm::normalize(mLookAt - mPosition);
+    mPosition = mPosition + direction * (float)delta;
+    mLookAt = mLookAt + direction * (float)delta;
+    mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
-
-void Camera::Zoom(double delta)
-{
-    while (delta > mSphCoords.r)
-    {
-        delta /= 2.0;
-    }
-
-    mSphCoords.r -= delta;
-    mSphCoords.r = std::max(0.01f, mSphCoords.r);
-
-    updateCamParams();
-}
-
-void Camera::Translate(double dx, double dy)
-{
-    glm::vec3 horizontalAxis = glm::normalize(glm::cross(getDirection(mUpVector),
-                                              mCenter - getPosition(mSphCoords)));
-    glm::vec3 verticalAxis = glm::normalize(glm::cross(mCenter - getPosition(mSphCoords),
-                                                       horizontalAxis));
-    mCenter = mCenter + (float)TRANSLATION_SPEED * (horizontalAxis * (float)dx + verticalAxis * (float)dy);
-    updateCamParams();
-}
-} // namespace Scene
-} // namespace Engine
+} // namespace Slicer

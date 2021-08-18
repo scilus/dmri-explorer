@@ -3,6 +3,8 @@
 #include <cmath>
 #include <iostream>
 
+namespace Slicer
+{
 namespace Math
 {
 namespace SH
@@ -16,15 +18,15 @@ double legendre(int l, int m, double x)
 }
 
 RealSymDescoteauxBasis::RealSymDescoteauxBasis()
-    :mMaxOrder(8)
-    ,mScaling()
+:mMaxOrder(8)
+,mScaling()
 {
     computeScaling();
 }
 
 RealSymDescoteauxBasis::RealSymDescoteauxBasis(uint maxOrder)
-    :mMaxOrder(maxOrder)
-    ,mScaling()
+:mMaxOrder(maxOrder)
+,mScaling()
 {
     computeScaling();
 }
@@ -81,5 +83,6 @@ std::complex<float> RealSymDescoteauxBasis::computeSHFunc(uint l, int m, float t
     std::complex<float> sh = std::polar(r, m * phi);
     return sh;
 }
-} // SH
-} // Math
+} // namespace SH
+} // namespace Math
+} // namespace Slicer

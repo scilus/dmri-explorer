@@ -3,28 +3,26 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <model.h>
+#include <application_state.h>
 
-namespace Engine
-{
-namespace GUI
+namespace Slicer
 {
 UIManager::UIManager()
-    :mWindow(nullptr)
-    ,mIO(nullptr)
-    ,mModel(nullptr)
-    ,mShowDemoWindow(true)
+:mWindow(nullptr)
+,mIO(nullptr)
+,mState(nullptr)
+,mShowDemoWindow(false)
+,mShowSlicers(false)
 {
 }
 
-UIManager::UIManager(GLFWwindow* window, std::shared_ptr<Scene::Model> model,
-                     const std::string& glslVersion)
-    :mWindow(window)
-    ,mIO(nullptr)
-    ,mModel(model)
-    ,mShowDemoWindow(false)
-    ,mShowSlicers(true)
-    ,mShowSphereOptions(false)
-    ,mShowControls(false)
+UIManager::UIManager(GLFWwindow* window, const std::string& glslVersion,
+                     const std::shared_ptr<ApplicationState>& state)
+:mWindow(window)
+,mIO(nullptr)
+,mShowDemoWindow(false)
+,mShowSlicers(false)
+,mState(state)
 {
     // Initialize imgui
     IMGUI_CHECKVERSION();
@@ -48,8 +46,7 @@ void UIManager::DrawInterface()
     drawMainMenuBar();
     drawDemoWindow();
     drawSlicersWindow();
-    drawControlsWindow();
-    drawSphereOptionsWindow();
+    drawPreferencesWindow();
 
     // Rendering
     ImGui::Render();
@@ -75,8 +72,7 @@ void UIManager::drawMainMenuBar()
     if(ImGui::BeginMenu("Options"))
     {
         ImGui::MenuItem("Show slicers window", NULL, &mShowSlicers);
-        ImGui::MenuItem("Show camera options", NULL, &mShowControls);
-        ImGui::MenuItem("Show sphere options", NULL, &mShowSphereOptions);
+        ImGui::MenuItem("Preferences", NULL, &mShowPreferences);
         ImGui::Separator();
         ImGui::MenuItem("Show demo window", NULL, &mShowDemoWindow);
         ImGui::EndMenu();
@@ -84,129 +80,145 @@ void UIManager::drawMainMenuBar()
     ImGui::EndMainMenuBar();
 }
 
+void UIManager::drawPreferencesWindow()
+{
+    if(!mShowPreferences)
+        return;
+    
+    ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(406.f, 79.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
+
+    ImGui::Begin("Preferences", &mShowPreferences);
+    float rotationSpeed = mState->Window.RotationSpeed.Get();
+    float translationSpeed = mState->Window.TranslationSpeed.Get();
+    float zoomSpeed = mState->Window.ZoomSpeed.Get();
+
+    if(ImGui::InputFloat("Rotation speed", &rotationSpeed, 0.001f, 0.5f))
+    {
+        mState->Window.RotationSpeed.Update(rotationSpeed);
+    }
+
+    if(ImGui::InputFloat("Translation speed", &translationSpeed, 0.001f, 0.5f))
+    {
+        mState->Window.TranslationSpeed.Update(translationSpeed);
+    }
+
+    if(ImGui::InputFloat("Zoom speed", &zoomSpeed, 0.001f, 0.5f))
+    {
+        mState->Window.ZoomSpeed.Update(zoomSpeed);
+    }
+    ImGui::End();
+}
+
 void UIManager::drawSlicersWindow()
 {
     if(!mShowSlicers)
         return;
 
+    auto& sliceParam = mState->VoxelGrid.SliceIndices;
+    auto& shapeParam = mState->VoxelGrid.VolumeShape;
+    if(!sliceParam.IsInit() || !shapeParam.IsInit())
+        return;
+
     ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(250.f, 100.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(417.f, 180.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
     ImGui::Begin("Slices options", &mShowSlicers);
-    glm::ivec4 sliceIndex = mModel->GetSliceIndex();
-    const glm::ivec4 gridDims = mModel->GetGridDims();
+
     bool updateSliceIndex = false;
+    glm::ivec3 slice = sliceParam.Get();
+    glm::ivec3 shape = shapeParam.Get();
 
     ImGui::Text("X-Slice");
     ImGui::SameLine();
-    updateSliceIndex |= ImGui::SliderInt("##slicerx", &sliceIndex.x, 0, gridDims.x - 1);
+    updateSliceIndex |= ImGui::SliderInt("##xslicer", &slice.x, 0, shape.x - 1);
     ImGui::SameLine();
-    if(ImGui::ArrowButton("##left0", ImGuiDir_Left))
+    if(ImGui::ArrowButton("##xleft", ImGuiDir_Left))
     {
-        sliceIndex.x = std::max(0, sliceIndex.x - 1);
+        slice.x = std::max(0, slice.x - 1);
         updateSliceIndex = true;
     }
     ImGui::SameLine();
-    if(ImGui::ArrowButton("##right0", ImGuiDir_Right))
+    if(ImGui::ArrowButton("##xright", ImGuiDir_Right))
     {
-        sliceIndex.x = std::min(gridDims.x - 1, sliceIndex.x + 1);
+        slice.x = std::min(shape.x - 1, slice.x + 1);
         updateSliceIndex = true;
     }
 
     ImGui::Text("Y-Slice");
     ImGui::SameLine();
-    updateSliceIndex |= ImGui::SliderInt("##slicery", &sliceIndex.y, 0, gridDims.y - 1);
+    updateSliceIndex |= ImGui::SliderInt("##yslicer", &slice.y, 0, shape.y - 1);
     ImGui::SameLine();
-    if(ImGui::ArrowButton("##left1", ImGuiDir_Left))
+    if(ImGui::ArrowButton("##yleft", ImGuiDir_Left))
     {
-        sliceIndex.y = std::max(0, sliceIndex.y - 1);
+        slice.y = std::max(0, slice.y - 1);
         updateSliceIndex = true;
     }
     ImGui::SameLine();
-    if(ImGui::ArrowButton("##right1", ImGuiDir_Right))
+    if(ImGui::ArrowButton("##yright", ImGuiDir_Right))
     {
-        sliceIndex.y = std::min(gridDims.y - 1, sliceIndex.y + 1);
+        slice.y = std::min(shape.y - 1, slice.y + 1);
         updateSliceIndex = true;
     }
 
     ImGui::Text("Z-Slice");
     ImGui::SameLine();
-    updateSliceIndex |= ImGui::SliderInt("##slicerz", &sliceIndex.z, 0, gridDims.z - 1);
+    updateSliceIndex |= ImGui::SliderInt("##zslicer", &slice.z, 0, shape.z - 1);
     ImGui::SameLine();
-    if(ImGui::ArrowButton("##left2", ImGuiDir_Left))
+    if(ImGui::ArrowButton("##zleft", ImGuiDir_Left))
     {
-        sliceIndex.z = std::max(0, sliceIndex.z - 1);
+        slice.z = std::max(0, slice.z - 1);
         updateSliceIndex = true;
     }
     ImGui::SameLine();
-    if(ImGui::ArrowButton("##right2", ImGuiDir_Right))
+    if(ImGui::ArrowButton("##zright", ImGuiDir_Right))
     {
-        sliceIndex.z = std::min(gridDims.z - 1, sliceIndex.z + 1);
+        slice.z = std::min(shape.z - 1, slice.z + 1);
         updateSliceIndex = true;
     }
-    ImGui::Spacing();
-    ImGui::End();
+
     if(updateSliceIndex)
     {
-        mModel->SetSliceIndex(sliceIndex.x, sliceIndex.y, sliceIndex.z);
+        mState->VoxelGrid.SliceIndices.Update(slice);
     }
-}
 
-void UIManager::drawControlsWindow()
-{
-    if(!mShowControls)
+    ImGui::Separator();
+    auto& scalingParam = mState->Sphere.Scaling;
+    auto& thresholdParam = mState->Sphere.SH0Threshold;
+    auto& normalizedParam = mState->Sphere.IsNormalized;
+    if (!scalingParam.IsInit() || !thresholdParam.IsInit() || !normalizedParam.IsInit())
+    {
+        ImGui::Spacing();
+        ImGui::End();
         return;
+    }
 
-    ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(272.f, 120.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
+    float scaling = scalingParam.Get();
+    float threshold = thresholdParam.Get();
+    bool normalized = normalizedParam.Get();
 
-    ImGui::Begin("Controls", &mShowControls);
-    ImGui::Text("Speed");
-    float tSpeed = mModel->GetTranslationSpeed();
-    float rSpeed = mModel->GetRotationSpeed();
-    float sSpeed = mModel->GetScalingSpeed();
-    if(ImGui::InputFloat("Translation", &tSpeed, 0.001f, 0.05f))
+    ImGui::Text("Sphere scaling");
+    ImGui::SameLine();
+    if(ImGui::InputFloat("##sphere.scaling", &scaling, 0.001f, 0.5f))
     {
-        mModel->SetTranslationSpeed(tSpeed);
+        scalingParam.Update(scaling);
     }
-    if(ImGui::InputFloat("Rotation", &rSpeed, 0.001f, 0.05f))
+    ImGui::Text("SH0 threshold");
+    ImGui::SameLine();
+    if(ImGui::InputFloat("##sphere.sh0.threshold", &threshold, 0.001f, 0.5f))
     {
-        mModel->SetRotationSpeed(rSpeed);
+        thresholdParam.Update(threshold);
     }
-    if(ImGui::InputFloat("Scaling", &sSpeed, 0.001f, 0.05f))
+    ImGui::Text("Normalize per voxel");
+    ImGui::SameLine();
+    if(ImGui::Checkbox("##sphere.normalized", &normalized))
     {
-        mModel->SetScalingSpeed(sSpeed);
+        normalizedParam.Update(normalized);
     }
-    ImGui::End();
-}
 
-void UIManager::drawSphereOptionsWindow()
-{
-    if(!mShowSphereOptions)
-        return;
-
-    ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(310.f, 120.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
-
-    ImGui::Begin("Sphere options", &mShowSphereOptions);
-    bool normalize = mModel->GetNormalized();
-    float normThreshold = mModel->GetSH0Threshold();
-    float scaling = mModel->GetSphereScaling();
-    if(ImGui::Checkbox("Fit to voxel", &normalize))
-    {
-        mModel->SetNormalized(normalize);
-    }
-    if(ImGui::InputFloat("SH0 threshold", &normThreshold, 0.01f, 0.5f))
-    {
-        mModel->SetSH0Threshold(normThreshold);
-    }
-    if(ImGui::InputFloat("Scaling", &scaling, 0.01f, 0.5f))
-    {
-        mModel->SetSphereScaling(scaling);
-    }
+    ImGui::Spacing();
     ImGui::End();
 }
 
@@ -217,5 +229,4 @@ void UIManager::drawDemoWindow()
 
     ImGui::ShowDemoWindow(&mShowDemoWindow);
 }
-} // namespace GUI
-} // namespace Engine
+} // namespace Slicer

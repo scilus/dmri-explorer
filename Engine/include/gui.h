@@ -5,37 +5,30 @@
 #include <model.h>
 #include <memory>
 #include <GLFW/glfw3.h>
+#include <application_state.h>
 
-namespace Engine
-{
-namespace Scene
-{
-class Model;
-}
-namespace GUI
+namespace Slicer
 {
 class UIManager
 {
 public:
     UIManager();
-    UIManager(GLFWwindow* window, std::shared_ptr<Scene::Model> model, const std::string& glslVersion);
+    UIManager(GLFWwindow* window, const std::string& glslVersion,
+              const std::shared_ptr<ApplicationState>& state);
     void DrawInterface();
     void Terminate() const;
     bool WantCaptureMouse() const;
 private:
     void drawMainMenuBar();
     void drawSlicersWindow();
+    void drawPreferencesWindow();
     void drawDemoWindow();
-    void drawControlsWindow();
-    void drawSphereOptionsWindow();
 
     GLFWwindow* mWindow = nullptr;
-    std::shared_ptr<Scene::Model> mModel = nullptr;
     ImGuiIO* mIO = nullptr;
+    std::shared_ptr<ApplicationState> mState;
     bool mShowDemoWindow = false;
     bool mShowSlicers = false;
-    bool mShowControls = false;
-    bool mShowSphereOptions = false;
+    bool mShowPreferences = false;
 };
-} // namespace GUI
-} // namespace Engine
+} // namespace Slicer

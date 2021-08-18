@@ -2,6 +2,8 @@
 #include <chrono>
 #include <string>
 
+namespace Slicer
+{
 namespace Utilities
 {
 class AutoTimer
@@ -28,3 +30,4 @@ private:
     std::string mLabel;
 };
 } // namespace Utilities
+} // namespace Slicer

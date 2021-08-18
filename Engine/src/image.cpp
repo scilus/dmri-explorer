@@ -1,13 +1,21 @@
 #include <image.h>
 #include <stdexcept>
 
-namespace Image
+namespace Slicer
 {
+NiftiImageWrapper::NiftiImageWrapper()
+:mImage(nullptr)
+,mDims()
+,mLength(0)
+,mNbVox(0)
+{
+}
+
 NiftiImageWrapper::NiftiImageWrapper(const std::string& path)
-    :mData(nifti_image_read(path.c_str(), true))
-    ,mDims(mData->nx, mData->ny, mData->nz, mData->nt)
-    ,mLength(mData->nvox)
-    ,mNbVox(mDims.x * mDims.y * mDims.z)
+:mImage(nifti_image_read(path.c_str(), true))
+,mDims(mImage->nx, mImage->ny, mImage->nz, mImage->nt)
+,mLength(mImage->nvox)
+,mNbVox(mDims.x * mDims.y * mDims.z)
 {
 }
 
@@ -17,7 +25,7 @@ NiftiImageWrapper::~NiftiImageWrapper()
 
 std::shared_ptr<nifti_image> NiftiImageWrapper::getNiftiImage() const
 {
-    return mData;
+    return mImage;
 }
 
 glm::vec<4, int> NiftiImageWrapper::dims() const
@@ -56,18 +64,18 @@ double NiftiImageWrapper::at(uint i, uint j, uint k, uint l) const
     double value = 0.0;
     if(dtype() == DataType::float64)
     {
-        value = ((double*)(mData->data))[flatIndex];
+        value = ((double*)(mImage->data))[flatIndex];
     }
     else if(dtype() == DataType::float32)
     {
-        value = static_cast<double>(((float*)(mData->data))[flatIndex]);
+        value = static_cast<double>(((float*)(mImage->data))[flatIndex]);
     }
     return value;
 }
 
 DataType NiftiImageWrapper::dtype() const
 {
-    switch(mData->datatype)
+    switch(mImage->datatype)
     {
     case DT_UNKNOWN:
         return DataType::unknown;
@@ -109,4 +117,4 @@ DataType NiftiImageWrapper::dtype() const
         return DataType::unknown;
     }
 }
-} // Image
+} // namespace Slicer

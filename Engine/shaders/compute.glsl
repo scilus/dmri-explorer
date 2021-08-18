@@ -1,9 +1,9 @@
 #version 460
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
-layout(std430, binding=0) buffer allSpheresVerticesBuffer
+layout(std430, binding=0) buffer allRadiisBuffer
 {
-    vec4 allVertices[];
+    float allRadiis[];
 };
 
 layout(std430, binding=1) buffer allSpheresNormalsBuffer
@@ -26,17 +26,12 @@ layout(std430, binding=5) buffer sphereVerticesBuffer
     vec4 vertices[];
 };
 
-layout(std430, binding=6) buffer sphereNormalsBuffer
-{
-    vec4 normals[];
-};
-
-layout(std430, binding=7) buffer sphereIndicesBuffer
+layout(std430, binding=6) buffer sphereIndicesBuffer
 {
     uint indices[];
 };
 
-layout(std430, binding=8) buffer sphereInfoBuffer
+layout(std430, binding=7) buffer sphereInfoBuffer
 {
     uint nbVertices;
     uint nbIndices;
@@ -45,7 +40,7 @@ layout(std430, binding=8) buffer sphereInfoBuffer
     float scaling;
 };
 
-layout(std430, binding=9) buffer gridInfoBuffer
+layout(std430, binding=8) buffer gridInfoBuffer
 {
     ivec4 gridDims;
     ivec4 sliceIndex;
@@ -53,23 +48,36 @@ layout(std430, binding=9) buffer gridInfoBuffer
 };
 
 const uint NB_SH = 45;
+const uint MAX_ORDER = 8;
 const float FLOAT_EPS = 1e-4;
+const float PI = 3.14159265358979323;
+
+const float L[45] = {
+    0,
+    2, 2, 2, 2, 2,
+    4, 4, 4, 4, 4, 4, 4, 4, 4,
+    6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+    8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8};
 
 float evaluateSH(uint voxID, uint sphVertID)
 {
     float ret = 0.0f;
     float sum = 0.0f;
+    float rmax = 0.0f;
     for(int i = 0; i < NB_SH; ++i)
     {
         sum += abs(shCoeffs[voxID * NB_SH + i]);
-            ret += shCoeffs[voxID * NB_SH + i]
-                 * shFuncs[sphVertID * NB_SH + i];
+        ret += shCoeffs[voxID * NB_SH + i]
+                * shFuncs[sphVertID * NB_SH + i];
+        rmax += (2.0f * L[i] + 1) / 4.0f / PI * pow(shCoeffs[voxID * NB_SH + i], 2);
     }
     if(sum > 0.0)
     {
         if(isNormalized > 0)
         {
-            return ret / sum;
+            rmax = sqrt(rmax);
+            rmax *= sqrt(0.5f * float(MAX_ORDER) + 1);
+            return ret / rmax;
         }
         return ret;
     }
@@ -81,8 +89,7 @@ void scaleSphere(uint voxID, uint firstVertID, bool isVisible)
     float r;
     for(uint i = 0; i < nbVertices; ++i)
     {
-        r = isVisible ? evaluateSH(voxID, i) : 0.0f;
-        allVertices[firstVertID + i] = vec4(r * vertices[i].xyz, 1.0);
+        allRadiis[firstVertID + i] = isVisible ? evaluateSH(voxID, i) : 0.0f;
     }
 }
 
@@ -99,9 +106,9 @@ void updateNormals(uint firstNormalID)
 
     for(uint i = 0; i < nbIndices; i += 3)
     {
-        a = allVertices[indices[i] + firstNormalID].xyz;
-        b = allVertices[indices[i + 1] + firstNormalID].xyz;
-        c = allVertices[indices[i + 2] + firstNormalID].xyz;
+        a = allRadiis[indices[i] + firstNormalID] * vertices[indices[i]].xyz;
+        b = allRadiis[indices[i + 1] + firstNormalID] * vertices[indices[i + 1]].xyz;
+        c = allRadiis[indices[i + 2] + firstNormalID] * vertices[indices[i + 2]].xyz;
         ab = b - a;
         ac = c - a;
         if(length(ab) > FLOAT_EPS && length(ac) > FLOAT_EPS)
@@ -166,7 +173,7 @@ void main()
 {
     // current compute shader unit index
     const uint invocationID = gl_GlobalInvocationID.x;
-    // first index of sphere in allVertices
+    // first index of sphere in allRadiis and allNormals
     const uint firstVertID = invocationID * nbVertices;
 
     // condition is slice needs redraw and current processed sphere belongs to said slice
@@ -179,7 +186,7 @@ void main()
 
     const uint voxID = convertInvocationIDToVoxID(invocationID);
 
-    bool isVisible = shCoeffs[voxID * NB_SH] > sh0Threshold;
+    bool isVisible = shCoeffs[voxID * NB_SH] > 0.0f;
 
     scaleSphere(voxID, firstVertID, isVisible);
     if(isVisible)

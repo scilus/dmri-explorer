@@ -1,9 +1,9 @@
 #include "shader.h"
 #include "utils.hpp"
 
-namespace Engine
+namespace Slicer
 {
-namespace Scene
+namespace GPU
 {
 ShaderProgram::ShaderProgram(const std::string& filePath, const GLenum shaderType)
 {
@@ -23,10 +23,6 @@ ShaderProgram::ShaderProgram(const std::string& filePath, const GLenum shaderTyp
     glLinkProgram(this->mProgramID);
     assertProgramLinkingSuccess(this->mProgramID);
     this->mShaderType = shaderType;
-
-    // TO INCLUDE FILES FROM SHADERS
-    // glNamedStringARB to support include files from shaders
-    // glCompileShaderIncludeARB for including files from shaders
 }
 
 ProgramPipeline::ProgramPipeline(const std::vector<ShaderProgram>& shaderPrograms)
@@ -71,5 +67,5 @@ void ProgramPipeline::Bind() const
 {
     glBindProgramPipeline(this->mPipelineID);
 }
-} // namespace Scene
-} // namespace Engine
+} // namespace GPU
+} // namespace Slicer

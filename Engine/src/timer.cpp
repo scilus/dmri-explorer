@@ -1,16 +1,18 @@
 #include <timer.h>
 #include <iostream>
 
+namespace Slicer
+{
 namespace Utilities
 {
 AutoTimer::AutoTimer()
-    :mLabel()
+:mLabel()
 {
     mStart = std::chrono::high_resolution_clock::now();
 }
 
 AutoTimer::AutoTimer(const std::string& label)
-    :mLabel(label)
+:mLabel(label)
 {
     mStart = std::chrono::high_resolution_clock::now();
 }
@@ -23,14 +25,14 @@ AutoTimer::~AutoTimer()
 }
 
 Timer::Timer()
-    :mLabel()
-    ,mStart()
+:mLabel()
+,mStart()
 {
 }
 
 Timer::Timer(const std::string& label)
-    :mLabel(label)
-    ,mStart()
+:mLabel(label)
+,mStart()
 {
 }
 
@@ -47,3 +49,4 @@ double Timer::Stop()
     return duration.count();
 }
 } // namespace Utilities
+} // namespace Slicer

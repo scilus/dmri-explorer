@@ -4,14 +4,14 @@
 #include <string>
 #include <vector>
 
-namespace Engine
+namespace Slicer
 {
-namespace Scene
+namespace GPU
 {
 class ShaderProgram
 {
 public:
-    ShaderProgram() = delete;
+    ShaderProgram() = default;
     ShaderProgram(const std::string& filepath, const GLenum shaderType);
     inline const GLuint ID() const { return mProgramID; };
     inline const GLenum Type() const { return mShaderType; };
@@ -23,7 +23,7 @@ private:
 class ProgramPipeline
 {
 public:
-    ProgramPipeline() = delete;
+    ProgramPipeline() = default;
     ProgramPipeline(const std::vector<ShaderProgram>& shaderPrograms);
     ProgramPipeline(const ShaderProgram& shaderProgram);
     inline const GLuint ID() const { return mPipelineID; };
@@ -32,5 +32,5 @@ private:
     const GLbitfield convertShaderTypeToGLbitfield(const GLenum shaderType) const;
     GLuint mPipelineID = 0;
 };
-} // namespace Scene
-} // namespace Engine
+} // namespace GPU
+} // namespace Slicer
