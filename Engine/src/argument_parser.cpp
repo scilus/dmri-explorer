@@ -10,6 +10,8 @@ const int DEFAULT_SPHERE_RESOLUTION = 25;
 }
 
 ArgumentParser::ArgumentParser(int argc, char** argv)
+:mImagePath()
+,mSphereResolution(DEFAULT_SPHERE_RESOLUTION)
 {
     if(argc < 2)
     {
