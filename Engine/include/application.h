@@ -7,7 +7,7 @@
 #include <gui.h>
 #include <memory>
 #include <scene.h>
-#include <command_line.h>
+#include <argument_parser.h>
 #include <camera.h>
 #include <application_state.h>
 
@@ -17,13 +17,13 @@ class Application
 {
 public:
     Application() = delete;
-    Application(CLArgs args);
+    Application(const ArgumentParser& parser);
     ~Application();
 
     void Run();
 private:
     void initialize();
-    void initApplicationState(const CLArgs& args);
+    void initApplicationState(const ArgumentParser& parser);
 
     /// GLFW callbacks
     static void onMouseButton(GLFWwindow* window, int button, int action, int mod);

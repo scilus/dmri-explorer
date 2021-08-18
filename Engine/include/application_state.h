@@ -74,12 +74,10 @@ struct Grid
 {
     Grid()
     :SliceIndices()
-    ,VolumeShape()
-    ,IsSliceDirty(){};
+    ,VolumeShape(){};
 
     ApplicationParameter<glm::ivec3> SliceIndices;
     ApplicationParameter<glm::ivec3> VolumeShape;
-    ApplicationParameter<glm::ivec3> IsSliceDirty;
 };
 
 struct Sphere

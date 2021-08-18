@@ -189,7 +189,7 @@ void SHField::initializeGPUData()
     sphereData.Scaling = mState->Sphere.Scaling.Get();
 
     GridData gridData;
-    gridData.IsSliceDirty = glm::ivec4(mState->VoxelGrid.IsSliceDirty.Get(), 0);
+    gridData.IsSliceDirty = glm::ivec4(1, 1, 1, 0);
     gridData.SliceIndices = glm::ivec4(mState->VoxelGrid.SliceIndices.Get(), 0);
     gridData.VolumeShape = glm::ivec4(mState->VoxelGrid.VolumeShape.Get(), 0);
     

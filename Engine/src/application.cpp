@@ -15,14 +15,14 @@ const std::string GLSL_VERSION_STR = "#version 460";
 
 namespace Slicer
 {
-Application::Application(CLArgs args)
+Application::Application(const ArgumentParser& parser)
 :mTitle(WIN_TITLE)
 ,mState(new ApplicationState())
 ,mUI(nullptr)
 ,mScene(nullptr)
 ,mCursorPos(-1, -1)
 {
-    initApplicationState(args);
+    initApplicationState(parser);
     initialize();
 }
 
@@ -84,18 +84,17 @@ void Application::initialize()
                              mState));
 }
 
-void Application::initApplicationState(const CLArgs& args)
+void Application::initApplicationState(const ArgumentParser& parser)
 {
-    mState->FODFImage.Update(NiftiImageWrapper(args.imagePath));
+    mState->FODFImage.Update(NiftiImageWrapper(parser.GetImagePath()));
 
-    mState->Sphere.Resolution.Update(args.sphereRes);
+    mState->Sphere.Resolution.Update(parser.GetSphereResolution());
     mState->Sphere.IsNormalized.Update(false);
     mState->Sphere.Scaling.Update(0.5f);
     mState->Sphere.SH0Threshold.Update(0.0f);
 
     mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().dims());
     mState->VoxelGrid.SliceIndices.Update(mState->VoxelGrid.VolumeShape.Get() / 2);
-    mState->VoxelGrid.IsSliceDirty.Update(glm::ivec3(1, 1, 1));
 
     mState->Window.Height.Update(WIN_HEIGHT);
     mState->Window.Width.Update(WIN_WIDTH);
