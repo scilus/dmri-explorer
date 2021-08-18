@@ -137,8 +137,8 @@ void SHField::initializePerSphereAttributes()
 
     const auto& image = mState->FODFImage.Get();
     const auto numIndices = mSphere.getIndices().size();
-    const auto numVertices = mSphere.getNbVertices();
-    std::cout << numVertices << std::endl;
+    const auto numVertices = mSphere.getPoints().size();
+
     // safety when allocating shared memory
     mMutex.lock();
     mIndices.reserve(mNbSpheres * numIndices);
@@ -169,8 +169,8 @@ void SHField::initializePerSphereAttributes()
 void SHField::initializeGPUData()
 {
     // temporary zero-filled array for all spheres vertices and normals
-    std::vector<glm::vec4> allVertices(mNbSpheres * mSphere.getNbVertices());
-    std::vector<float> allRadiis(mNbSpheres * mSphere.getNbVertices());
+    std::vector<glm::vec4> allVertices(mNbSpheres * mSphere.getPoints().size());
+    std::vector<float> allRadiis(mNbSpheres * mSphere.getPoints().size());
 
     SphereData sphereData;
     sphereData.NumVertices = mSphere.getPoints().size();

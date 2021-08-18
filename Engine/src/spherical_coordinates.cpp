@@ -4,14 +4,18 @@ namespace Slicer
 {
 namespace Math
 {
-namespace Coordinate
+SphericalCoordinates::SphericalCoordinates()
+:r(0.0)
+,theta(0.0)
+,phi(0.0)
 {
-Spherical::Spherical(float r, float theta, float phi)
+}
+
+SphericalCoordinates::SphericalCoordinates(float r, float theta, float phi)
 :r(r)
 ,theta(theta)
 ,phi(phi)
 {
 }
-} // namespace Coordinate
 } // namespace Math
 } // namespace Slicer
