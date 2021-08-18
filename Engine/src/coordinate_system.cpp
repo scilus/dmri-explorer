@@ -24,7 +24,7 @@ void CoordinateSystem::ApplyTransform(const glm::mat4& t)
     mTransformMatrix = t * mTransformMatrix;
 }
 
-glm::mat4 CoordinateSystem::ToWorld()
+glm::mat4 CoordinateSystem::ToWorld() const
 {
     if(mParentCS != nullptr)
     {

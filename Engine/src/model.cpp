@@ -18,7 +18,7 @@ Model::~Model()
 
 void Model::initializeModel()
 {
-    updateApplicationState();
+    updateApplicationStateAtInit();
     registerStateCallbacks();
     initProgramPipeline();
     mIsInit = true;

@@ -26,7 +26,7 @@ Camera::Camera(const glm::vec3& position,
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
 
-void Camera::Update()
+void Camera::UpdateGPU()
 {
     CameraData cameraData;
     cameraData.eye = glm::vec4(mPosition, 1.0f);
@@ -43,7 +43,7 @@ void Camera::Resize(const float& aspect)
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
 }
 
-void Camera::TranslateZ(double delta)
+void Camera::Zoom(double delta)
 {
     const float& speed = mState->Window.ZoomSpeed.Get();
     const glm::vec3 direction = speed * glm::normalize(mLookAt - mPosition);

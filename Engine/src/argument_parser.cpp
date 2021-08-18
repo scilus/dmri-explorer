@@ -39,6 +39,7 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
                     break;
                 default:
                     std::cerr << "Error: Too many arguments for program." << std::endl;
+                    PrintUsage();
                     break;
             };
             ++count;
