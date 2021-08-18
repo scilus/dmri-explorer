@@ -4,6 +4,7 @@ namespace Slicer
 {
 namespace GPU
 {
+/// Enumeration of GPU bindings.
 enum class Binding
 {
     allRadiis = 0,

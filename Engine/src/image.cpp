@@ -28,7 +28,7 @@ std::shared_ptr<nifti_image> NiftiImageWrapper::getNiftiImage() const
     return mImage;
 }
 
-glm::vec<4, int> NiftiImageWrapper::dims() const
+glm::ivec4 NiftiImageWrapper::dims() const
 {
     return mDims;
 }

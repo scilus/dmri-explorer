@@ -28,6 +28,7 @@ Application::Application(const ArgumentParser& parser)
 
 Application::~Application()
 {
+    mUI->Terminate();
     // GLFW cleanup
     glfwTerminate();
 }
@@ -111,7 +112,7 @@ void Application::Run()
         glfwPollEvents();
 
         // Update camera parameters
-        mCamera->Update();
+        mCamera->UpdateGPU();
 
         // Draw scene
         mScene->Render();
@@ -167,7 +168,7 @@ void Application::onMouseScroll(GLFWwindow* window, double xoffset, double yoffs
     if(app->mUI->WantCaptureMouse())
         return;
 
-    app->mCamera->TranslateZ(yoffset);
+    app->mCamera->Zoom(yoffset);
 }
 
 void Application::onWindowResize(GLFWwindow* window, int width, int height)

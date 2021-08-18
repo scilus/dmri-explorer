@@ -15,7 +15,6 @@ SHField::SHField(const std::shared_ptr<ApplicationState>& state,
 :Model(state)
 ,mIndices()
 ,mSphHarmCoeffs()
-,mSphHarmFuncs()
 ,mNbSpheres(0)
 ,mVAO(0)
 ,mIndicesBO(0)
@@ -48,7 +47,7 @@ SHField::~SHField()
 {
 }
 
-void SHField::updateApplicationState()
+void SHField::updateApplicationStateAtInit()
 {
 }
 
@@ -98,13 +97,13 @@ void SHField::initializeMembers()
                + image.dims().y * image.dims().z; // X-slice
     mSphere = Primitive::Sphere(mState->Sphere.Resolution.Get());
 
-    std::thread initVoxThread(&SHField::initializePerVoxelAttributes, this);
-    std::thread initSpheresThread(&SHField::initializePerSphereAttributes, this);
+    std::thread initVoxThread(&SHField::copySHCoefficientsFromImage, this);
+    std::thread initSpheresThread(&SHField::initializeDrawCommand, this);
     initVoxThread.join();
     initSpheresThread.join();
 }
 
-void SHField::initializePerVoxelAttributes()
+void SHField::copySHCoefficientsFromImage()
 {
     Utilities::Timer voxelLoopTimer("Foreach voxel");
     voxelLoopTimer.Start();
@@ -130,7 +129,7 @@ void SHField::initializePerVoxelAttributes()
     voxelLoopTimer.Stop();
 }
 
-void SHField::initializePerSphereAttributes()
+void SHField::initializeDrawCommand()
 {
     Utilities::Timer sphereLoopTimer("Foreach sphere");
     sphereLoopTimer.Start();

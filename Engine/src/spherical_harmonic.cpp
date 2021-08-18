@@ -24,19 +24,19 @@ RealSymDescoteauxBasis::RealSymDescoteauxBasis()
     computeScaling();
 }
 
-RealSymDescoteauxBasis::RealSymDescoteauxBasis(uint maxOrder)
+RealSymDescoteauxBasis::RealSymDescoteauxBasis(unsigned int maxOrder)
 :mMaxOrder(maxOrder)
 ,mScaling()
 {
     computeScaling();
 }
 
-const size_t RealSymDescoteauxBasis::J(uint l, int m) const
+size_t RealSymDescoteauxBasis::J(unsigned int l, int m) const
 {
     return l * (l + 1) / 2 + m;
 }
 
-const size_t RealSymDescoteauxBasis::numCoeffs() const
+size_t RealSymDescoteauxBasis::numCoeffs() const
 {
     return (mMaxOrder + 1) * (mMaxOrder + 2) / 2;
 }
@@ -59,7 +59,7 @@ void RealSymDescoteauxBasis::computeScaling()
     }
 }
 
-float RealSymDescoteauxBasis::at(uint l, int m, float theta, float phi) const
+float RealSymDescoteauxBasis::at(unsigned int l, int m, float theta, float phi) const
 {
     if(l > mMaxOrder || l % 2 != 0)
     {
@@ -77,7 +77,7 @@ float RealSymDescoteauxBasis::at(uint l, int m, float theta, float phi) const
     }
 }
 
-std::complex<float> RealSymDescoteauxBasis::computeSHFunc(uint l, int m, float theta, float phi) const
+std::complex<float> RealSymDescoteauxBasis::computeSHFunc(unsigned int l, int m, float theta, float phi) const
 {
     float r = mScaling[J(l, m)] * legendre(l, m, cos(theta));
     std::complex<float> sh = std::polar(r, m * phi);
