@@ -1,9 +1,7 @@
 #include <camera.h>
-#include <utils.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/norm.hpp>
 #include <math.h>
-#include <iostream>
 #include <application_state.h>
 
 namespace Slicer

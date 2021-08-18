@@ -3,7 +3,6 @@
 #include <glm/glm.hpp>
 #include <shader_data.h>
 #include <memory>
-#include <spherical_coordinates.h>
 #include <coordinate_system.h>
 #include <application_state.h>
 

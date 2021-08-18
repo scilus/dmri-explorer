@@ -1,16 +1,7 @@
 #include <sh_field.h>
-#include <utils.hpp>
 #include <glad/glad.h>
-
-#include <iostream>
-#include <stdexcept>
-#include <cstdint>
 #include <thread>
-#include <glm/gtx/transform.hpp>
-#include <spherical_harmonic.h>
-
 #include <timer.h>
-#include <application_state.h>
 
 namespace
 {
