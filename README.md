@@ -1,4 +1,4 @@
-# RTfODF Slicer
+# RT fODF Slicer
 A real-time fiber ODF slicing application for Linux using `OpenGL 4.6`.
 
 ## Installation
