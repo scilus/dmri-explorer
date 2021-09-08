@@ -18,6 +18,7 @@ enum class Binding
     gridInfo = 8,
     camera = 9,
     modelTransform = 10,
+    allOrders = 11,
     none = 30
 };
 } // namespace GPU

@@ -21,6 +21,11 @@ public:
     /// \param[in] resolution Resolution of the sphere.
     Sphere(unsigned int resolution);
 
+    /// Constructor.
+    /// \param[in] resolution Resolution of the sphere.
+    /// \param[in] nbSHCoeffs Number of spherical harmonics coefficients.
+    Sphere(unsigned int resolution, unsigned int nbSHCoeffs);
+
     /// Copy constructor.
     /// \param[in] other The sphere to copy.
     Sphere(const Sphere& other);
@@ -41,6 +46,11 @@ public:
     /// Get the SH function at each sphere point.
     /// \return Vector of SH functions.
     inline std::vector<float> getSHFuncs() const { return mSphHarmFunc; };
+
+    /// Get the maximum SH order.
+    /// \return The maximum SH order for the basis.
+    inline unsigned int GetMaxSHOrder() const {return mSHBasis.GetMaxOrder(); };
+
 private:
     /// Generate the sphere mesh.
     void genUnitSphere();

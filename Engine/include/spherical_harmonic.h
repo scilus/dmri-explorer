@@ -12,6 +12,27 @@ namespace Math
 {
 namespace SH
 {
+namespace Utils
+{
+static unsigned int OrderFromNbCoeffs(unsigned int nbCoeffs)
+{
+    return static_cast<unsigned int>(-3.0 + sqrt(9.0 - 4.0 * (2.0 - 2.0 * nbCoeffs)))/2;
+}
+
+static std::vector<float> GetOrdersList(unsigned int maxOrder, bool fullBasis)
+{
+    std::vector<float> orders;
+    for(int l = 0; l <= maxOrder; l += fullBasis ? 1 : 2)
+    {
+        for(int m = -l; m <= l; ++m)
+        {
+            orders.push_back((float)l);
+        }
+    }
+    return orders;
+}
+} // namespace Utils
+
 /// \brief Implementation of DIPY legacy real symmetric Descoteaux07 basis.
 ///
 /// See https://dipy.org/documentation/1.4.1./theory/sh_basis/ for more details.
@@ -36,6 +57,9 @@ public:
     /// \return SH basis evaluated for l, m, theta, phi.
     float at(unsigned int l, int m, float theta, float phi) const;
 
+    /// Get the maximum SH order.
+    /// \return Maximum SH order.
+    inline unsigned int GetMaxOrder() const { return mMaxOrder; };
 private:
     /// Get the flattened index for order l and degree m.
     /// \param[in] l SH order (0 <= l <= mMaxOrder).
