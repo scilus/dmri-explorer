@@ -3,11 +3,6 @@
 #include <thread>
 #include <timer.h>
 
-namespace
-{
-const size_t NB_SH = 45;
-}
-
 namespace Slicer
 {
 SHField::SHField(const std::shared_ptr<ApplicationState>& state,
@@ -95,7 +90,8 @@ void SHField::initializeMembers()
     mNbSpheres = image.dims().x * image.dims().y  // Z-slice
                + image.dims().x * image.dims().z  // Y-slice
                + image.dims().y * image.dims().z; // X-slice
-    mSphere = Primitive::Sphere(mState->Sphere.Resolution.Get());
+    mSphere = Primitive::Sphere(mState->Sphere.Resolution.Get(),
+                                image.dims().w);
 
     std::thread initVoxThread(&SHField::copySHCoefficientsFromImage, this);
     std::thread initSpheresThread(&SHField::initializeDrawCommand, this);
@@ -120,7 +116,7 @@ void SHField::copySHCoefficientsFromImage()
         glm::vec<3, uint> id3D = image.unravelIndex3d(flatIndex);
 
         // Fill SH coefficients table
-        for(int k = 0; k < NB_SH; ++k)
+        for(int k = 0; k < image.dims().w; ++k)
         {
             mSphHarmCoeffs.push_back(static_cast<float>(image.at(id3D.x, id3D.y, id3D.z, k)));
         }
@@ -170,11 +166,13 @@ void SHField::initializeGPUData()
     // temporary zero-filled array for all spheres vertices and normals
     std::vector<glm::vec4> allVertices(mNbSpheres * mSphere.getPoints().size());
     std::vector<float> allRadiis(mNbSpheres * mSphere.getPoints().size());
+    std::vector<float> allOrders = Math::SH::Utils::GetOrdersList(mSphere.GetMaxSHOrder());
 
     SphereData sphereData;
     sphereData.NumVertices = mSphere.getPoints().size();
     sphereData.NumIndices = mSphere.getIndices().size();
     sphereData.IsNormalized = mState->Sphere.IsNormalized.Get();
+    sphereData.MaxOrder = mSphere.GetMaxSHOrder();
     sphereData.SH0threshold = mState->Sphere.SH0Threshold.Get();
     sphereData.Scaling = mState->Sphere.Scaling.Get();
 
@@ -191,6 +189,8 @@ void SHField::initializeGPUData()
                                          sizeof(float)* mSphHarmCoeffs.size());
     mSphHarmFuncsData = GPU::ShaderData(mSphere.getSHFuncs().data(), GPU::Binding::shFunctions,
                                         sizeof(float) * mSphere.getSHFuncs().size());
+    mAllOrdersData = GPU::ShaderData(allOrders.data(), GPU::Binding::allOrders,
+                                     sizeof(float) * allOrders.size());
     mSphereVerticesData = GPU::ShaderData(mSphere.getPoints().data(), GPU::Binding::sphereVertices,
                                           sizeof(glm::vec4) * mSphere.getPoints().size());
     mSphereIndicesData = GPU::ShaderData(mSphere.getIndices().data(), GPU::Binding::sphereIndices,
@@ -203,6 +203,7 @@ void SHField::initializeGPUData()
     // push all data to GPU
     mSphHarmCoeffsData.ToGPU();
     mSphHarmFuncsData.ToGPU();
+    mAllOrdersData.ToGPU();
     mSphereVerticesData.ToGPU();
     mSphereIndicesData.ToGPU();
     mSphereInfoData.ToGPU();
@@ -253,7 +254,7 @@ void SHField::SetSH0Threshold(float previous, float threshold)
 {
     if(previous != threshold)
     {
-        mSphereInfoData.Update(3*sizeof(unsigned int), sizeof(float), &threshold);
+        mSphereInfoData.Update(4*sizeof(unsigned int), sizeof(float), &threshold);
     }
 }
 
@@ -262,7 +263,7 @@ void SHField::SetSphereScaling(float previous, float scaling)
 {
     if(previous != scaling)
     {
-        mSphereInfoData.Update(3*sizeof(unsigned int) + sizeof(float), sizeof(float), &scaling);
+        mSphereInfoData.Update(4*sizeof(unsigned int) + sizeof(float), sizeof(float), &scaling);
     }
 }
 

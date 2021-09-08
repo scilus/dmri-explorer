@@ -93,16 +93,25 @@ protected:
 
 private:
     /// Struct containing sphere attributes for the GPU.
+    ///
+    /// The order of members is critical. The same order must be used
+    /// when declaring the struct on the GPU and the order is used for
+    /// modifying shader subdata from the CPU.
     struct SphereData
     {
         unsigned int NumVertices;
         unsigned int NumIndices;
         unsigned int IsNormalized;
+        unsigned int MaxOrder;
         float SH0threshold;
         float Scaling;
     };
 
     /// Struct containing the voxel grid attributes for the GPU.
+    ///
+    /// The order of members is critical. The same order must be used
+    /// when declaring the struct on the GPU and the order is used for
+    /// modifying shader subdata from the CPU.
     struct GridData
     {
         glm::ivec4 VolumeShape;
@@ -201,6 +210,9 @@ private:
 
     /// Glyphs normals GPU data.
     GPU::ShaderData mAllSpheresNormalsData;
+
+    /// All SH orders, repeated.
+    GPU::ShaderData mAllOrdersData;
 
     /// DrawElementsIndirectCommand array.
     std::vector<DrawElementsIndirectCommand> mIndirectCmd;

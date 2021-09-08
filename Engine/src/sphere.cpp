@@ -2,7 +2,7 @@
 
 namespace
 {
-const uint MAX_SH_ORDER = 8;
+const uint DEFAULT_MAX_SH_ORDER = 8;
 }
 
 namespace Slicer
@@ -13,7 +13,7 @@ Sphere::Sphere()
 :mResolution(10)
 ,mIndices()
 ,mPoints()
-,mSHBasis(MAX_SH_ORDER)
+,mSHBasis(DEFAULT_MAX_SH_ORDER)
 ,mSphHarmFunc()
 {
     genUnitSphere();
@@ -23,7 +23,18 @@ Sphere::Sphere(unsigned int resolution)
 :mResolution(resolution)
 ,mIndices()
 ,mPoints()
-,mSHBasis(MAX_SH_ORDER)
+,mSHBasis(DEFAULT_MAX_SH_ORDER)
+,mSphHarmFunc()
+{
+    genUnitSphere();
+}
+
+Sphere::Sphere(unsigned int resolution,
+               unsigned int nbSHCoeffs)
+:mResolution(resolution)
+,mIndices()
+,mPoints()
+,mSHBasis(Math::SH::Utils::OrderFromNbCoeffs(nbSHCoeffs))
 ,mSphHarmFunc()
 {
     genUnitSphere();
@@ -57,7 +68,7 @@ void Sphere::addPoint(float theta, float phi, float r)
     const glm::vec3 vecCartesian = convertToCartesian(theta, phi, r);
     mPoints.push_back(glm::vec4(vecCartesian.x, vecCartesian.y, vecCartesian.z, 1.0f));
     // evaluate SH function for all l, m up to MAX_SH_ORDER
-    for(int l = 0; l <= MAX_SH_ORDER; l += 2)
+    for(int l = 0; l <= mSHBasis.GetMaxOrder(); l += 2)
     {
         for(int m = -l; m <= l; ++m)
         {
