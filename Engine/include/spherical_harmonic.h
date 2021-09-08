@@ -14,7 +14,7 @@ namespace SH
 {
 namespace Utils
 {
-static unsigned int OrderFromNbCoeffs(unsigned int nbCoeffs)
+static inline unsigned int OrderFromNbCoeffs(unsigned int nbCoeffs)
 {
     return static_cast<unsigned int>(-3.0 + sqrt(9.0 - 4.0 * (2.0 - 2.0 * nbCoeffs)))/2;
 }
