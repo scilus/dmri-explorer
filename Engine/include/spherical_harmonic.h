@@ -19,10 +19,10 @@ static inline unsigned int OrderFromNbCoeffs(unsigned int nbCoeffs)
     return static_cast<unsigned int>(-3.0 + sqrt(9.0 - 4.0 * (2.0 - 2.0 * nbCoeffs)))/2;
 }
 
-static std::vector<float> GetOrdersList(unsigned int maxOrder, bool fullBasis)
+static std::vector<float> GetOrdersList(unsigned int maxOrder)
 {
     std::vector<float> orders;
-    for(int l = 0; l <= maxOrder; l += fullBasis ? 1 : 2)
+    for(int l = 0; l <= maxOrder; l += 2)
     {
         for(int m = -l; m <= l; ++m)
         {

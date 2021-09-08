@@ -166,7 +166,7 @@ void SHField::initializeGPUData()
     // temporary zero-filled array for all spheres vertices and normals
     std::vector<glm::vec4> allVertices(mNbSpheres * mSphere.getPoints().size());
     std::vector<float> allRadiis(mNbSpheres * mSphere.getPoints().size());
-    std::vector<float> allOrders = Math::SH::Utils::GetOrdersList(mSphere.GetMaxSHOrder(), false);
+    std::vector<float> allOrders = Math::SH::Utils::GetOrdersList(mSphere.GetMaxSHOrder());
 
     SphereData sphereData;
     sphereData.NumVertices = mSphere.getPoints().size();
