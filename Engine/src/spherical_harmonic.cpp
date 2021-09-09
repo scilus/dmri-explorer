@@ -111,8 +111,7 @@ std::vector<float> DescoteauxBasis::GetOrderList() const
     return orders;
 }
 
-unsigned int DescoteauxBasis::getOrderFromNbCoeffs(unsigned int nbCoeffs,
-                                                          bool* fullBasis) const
+unsigned int DescoteauxBasis::getOrderFromNbCoeffs(unsigned int nbCoeffs, bool* fullBasis) const
 {
     const float& floatEpsilon = std::numeric_limits<float>::epsilon();
     const float symOrder = (-3.0 + sqrt(1.0 + 8.0 * nbCoeffs)) / 2.0;

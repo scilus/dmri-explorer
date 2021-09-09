@@ -53,9 +53,9 @@ private:
     /// Get the maximum order from the number of SH coefficients.
     /// Also detects if the basis is full if fullBasis is supplied.
     /// \param[in] nbCoeffs Number of SH coefficients and functions.
-    /// \param[out] fullBasis When supplied, contains true if the basis is full.
+    /// \param[out] fullBasis When not nullptr, contains true if the basis is full.
     /// \return The maximum order from the number of SH coefficients.
-    unsigned int getOrderFromNbCoeffs(unsigned int nbCoeffs, bool* fullBasis=nullptr) const;
+    unsigned int getOrderFromNbCoeffs(unsigned int nbCoeffs, bool* fullBasis) const;
 
     /// Get the flattened index for order l and degree m.
     /// \param[in] l SH order (0 <= l <= mMaxOrder).
