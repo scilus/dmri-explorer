@@ -105,6 +105,7 @@ private:
         unsigned int MaxOrder;
         float SH0threshold;
         float Scaling;
+        unsigned int NbCoeffs;
     };
 
     /// Struct containing the voxel grid attributes for the GPU.
@@ -163,7 +164,7 @@ private:
     std::mutex mMutex;
 
     /// Sphere used for SH projection.
-    Primitive::Sphere mSphere;
+    std::shared_ptr<Primitive::Sphere> mSphere;
 
     /// Maximum number of spheres rendered.
     uint mNbSpheres;
