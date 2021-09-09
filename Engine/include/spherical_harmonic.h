@@ -8,26 +8,24 @@
 
 namespace Slicer
 {
-namespace Math
-{
 namespace SH
 {
-/// \brief Implementation of DIPY legacy real symmetric Descoteaux07 basis.
+/// \brief Implementation of DIPY legacy real Descoteaux07 basis.
 ///
 /// See https://dipy.org/documentation/1.4.1./theory/sh_basis/ for more details.
-class RealSymDescoteauxBasis
+class DescoteauxBasis
 {
 public:
     /// Default constructor.
-    RealSymDescoteauxBasis();
+    DescoteauxBasis();
 
     /// Constructor.
     /// \param[in] nbCoeffs Number of SH coefficients and functions
     ///                     for reconstruction.
-    RealSymDescoteauxBasis(unsigned int nbCoeffs);
+    DescoteauxBasis(unsigned int nbCoeffs);
 
     /// Destructor.
-    ~RealSymDescoteauxBasis() = default;
+    ~DescoteauxBasis() = default;
 
     /// Evaluate SH basis for l, m, theta, phi.
     /// \param[in] l SH function order (0 <= l <= mMaxOrder).
@@ -93,5 +91,4 @@ private:
     bool mFullBasis;
 };
 } // namespace SH
-} // namespace Math
 } // namespace Slicer

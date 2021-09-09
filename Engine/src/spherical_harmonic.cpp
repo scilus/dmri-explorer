@@ -5,8 +5,6 @@
 
 namespace Slicer
 {
-namespace Math
-{
 namespace SH
 {
 double legendre(int l, int m, double x)
@@ -19,14 +17,14 @@ double legendre(int l, int m, double x)
     return val;
 }
 
-RealSymDescoteauxBasis::RealSymDescoteauxBasis(unsigned int nbCoeffs)
+DescoteauxBasis::DescoteauxBasis(unsigned int nbCoeffs)
 :mScaling()
 {
     mMaxOrder = getOrderFromNbCoeffs(nbCoeffs, &mFullBasis);
     computeScaling();
 }
 
-size_t RealSymDescoteauxBasis::J(unsigned int l, int m) const
+size_t DescoteauxBasis::J(unsigned int l, int m) const
 {
     if(mFullBasis)
     {
@@ -35,7 +33,7 @@ size_t RealSymDescoteauxBasis::J(unsigned int l, int m) const
     return l * (l + 1) / 2 + m;
 }
 
-size_t RealSymDescoteauxBasis::numCoeffs() const
+size_t DescoteauxBasis::numCoeffs() const
 {
     if(mFullBasis)
     {
@@ -44,7 +42,7 @@ size_t RealSymDescoteauxBasis::numCoeffs() const
     return (mMaxOrder + 1) * (mMaxOrder + 2) / 2;
 }
 
-void RealSymDescoteauxBasis::computeScaling()
+void DescoteauxBasis::computeScaling()
 {
     const size_t nCoeffs = numCoeffs();
     mScaling.resize(nCoeffs);
@@ -62,7 +60,7 @@ void RealSymDescoteauxBasis::computeScaling()
     }
 }
 
-float RealSymDescoteauxBasis::at(unsigned int l, int m, float theta, float phi) const
+float DescoteauxBasis::at(unsigned int l, int m, float theta, float phi) const
 {
     if(l > mMaxOrder || (l % 2 != 0 && !mFullBasis))
     {
@@ -80,7 +78,7 @@ float RealSymDescoteauxBasis::at(unsigned int l, int m, float theta, float phi) 
     }
 }
 
-std::vector<float> RealSymDescoteauxBasis::at(float theta, float phi) const
+std::vector<float> DescoteauxBasis::at(float theta, float phi) const
 {
     std::vector<float> shFuncs;
     for(int l = 0; l <= mMaxOrder; l += mFullBasis ? 1 : 2)
@@ -93,14 +91,14 @@ std::vector<float> RealSymDescoteauxBasis::at(float theta, float phi) const
     return shFuncs;
 }
 
-std::complex<float> RealSymDescoteauxBasis::computeSHFunc(unsigned int l, int m, float theta, float phi) const
+std::complex<float> DescoteauxBasis::computeSHFunc(unsigned int l, int m, float theta, float phi) const
 {
     const float r = mScaling[J(l, m)] * legendre(l, m, cos(theta));
     std::complex<float> sh = std::polar(r, m * phi);
     return sh;
 }
 
-std::vector<float> RealSymDescoteauxBasis::GetOrderList() const
+std::vector<float> DescoteauxBasis::GetOrderList() const
 {
     std::vector<float> orders;
     for(int l = 0; l <= mMaxOrder; l += mFullBasis? 1:2)
@@ -113,7 +111,7 @@ std::vector<float> RealSymDescoteauxBasis::GetOrderList() const
     return orders;
 }
 
-unsigned int RealSymDescoteauxBasis::getOrderFromNbCoeffs(unsigned int nbCoeffs,
+unsigned int DescoteauxBasis::getOrderFromNbCoeffs(unsigned int nbCoeffs,
                                                           bool* fullBasis) const
 {
     const float& floatEpsilon = std::numeric_limits<float>::epsilon();
@@ -140,5 +138,4 @@ unsigned int RealSymDescoteauxBasis::getOrderFromNbCoeffs(unsigned int nbCoeffs,
     throw std::runtime_error("Invalid number of coefficients.");
 }
 } // namespace SH
-} // namespace Math
 } // namespace Slicer

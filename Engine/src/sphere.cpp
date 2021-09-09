@@ -17,7 +17,7 @@ Sphere::Sphere()
 ,mSHBasis(nullptr)
 ,mSphHarmFunc()
 {
-    mSHBasis.reset(new Math::SH::RealSymDescoteauxBasis(DEFAULT_NB_COEFFS));
+    mSHBasis.reset(new SH::DescoteauxBasis(DEFAULT_NB_COEFFS));
     genUnitSphere();
 }
 
@@ -29,7 +29,7 @@ Sphere::Sphere(unsigned int resolution,
 ,mSHBasis()
 ,mSphHarmFunc()
 {
-    mSHBasis.reset(new Math::SH::RealSymDescoteauxBasis(nbSHCoeffs));
+    mSHBasis.reset(new SH::DescoteauxBasis(nbSHCoeffs));
     genUnitSphere();
 }
 

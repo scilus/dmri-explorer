@@ -78,7 +78,7 @@ private:
     std::vector<float> mSphHarmFunc;
 
     /// SH basis in use.
-    std::shared_ptr<Math::SH::RealSymDescoteauxBasis> mSHBasis;
+    std::shared_ptr<SH::DescoteauxBasis> mSHBasis;
 
     /// Resolution of sphere.
     unsigned int mResolution;
