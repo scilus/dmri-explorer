@@ -39,6 +39,7 @@ layout(std430, binding=7) buffer sphereInfoBuffer
     uint maxOrder;
     float sh0Threshold;
     float scaling;
+    uint nbCoeffs;
 };
 
 layout(std430, binding=8) buffer gridInfoBuffer
@@ -56,22 +57,17 @@ layout(std430, binding=11) buffer ordersBuffer
 const float FLOAT_EPS = 1e-4;
 const float PI = 3.14159265358979323;
 
-uint nbCoeffsFromOrder(uint order)
-{
-    return (maxOrder + 2) * (maxOrder + 1) / 2;
-}
-
 float evaluateSH(uint voxID, uint sphVertID)
 {
     float ret = 0.0f;
     float sum = 0.0f;
     float rmax = 0.0f;
-    for(int i = 0; i < nbCoeffsFromOrder(maxOrder); ++i)
+    for(int i = 0; i < nbCoeffs; ++i)
     {
-        sum += abs(shCoeffs[voxID * nbCoeffsFromOrder(maxOrder) + i]);
-        ret += shCoeffs[voxID * nbCoeffsFromOrder(maxOrder) + i]
-                * shFuncs[sphVertID * nbCoeffsFromOrder(maxOrder) + i];
-        rmax += (2.0f * L[i] + 1.0f) / 4.0f / PI * pow(shCoeffs[voxID * nbCoeffsFromOrder(maxOrder) + i], 2);
+        sum += abs(shCoeffs[voxID * nbCoeffs + i]);
+        ret += shCoeffs[voxID * nbCoeffs + i]
+                * shFuncs[sphVertID * nbCoeffs + i];
+        rmax += (2.0f * L[i] + 1.0f) / 4.0f / PI * pow(shCoeffs[voxID * nbCoeffs + i], 2);
     }
     if(sum > 0.0)
     {
@@ -188,7 +184,7 @@ void main()
 
     const uint voxID = convertInvocationIDToVoxID(invocationID);
 
-    bool isVisible = shCoeffs[voxID * nbCoeffsFromOrder(maxOrder)] > 0.0f;
+    bool isVisible = shCoeffs[voxID * nbCoeffs] > 0.0f;
 
     scaleSphere(voxID, firstVertID, isVisible);
     if(isVisible)

@@ -8,46 +8,24 @@
 
 namespace Slicer
 {
-namespace Math
-{
 namespace SH
 {
-namespace Utils
-{
-static inline unsigned int OrderFromNbCoeffs(unsigned int nbCoeffs)
-{
-    return static_cast<unsigned int>(-3.0 + sqrt(9.0 - 4.0 * (2.0 - 2.0 * nbCoeffs)))/2;
-}
-
-static std::vector<float> GetOrdersList(unsigned int maxOrder)
-{
-    std::vector<float> orders;
-    for(int l = 0; l <= maxOrder; l += 2)
-    {
-        for(int m = -l; m <= l; ++m)
-        {
-            orders.push_back((float)l);
-        }
-    }
-    return orders;
-}
-} // namespace Utils
-
-/// \brief Implementation of DIPY legacy real symmetric Descoteaux07 basis.
+/// \brief Implementation of DIPY legacy real Descoteaux07 basis.
 ///
 /// See https://dipy.org/documentation/1.4.1./theory/sh_basis/ for more details.
-class RealSymDescoteauxBasis
+class DescoteauxBasis
 {
 public:
     /// Default constructor.
-    RealSymDescoteauxBasis();
+    DescoteauxBasis();
 
     /// Constructor.
-    /// \param[in] maxOrder Maximum SH order for reconstruction.
-    RealSymDescoteauxBasis(unsigned int maxOrder);
+    /// \param[in] nbCoeffs Number of SH coefficients and functions
+    ///                     for reconstruction.
+    DescoteauxBasis(unsigned int nbCoeffs);
 
     /// Destructor.
-    ~RealSymDescoteauxBasis() = default;
+    ~DescoteauxBasis() = default;
 
     /// Evaluate SH basis for l, m, theta, phi.
     /// \param[in] l SH function order (0 <= l <= mMaxOrder).
@@ -57,10 +35,28 @@ public:
     /// \return SH basis evaluated for l, m, theta, phi.
     float at(unsigned int l, int m, float theta, float phi) const;
 
+    /// Evaluate SH basis for l, m, theta, phi.
+    /// \param[in] theta Inclination angle in radians.
+    /// \param[in] phi Azimuth angle in radians.
+    /// \return SH basis evaluated for l, m, theta, phi.
+    std::vector<float> at(float theta, float phi) const;
+
     /// Get the maximum SH order.
     /// \return Maximum SH order.
     inline unsigned int GetMaxOrder() const { return mMaxOrder; };
+
+    /// Get the list of SH orders.
+    /// \return A vector containing all SH orders, repeated.
+    std::vector<float> GetOrderList() const;
+
 private:
+    /// Get the maximum order from the number of SH coefficients.
+    /// Also detects if the basis is full if fullBasis is supplied.
+    /// \param[in] nbCoeffs Number of SH coefficients and functions.
+    /// \param[out] fullBasis When not nullptr, contains true if the basis is full.
+    /// \return The maximum order from the number of SH coefficients.
+    unsigned int getOrderFromNbCoeffs(unsigned int nbCoeffs, bool* fullBasis) const;
+
     /// Get the flattened index for order l and degree m.
     /// \param[in] l SH order (0 <= l <= mMaxOrder).
     /// \param[in] m SH degree (-l <= m <= l).
@@ -90,7 +86,9 @@ private:
 
     /// Maximum SH order.
     uint mMaxOrder;
+
+    /// Full basis flag. When true, basis includes odd order SH functions.
+    bool mFullBasis;
 };
 } // namespace SH
-} // namespace Math
 } // namespace Slicer

@@ -19,10 +19,6 @@ public:
 
     /// Constructor.
     /// \param[in] resolution Resolution of the sphere.
-    Sphere(unsigned int resolution);
-
-    /// Constructor.
-    /// \param[in] resolution Resolution of the sphere.
     /// \param[in] nbSHCoeffs Number of spherical harmonics coefficients.
     Sphere(unsigned int resolution, unsigned int nbSHCoeffs);
 
@@ -49,7 +45,12 @@ public:
 
     /// Get the maximum SH order.
     /// \return The maximum SH order for the basis.
-    inline unsigned int GetMaxSHOrder() const {return mSHBasis.GetMaxOrder(); };
+    inline unsigned int GetMaxSHOrder() const {return mSHBasis->GetMaxOrder(); };
+
+    /// Get all SH orders.
+    /// \return A vector where the ith position contains the SH order
+    ///         corresponding to the SH function at position i.
+    inline std::vector<float> GetOrdersList() const { return mSHBasis->GetOrderList(); };
 
 private:
     /// Generate the sphere mesh.
@@ -77,7 +78,7 @@ private:
     std::vector<float> mSphHarmFunc;
 
     /// SH basis in use.
-    Math::SH::RealSymDescoteauxBasis mSHBasis;
+    std::shared_ptr<SH::DescoteauxBasis> mSHBasis;
 
     /// Resolution of sphere.
     unsigned int mResolution;
