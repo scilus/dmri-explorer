@@ -48,11 +48,10 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Update and generate documentation
         run: |
+          cd $GITHUB_WORKSPACE
           doxygen Doxyfile
           if [ -z "$(git status --porcelain)" ]; then 
             echo Documentation unchanged
           else
-            git add .
-            git commit -m "Update doxygen documentation"
-            git push
+            echo Changes!
           fi
