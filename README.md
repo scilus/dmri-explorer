@@ -38,3 +38,6 @@ To run the executable:
 ```
 rtfodfslicer path/to/image.nii.gz
 ```
+
+## Documentation
+Documentation is available on the application's [website](https://chrls98.github.io/RTfODFSlicer/html/index.html). It contains up-to-date documentation on the code generated with Doxygen.
