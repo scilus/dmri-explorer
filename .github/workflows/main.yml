@@ -27,6 +27,12 @@ jobs:
         with:
           ref: 'gh-pages'
 
+      - name: Install Doxygen
+        run: |
+          sudo apt-add-repository universe
+          sudo apt-get update
+          sudo apt-get install -y doxygen
+
       - name: Configure built-in token
         run: |
           git config user.name github-actions
