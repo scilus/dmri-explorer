@@ -32,10 +32,16 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
 
+      - uses: everlytic/branch-merge@1.1.2
+        with:
+          github_token: ${{ github.token }}
+          source_ref: 'main'
+          target_branch: 'gh-pages'
+          commit_message_template: '[Automated] Merged {source_ref} into target {target_branch}'
+
       # Runs a set of commands using the runners shell
       - name: Update and generate documentation
         run: |
-          git merge main
           doxygen Doxyfile
           git add .
           git commit -m "Update doxygen documentation"
