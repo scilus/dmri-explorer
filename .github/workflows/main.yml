@@ -59,9 +59,3 @@ jobs:
             git commit -m "[Automated] Generate doxygen documentation"
             git push
           fi
-
-      - name: Deploy gh-pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
