@@ -49,6 +49,10 @@ jobs:
       - name: Update and generate documentation
         run: |
           doxygen Doxyfile
-          git add .
-          git commit -m "Update doxygen documentation"
-          git push
+          if [ -z "$(git status --porcelain)" ]; then 
+            echo Documentation unchanged
+          else
+            git add .
+            git commit -m "Update doxygen documentation"
+            git push
+          fi
