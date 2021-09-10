@@ -55,5 +55,6 @@ jobs:
           else
             git add .
             git commit -m "[Automated] Generate doxygen documentation"
+            git pull
             git push
           fi
