@@ -49,12 +49,13 @@ jobs:
       - name: Update and generate documentation
         run: |
           cd $GITHUB_WORKSPACE
+          git pull
           doxygen Doxyfile
           if [ -z "$(git status --porcelain)" ]; then 
             echo Documentation unchanged
           else
+            echo Documentation changed
             git add .
             git commit -m "[Automated] Generate doxygen documentation"
-            git pull
             git push
           fi
