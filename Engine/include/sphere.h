@@ -68,6 +68,11 @@ private:
     /// \param[in] phi Azimuth angle in radians.
     glm::vec3 convertToCartesian(float r, float theta, float phi) const;
 
+    /// Convert cartesian coordinates to spherical coordinates.
+    /// \param[in] cartesian 3D cartesian coordinate.
+    /// \return Corresponding position in spherical coordinates.
+    Math::SphericalCoordinates convertToSpherical(const glm::vec3& cartesian) const;
+
     /// Sphere points as homogeneous coordinates.
     std::vector<glm::vec4> mPoints;
 
