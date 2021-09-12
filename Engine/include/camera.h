@@ -18,7 +18,7 @@ public:
     /// Constructor.
     /// \param[in] position Starting position in world coordinates.
     /// \param[in] upVector Up vector in world coordinates.
-    /// \param[in] lookAt Point in center of view.
+    /// \param[in] lookAt Point at center of view.
     /// \param[in] fov Field of view in radians.
     /// \param[in] aspect Aspect ratio of window (width / height).
     /// \param[in] near Near clipping distance.
@@ -26,7 +26,7 @@ public:
     /// \param[in] state Pointer to ApplicationState instance.
     Camera(const glm::vec3& position,
            const glm::vec3& upVector,
-           const glm::vec3& lookat,
+           const glm::vec3& lookAt,
            const float& fov, const float& aspect,
            const float& near, const float& far,
            const std::shared_ptr<ApplicationState>& state);

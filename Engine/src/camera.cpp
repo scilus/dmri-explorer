@@ -8,11 +8,11 @@ namespace Slicer
 {
 Camera::Camera(const glm::vec3& position,
                const glm::vec3& upVector,
-               const glm::vec3& lookat,
+               const glm::vec3& lookAt,
                const float& fov, const float& aspect,
                const float& near, const float& far,
                const std::shared_ptr<ApplicationState>& state)
-:mLookAt(lookat)
+:mLookAt(lookAt)
 ,mPosition(position)
 ,mUpVector(upVector)
 ,mFov(fov)
