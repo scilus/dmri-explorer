@@ -84,7 +84,6 @@ float evaluateSH(uint voxID, uint sphVertID)
 
 void scaleSphere(uint voxID, uint firstVertID, bool isVisible)
 {
-    float r;
     for(uint i = 0; i < nbVertices; ++i)
     {
         allRadiis[firstVertID + i] = isVisible ? evaluateSH(voxID, i) : 0.0f;

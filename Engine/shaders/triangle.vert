@@ -54,9 +54,10 @@ layout(std430, binding=10) buffer modelTransformsBuffer
 out gl_PerVertex{
     vec4 gl_Position;
 };
+out vec4 v_wpos;
 out vec3 v_color;
 out vec4 v_normal;
-out vec4 v_eye;
+out vec4 v_weye;
 out float v_isVisible;
 
 ivec3 convertInvocationIDToIndex3D(uint invocationID)
@@ -92,26 +93,30 @@ void main()
     const uint voxID = convertIndex3DToVoxID(index3d.x, index3d.y, index3d.z);
     bool isVisible = shCoeffs[voxID * nbCoeffs] > sh0Threshold;
 
-    mat4 trMat;
-    trMat[0][0] = scaling;
-    trMat[1][1] = scaling;
-    trMat[2][2] = scaling;
-    trMat[3][0] = float(index3d.x - gridDims.x / 2);
-    trMat[3][1] = float(index3d.y - gridDims.y / 2);
-    trMat[3][2] = float(index3d.z - gridDims.z / 2);
-    trMat[3][3] = 1.0;
+    mat4 localMatrix;
+    localMatrix[0][0] = scaling;
+    localMatrix[1][1] = scaling;
+    localMatrix[2][2] = scaling;
+    localMatrix[3][0] = float(index3d.x - gridDims.x / 2);
+    localMatrix[3][1] = float(index3d.y - gridDims.y / 2);
+    localMatrix[3][2] = float(index3d.z - gridDims.z / 2);
+    localMatrix[3][3] = 1.0;
 
     vec4 currentVertex = vec4(vertices[gl_VertexID%nbVertices].xyz * allRadiis[gl_VertexID], 1.0f);
 
     gl_Position = projectionMatrix
                 * viewMatrix
                 * modelMatrix
-                * trMat
+                * localMatrix
                 * currentVertex;
+
+    v_wpos = modelMatrix
+           * localMatrix
+           * currentVertex;
 
     v_normal = modelMatrix
              * allNormals[gl_VertexID];
     v_color = abs(normalize(currentVertex.xyz));
     v_isVisible = isVisible ? 1.0f:0.0f;
-    v_eye = normalize(eye);
+    v_weye = eye;
 }
