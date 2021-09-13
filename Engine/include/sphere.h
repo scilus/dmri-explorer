@@ -67,6 +67,7 @@ private:
     /// \param[in] r Radius
     /// \param[in] theta Inclination angle in radians.
     /// \param[in] phi Azimuth angle in radians.
+    /// \return Corresponding position in cartesian coordinates.
     glm::vec3 convertToCartesian(float r, float theta, float phi) const;
 
     /// Convert cartesian coordinates to spherical coordinates.

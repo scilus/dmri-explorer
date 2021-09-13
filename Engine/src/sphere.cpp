@@ -1,6 +1,5 @@
 #include <sphere.h>
 #include <glm/gtx/norm.hpp>
-#include <iostream>
 #include <map>
 
 namespace
@@ -24,6 +23,17 @@ const unsigned int BASE_ICOSAHEDRON_INDICES[BASE_ICOSAHEDRON_NB_FACES*3] = {
     7,3,10, 7,10,6, 7,6,11, 11,6,0, 0,6,1,
     6,10,1, 9,11,0, 9,2,11, 9,5,2, 7,11,2
 };
+
+
+std::pair<unsigned int, unsigned int> GetKey(unsigned int v0, unsigned int v1)
+{
+    // return the same pair for {v0, v1} and {v1, v0}
+    if(v1 < v0)
+    {
+        return std::pair<unsigned int, unsigned int>(v1, v0);
+    }
+    return std::pair<unsigned int, unsigned int>(v0, v1);
+}
 }
 
 namespace Slicer
@@ -150,19 +160,11 @@ void Sphere::genUnitIcosahedron()
         mIndices.push_back(BASE_ICOSAHEDRON_INDICES[i]);
     }
 
-    // Subdivide icosahedron up to resolution
+    // Subdivide icosahedron up to mResolution
     for(int i = 0; i < mResolution; ++i)
-        subdivide();
-}
-
-std::pair<unsigned int, unsigned int> GetKey(unsigned int v0, unsigned int v1)
-{
-    // return the same pair for {v0, v1} and {v1, v0}
-    if(v1 < v0)
     {
-        return std::pair<unsigned int, unsigned int>(v1, v0);
+        subdivide();
     }
-    return std::pair<unsigned int, unsigned int>(v0, v1);
 }
 
 void Sphere::subdivide()
