@@ -81,7 +81,7 @@ void Application::initialize()
                              glm::vec3(0.0f, 1.0f, 0.0f),  // upvector
                              glm::vec3(0.0f, 0.0f, 0.0f),  //lookat
                              glm::radians(60.0f), aspectRatio,
-                             0.5f, 500.0f,
+                             0.1f, 500.0f,
                              mState));
 }
 

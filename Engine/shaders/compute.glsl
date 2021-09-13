@@ -79,7 +79,7 @@ float evaluateSH(uint voxID, uint sphVertID)
         }
         return ret;
     }
-    return 0.0;
+    return 0.0f;
 }
 
 void scaleSphere(uint voxID, uint firstVertID, bool isVisible)
