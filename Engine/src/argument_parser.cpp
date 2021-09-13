@@ -6,7 +6,7 @@ namespace Slicer
 {
 namespace
 {
-const int DEFAULT_SPHERE_RESOLUTION = 25;
+const int DEFAULT_SPHERE_RESOLUTION = 3;
 }
 
 ArgumentParser::ArgumentParser(int argc, char** argv)

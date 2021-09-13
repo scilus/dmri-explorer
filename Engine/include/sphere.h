@@ -53,20 +53,27 @@ public:
     inline std::vector<float> GetOrdersList() const { return mSHBasis->GetOrderList(); };
 
 private:
-    /// Generate the sphere mesh.
-    void genUnitSphere();
+    /// Generate the sphere mesh from a unit icosahedron.
+    void genUnitIcosahedron();
 
-    /// Add a point to the mesh.
-    /// \param[in] theta Inclination angle in radians.
-    /// \param[in] phi Azimuth angle in radians.
-    /// \param[in] r Radius of sphere.
-    void addPoint(float theta, float phi, float r);
+    /// Subdivide each triangle into 4 smaller triangles.
+    void subdivide();
+
+    /// Add a point to the sphere.
+    /// \param[in] cartesian Point to add, expressed in cartesian coordinates
+    void addPoint(const glm::vec3& cartesian);
 
     /// Convert spherical coordinates to cartesian coordinates.
     /// \param[in] r Radius
     /// \param[in] theta Inclination angle in radians.
     /// \param[in] phi Azimuth angle in radians.
+    /// \return Corresponding position in cartesian coordinates.
     glm::vec3 convertToCartesian(float r, float theta, float phi) const;
+
+    /// Convert cartesian coordinates to spherical coordinates.
+    /// \param[in] cartesian 3D cartesian coordinate.
+    /// \return Corresponding position in spherical coordinates.
+    Math::SphericalCoordinates convertToSpherical(const glm::vec3& cartesian) const;
 
     /// Sphere points as homogeneous coordinates.
     std::vector<glm::vec4> mPoints;
