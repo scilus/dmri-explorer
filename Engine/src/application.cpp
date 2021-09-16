@@ -9,7 +9,7 @@ const unsigned int WIN_HEIGHT = 600;
 const float TRANSLATION_SPEED = 0.02f;
 const float ROTATION_SPEED = 0.005f;
 const float ZOOM_SPEED = 1.0f;
-const std::string WIN_TITLE = "RT fODF Slicer";
+const std::string WIN_TITLE = "dmri-explorer";
 const std::string GLSL_VERSION_STR = "#version 460";
 }
 

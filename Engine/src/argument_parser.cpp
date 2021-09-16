@@ -53,8 +53,8 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
 void ArgumentParser::PrintUsage() const
 {
     std::string usage = "Usage:\n";
-    usage += "RT fODF Slicer - Real-Time fiber ODF Slicer\n";
-    usage += "rtfodfslicer image [sphere_resolution]\n";
+    usage += "dmri-explorer - Real-time Diffusion MRI viewer\n";
+    usage += "dmriexplorer image [sphere_resolution]\n";
     usage += "\n";
     usage += "Mandatory arguments\n";
     usage += "    image: Path to the SH image in nifti file format.\n";
