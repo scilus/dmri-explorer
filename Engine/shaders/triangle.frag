@@ -158,7 +158,3 @@ void main()
     vec3 outColor = (ambient + diffuse + specular) * (fadeIfHidden > 0 ? GetFading() : 1.0f);
     shaded_color = vec4(outColor, 1.0f);
 }
-
-    //const float x = length(world_pos.xyz - planesIntersection.xyz);
-    //const float sigma = 15.0f;
-    //const float fading = pow(EULERS_NUMBER, -0.5f * pow(x / sigma, 2.0f));
