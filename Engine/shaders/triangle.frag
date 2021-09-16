@@ -81,21 +81,21 @@ float GetFading()
     if(isBehindSlice.x)
     {
         // object is behind X plane and does not belong to X plane
-        const float x = getNormalized(absDotEyeNormal.x, MIN_ALPHA, 1.0f, 0.0f, 1.0f);
+        const float x = getNormalized(absDotEyeNormal.x, MIN_BG_SHADING, 1.0f, 0.0f, 1.0f);
         backgroundFading = min(backgroundFading,
                                transitionFunction(x, HIDDEN_FRAG_SIGMA, MIN_BG_SHADING));
     }
     if(isBehindSlice.y)
     {
         // object is behind Y plane and does not belong to Y plane
-        const float x = getNormalized(absDotEyeNormal.y, MIN_ALPHA, 1.0f, 0.0f, 1.0f);
+        const float x = getNormalized(absDotEyeNormal.y, MIN_BG_SHADING, 1.0f, 0.0f, 1.0f);
         backgroundFading = min(backgroundFading,
                                transitionFunction(x, HIDDEN_FRAG_SIGMA, MIN_BG_SHADING));
     }
     if(isBehindSlice.z)
     {
         // object is behind Z plane and does not belong to Z plane
-        const float x = getNormalized(absDotEyeNormal.z, MIN_ALPHA, 1.0f, 0.0f, 1.0f);
+        const float x = getNormalized(absDotEyeNormal.z, MIN_BG_SHADING, 1.0f, 0.0f, 1.0f);
         backgroundFading = min(backgroundFading,
                                transitionFunction(x, HIDDEN_FRAG_SIGMA, MIN_BG_SHADING));
     }
