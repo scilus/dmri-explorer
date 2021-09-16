@@ -26,7 +26,7 @@ SHField::SHField(const std::shared_ptr<ApplicationState>& state,
     initializeMembers();
     resetCS(std::shared_ptr<CoordinateSystem>(new CoordinateSystem(glm::mat4(1.0f), parent)));
 
-    const std::string csPath = RTFODFSLICER_SHADERS_DIR + std::string("/compute.glsl");
+    const std::string csPath = DMRI_EXPLORER_SHADERS_DIR + std::string("/compute.glsl");
     mComputeShader = GPU::ShaderProgram(csPath, GL_COMPUTE_SHADER);
 
     // Bind primitives to GPU
@@ -77,8 +77,8 @@ void SHField::registerStateCallbacks()
 
 void SHField::initProgramPipeline()
 {
-    const std::string vsPath = RTFODFSLICER_SHADERS_DIR + std::string("/triangle.vert");
-    const std::string fsPath = RTFODFSLICER_SHADERS_DIR + std::string("/triangle.frag");
+    const std::string vsPath = DMRI_EXPLORER_SHADERS_DIR + std::string("/triangle.vert");
+    const std::string fsPath = DMRI_EXPLORER_SHADERS_DIR + std::string("/triangle.frag");
     std::vector<GPU::ShaderProgram> shaders;
     shaders.push_back(GPU::ShaderProgram(vsPath, GL_VERTEX_SHADER));
     shaders.push_back(GPU::ShaderProgram(fsPath, GL_FRAGMENT_SHADER));

@@ -1,8 +1,8 @@
-# RT fODF Slicer
-A real-time fiber ODF slicing application for Linux using `OpenGL 4.6`. It can visualize spherical functions expressed as a series of spherical harmonics coefficients in DIPY's `descoteaux07` legacy real symmetric SH basis (See [this link](https://dipy.org/documentation/1.4.1./theory/sh_basis/) for more details.).
+# dmri-explorer : A Diffusion MRI Visualization Application
+A real-time diffusion MRI slicing application for Linux using `OpenGL 4.6`. It can visualize spherical functions expressed as a series of spherical harmonics coefficients in DIPY's `descoteaux07` legacy real symmetric SH basis (See [this link](https://dipy.org/documentation/1.4.1./theory/sh_basis/) for more details.).
 
 ## CDMRI'21
-The software is presented as part of the CDMRI'21 workshop. It has however evolved since then and will keep getting better over time. For the implementation presented at the workshop, please refer to the release [v0.1](https://github.com/CHrlS98/RTfODFSlicer/releases/tag/v0.1).
+The software is presented as part of the CDMRI'21 workshop. It has however evolved since then and will keep getting better over time. For the implementation presented at the workshop, please refer to the release [v0.1](https://github.com/scilus/dmri-explorer/releases/tag/v0.1).
 
 ## Installation
 
@@ -36,8 +36,8 @@ export PATH='${absolute_path_to_project}/build/Engine':$PATH
 ## Running the application
 To run the executable:
 ```
-rtfodfslicer path/to/image.nii.gz
+dmriexplorer path/to/image.nii.gz
 ```
 
 ## Documentation
-Documentation is available on the application's [website](https://chrls98.github.io/RTfODFSlicer/html/index.html). It contains up-to-date documentation on the code generated with Doxygen.
+The repository's [website](https://scilus.github.io/dmri-explorer/html/index.html) contains up-to-date documentation on the code generated with Doxygen.

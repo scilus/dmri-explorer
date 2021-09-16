@@ -4,7 +4,7 @@ set(CMAKE_TOOLCHAIN_FILE ./third/vcpkg-export-20210512-131839/scripts/buildsyste
 #========== Global Configurations =============#
 #----------------------------------------------#
 cmake_minimum_required(VERSION 3.11)
-project(rtfodfslicer)
+project(dmriexplorer)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
