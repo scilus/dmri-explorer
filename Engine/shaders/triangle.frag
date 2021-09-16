@@ -30,8 +30,9 @@ const float KD = 0.6;
 const float KS = 0.1;
 
 const float PARALLEL_PLANE_EPSILON = 0.1f;
-const float HIDDEN_FRAG_TRANSITION_SIGMA = 0.1f;
-const float PARALLEL_FRAG_TRANSITION_SIGMA = 0.15f;
+const float HIDDEN_FRAG_SIGMA = 0.1f;
+const float PARALLEL_FRAG_SIGMA = 0.12f;
+const float MIN_BG_SHADING = 0.2f;
 const float MIN_ALPHA = 0.1f;
 
 float getNormalized(float x, float cmin, float cmax, float nmin, float nmax)
@@ -39,7 +40,7 @@ float getNormalized(float x, float cmin, float cmax, float nmin, float nmax)
     return (x - cmin)/(cmax - cmin)*(nmax - nmin) + nmin;
 }
 
-float alphaTransitionFunction(float x, float sigma, float minFading)
+float transitionFunction(float x, float sigma, float minFading)
 {
     const float fx = exp(-0.5f * pow(x / sigma, 2));
     return getNormalized(fx, 0.0f, 1.0f, minFading, 1.0f);
@@ -48,14 +49,11 @@ float alphaTransitionFunction(float x, float sigma, float minFading)
 float GetFading()
 {
     // world coordinate of planes intersection
-    const vec4 planesIntersection = modelMatrix
-                                  * vec4(float(sliceIndex.x - gridDims.x / 2),
-                                         float(sliceIndex.y - gridDims.y / 2),
-                                         float(sliceIndex.z - gridDims.z / 2),
-                                         1.0f);
+    const vec4 worldPlanesCenter = modelMatrix
+                                 * vec4(sliceIndex.xyz - gridDims.xyz / 2, 1.0f);
 
-    const vec4 planesCenterToFragPosDir = normalize(world_frag_pos - planesIntersection);
-    const vec4 planesCenterToEyePosDir = normalize(world_eye_pos - planesIntersection);
+    const vec4 planesCenterToFragPosDir = normalize(world_frag_pos - worldPlanesCenter);
+    const vec4 planesCenterToEyePosDir = normalize(world_eye_pos - worldPlanesCenter);
 
     // slices normal
     vec4 worldXNormal = normalize(modelMatrix * X_SLICE_NORMAL);
@@ -79,53 +77,54 @@ float GetFading()
                                       vertex_slice.z < 0.0f);
 
     // test for fragment behind planes
-    float fading = 1.0f;
+    float backgroundFading = 1.0f;
     if(isBehindSlice.x)
     {
         // object is behind X plane and does not belong to X plane
         const float x = getNormalized(absDotEyeNormal.x, MIN_ALPHA, 1.0f, 0.0f, 1.0f);
-        fading = min(fading, alphaTransitionFunction(x, HIDDEN_FRAG_TRANSITION_SIGMA, MIN_ALPHA));
+        backgroundFading = min(backgroundFading,
+                               transitionFunction(x, HIDDEN_FRAG_SIGMA, MIN_BG_SHADING));
     }
     if(isBehindSlice.y)
     {
         // object is behind Y plane and does not belong to Y plane
         const float x = getNormalized(absDotEyeNormal.y, MIN_ALPHA, 1.0f, 0.0f, 1.0f);
-        fading = min(fading, alphaTransitionFunction(x, HIDDEN_FRAG_TRANSITION_SIGMA, MIN_ALPHA));
+        backgroundFading = min(backgroundFading,
+                               transitionFunction(x, HIDDEN_FRAG_SIGMA, MIN_BG_SHADING));
     }
     if(isBehindSlice.z)
     {
         // object is behind Z plane and does not belong to Z plane
         const float x = getNormalized(absDotEyeNormal.z, MIN_ALPHA, 1.0f, 0.0f, 1.0f);
-        fading = min(fading, alphaTransitionFunction(x, HIDDEN_FRAG_TRANSITION_SIGMA, MIN_ALPHA));
+        backgroundFading = min(backgroundFading,
+                               transitionFunction(x, HIDDEN_FRAG_SIGMA, MIN_BG_SHADING));
     }
 
-    // the fragment is not blocked by any plane; is it parallel?
-    if(vertex_slice.x > 0.0f && vertex_slice.y < 0.0f && vertex_slice.z < 0.0f)
+    float parallelPlanesFading = 0.0f;
+    float newFading;
+    // also shade by the angle between the plane and the view vector
+    if(vertex_slice.x > 0.0f)
     {
-        if(absDotEyeNormal.x < PARALLEL_PLANE_EPSILON / 2.0f)
-        {
-            discard;
-        }
-        fading = min(fading, 1.0f + MIN_ALPHA - alphaTransitionFunction(absDotEyeNormal.x, PARALLEL_FRAG_TRANSITION_SIGMA, 0.0f));
+        newFading = 1.0f - transitionFunction(absDotEyeNormal.x, PARALLEL_FRAG_SIGMA, 0.0f);
+        parallelPlanesFading = max(parallelPlanesFading, newFading);
     }
-    if(vertex_slice.x < 0.0f && vertex_slice.y > 0.0f && vertex_slice.z < 0.0f)
+    if(vertex_slice.y > 0.0f)
     {
-        if(absDotEyeNormal.y < PARALLEL_PLANE_EPSILON / 2.0f)
-        {
-            discard;
-        }
-        fading = min(fading, 1.0f + MIN_ALPHA - alphaTransitionFunction(absDotEyeNormal.y, PARALLEL_FRAG_TRANSITION_SIGMA, 0.0f));
+        newFading = 1.0f - transitionFunction(absDotEyeNormal.y, PARALLEL_FRAG_SIGMA, 0.0f);
+        parallelPlanesFading = max(parallelPlanesFading, newFading);
     }
-    if(vertex_slice.x < 0.0f && vertex_slice.y < 0.0f && vertex_slice.z > 0.0f)
+    if(vertex_slice.z > 0.0f)
     {
-        if(absDotEyeNormal.z < PARALLEL_PLANE_EPSILON / 2.0f)
-        {
-            discard;
-        }
-        fading = min(fading, 1.0f + MIN_ALPHA - alphaTransitionFunction(absDotEyeNormal.z, PARALLEL_FRAG_TRANSITION_SIGMA, 0.0f));
+        newFading = 1.0f - transitionFunction(absDotEyeNormal.z, PARALLEL_FRAG_SIGMA, 0.0f);
+        parallelPlanesFading = max(parallelPlanesFading, newFading);
     }
 
-    // the fragment is not behind any plane
+    const float fading = min(backgroundFading, parallelPlanesFading);
+    if(fading < MIN_ALPHA)
+    {
+        discard;
+    }
+
     return fading;
 }
 
