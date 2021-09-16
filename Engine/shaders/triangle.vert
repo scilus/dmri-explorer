@@ -29,6 +29,7 @@ layout(std430, binding=7) buffer sphereInfoBuffer
     float sh0Threshold;
     float scaling;
     uint nbCoeffs;
+    uint fadeIfHidden; // bool
 };
 
 layout(std430, binding=8) buffer gridInfoBuffer

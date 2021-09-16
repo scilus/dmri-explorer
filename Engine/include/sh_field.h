@@ -106,6 +106,7 @@ private:
         float SH0threshold;
         float Scaling;
         unsigned int NbCoeffs;
+        unsigned int FadeIfHidden;
     };
 
     /// Struct containing the voxel grid attributes for the GPU.
@@ -154,6 +155,8 @@ private:
     /// \param[in] previous Previous 0th SH threshold.
     /// \param[in] threshold New SH0 threshold.
     void SetSH0Threshold(float previous, float threshold);
+
+    void SetFadeIfHidden(bool previous, bool fadeEnabled);
 
     /// Generate a vertex buffer object for data.
     /// \param[in] data The data to send to the GPU.

@@ -73,6 +73,12 @@ void SHField::registerStateCallbacks()
             this->SetSphereScaling(p, n);
         }
     );
+    mState->Sphere.FadeIfHidden.RegisterCallback(
+        [this](bool p, bool n)
+        {
+            this->SetFadeIfHidden(p, n);
+        }
+    );
 }
 
 void SHField::initProgramPipeline()
@@ -177,6 +183,7 @@ void SHField::initializeGPUData()
     sphereData.SH0threshold = mState->Sphere.SH0Threshold.Get();
     sphereData.Scaling = mState->Sphere.Scaling.Get();
     sphereData.NbCoeffs = mState->FODFImage.Get().dims().w;
+    sphereData.FadeIfHidden = mState->Sphere.FadeIfHidden.Get();
 
     GridData gridData;
     gridData.IsSliceDirty = glm::ivec4(1, 1, 1, 0);
@@ -266,6 +273,15 @@ void SHField::SetSphereScaling(float previous, float scaling)
     if(previous != scaling)
     {
         mSphereInfoData.Update(4*sizeof(unsigned int) + sizeof(float), sizeof(float), &scaling);
+    }
+}
+
+void SHField::SetFadeIfHidden(bool previous, bool fadeEnabled)
+{
+    if(previous != fadeEnabled)
+    {
+        unsigned int uintFadeEnabled = fadeEnabled ? 1 : 0;
+        mSphereInfoData.Update(5*sizeof(unsigned int) + 2*sizeof(float), sizeof(unsigned int), &uintFadeEnabled);
     }
 }
 
