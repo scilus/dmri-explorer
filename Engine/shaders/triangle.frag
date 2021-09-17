@@ -45,7 +45,7 @@ const float PARALLEL_PLANE_EPSILON = 0.1f;
 const float HIDDEN_FRAG_SIGMA = 0.1f;
 const float PARALLEL_FRAG_SIGMA = 0.12f;
 const float MIN_BG_SHADING = 0.2f;
-const float MIN_ALPHA = 0.1f;
+const float MIN_SHADING_THRESHOLD = 0.1f;
 
 float getNormalized(float x, float cmin, float cmax, float nmin, float nmax)
 {
@@ -132,7 +132,7 @@ float GetFading()
     }
 
     const float fading = min(backgroundFading, parallelPlanesFading);
-    if(fading < MIN_ALPHA)
+    if(fading < MIN_SHADING_THRESHOLD)
     {
         discard;
     }
