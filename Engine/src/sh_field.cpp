@@ -272,7 +272,9 @@ void SHField::SetSphereScaling(float previous, float scaling)
 {
     if(previous != scaling)
     {
-        mSphereInfoData.Update(4*sizeof(unsigned int) + sizeof(float), sizeof(float), &scaling);
+        mSphereInfoData.Update(4*sizeof(unsigned int) + sizeof(float),
+                               sizeof(float),
+                               &scaling);
     }
 }
 
@@ -281,7 +283,9 @@ void SHField::SetFadeIfHidden(bool previous, bool fadeEnabled)
     if(previous != fadeEnabled)
     {
         unsigned int uintFadeEnabled = fadeEnabled ? 1 : 0;
-        mSphereInfoData.Update(5*sizeof(unsigned int) + 2*sizeof(float), sizeof(unsigned int), &uintFadeEnabled);
+        mSphereInfoData.Update(5*sizeof(unsigned int) + 2*sizeof(float),
+                               sizeof(unsigned int),
+                               &uintFadeEnabled);
     }
 }
 
