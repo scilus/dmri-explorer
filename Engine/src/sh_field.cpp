@@ -52,31 +52,31 @@ void SHField::registerStateCallbacks()
     mState->VoxelGrid.SliceIndices.RegisterCallback(
         [this](glm::vec3 p, glm::vec3 n)
         {
-            this->SetSliceIndex(p, n);
+            this->setSliceIndex(p, n);
         }
     );
     mState->Sphere.IsNormalized.RegisterCallback(
         [this](bool p, bool n)
         {
-            this->SetNormalized(p, n);
+            this->setNormalized(p, n);
         }
     );
     mState->Sphere.SH0Threshold.RegisterCallback(
         [this](float p, float n)
         {
-            this->SetSH0Threshold(p, n);
+            this->setSH0Threshold(p, n);
         }
     );
     mState->Sphere.Scaling.RegisterCallback(
         [this](float p, float n)
         {
-            this->SetSphereScaling(p, n);
+            this->setSphereScaling(p, n);
         }
     );
     mState->Sphere.FadeIfHidden.RegisterCallback(
         [this](bool p, bool n)
         {
-            this->SetFadeIfHidden(p, n);
+            this->setFadeIfHidden(p, n);
         }
     );
 }
@@ -230,7 +230,7 @@ GLuint SHField::genVBO(const std::vector<T>& data) const
     return vbo;
 }
 
-void SHField::SetSliceIndex(glm::vec3 prevIndices, glm::vec3 newIndices)
+void SHField::setSliceIndex(glm::vec3 prevIndices, glm::vec3 newIndices)
 {
     glm::ivec4 isSliceDirty;
     isSliceDirty.x = prevIndices.x != newIndices.x;
@@ -246,7 +246,7 @@ void SHField::SetSliceIndex(glm::vec3 prevIndices, glm::vec3 newIndices)
     }
 }
 
-void SHField::SetNormalized(bool previous, bool isNormalized)
+void SHField::setNormalized(bool previous, bool isNormalized)
 {
     if(previous != isNormalized)
     {
@@ -259,7 +259,7 @@ void SHField::SetNormalized(bool previous, bool isNormalized)
 }
 
 
-void SHField::SetSH0Threshold(float previous, float threshold)
+void SHField::setSH0Threshold(float previous, float threshold)
 {
     if(previous != threshold)
     {
@@ -268,7 +268,7 @@ void SHField::SetSH0Threshold(float previous, float threshold)
 }
 
 
-void SHField::SetSphereScaling(float previous, float scaling)
+void SHField::setSphereScaling(float previous, float scaling)
 {
     if(previous != scaling)
     {
@@ -278,7 +278,7 @@ void SHField::SetSphereScaling(float previous, float scaling)
     }
 }
 
-void SHField::SetFadeIfHidden(bool previous, bool fadeEnabled)
+void SHField::setFadeIfHidden(bool previous, bool fadeEnabled)
 {
     if(previous != fadeEnabled)
     {
