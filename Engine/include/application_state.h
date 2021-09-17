@@ -113,7 +113,8 @@ struct Sphere
     :Scaling()
     ,SH0Threshold()
     ,IsNormalized()
-    ,Resolution(){};
+    ,Resolution()
+    ,FadeIfHidden(){};
 
     /// The scaling factor for the sphere glyphs.
     ApplicationParameter<float> Scaling;
@@ -127,6 +128,9 @@ struct Sphere
     /// Resolution of the sphere. The higher, the more
     /// detailed the representation.
     ApplicationParameter<int> Resolution;
+
+    /// Whether hidden glyphs should fade to black.
+    ApplicationParameter<bool> FadeIfHidden;
 };
 
 /// Struct containing global parameters for window and inputs.

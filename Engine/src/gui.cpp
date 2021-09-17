@@ -86,7 +86,7 @@ void UIManager::drawPreferencesWindow()
         return;
     
     ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(406.f, 79.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(406.f, 108.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
     ImGui::Begin("Preferences", &mShowPreferences);
@@ -122,7 +122,7 @@ void UIManager::drawSlicersWindow()
         return;
 
     ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(417.f, 180.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(417.f, 200.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
     ImGui::Begin("Slices options", &mShowSlicers);
@@ -188,7 +188,9 @@ void UIManager::drawSlicersWindow()
     auto& scalingParam = mState->Sphere.Scaling;
     auto& thresholdParam = mState->Sphere.SH0Threshold;
     auto& normalizedParam = mState->Sphere.IsNormalized;
-    if (!scalingParam.IsInit() || !thresholdParam.IsInit() || !normalizedParam.IsInit())
+    auto& fadeHiddenParam = mState->Sphere.FadeIfHidden;
+    if (!scalingParam.IsInit() || !thresholdParam.IsInit() ||
+        !normalizedParam.IsInit() || !fadeHiddenParam.IsInit())
     {
         ImGui::Spacing();
         ImGui::End();
@@ -198,6 +200,7 @@ void UIManager::drawSlicersWindow()
     float scaling = scalingParam.Get();
     float threshold = thresholdParam.Get();
     bool normalized = normalizedParam.Get();
+    bool fadeIfHidden = fadeHiddenParam.Get();
 
     ImGui::Text("Sphere scaling");
     ImGui::SameLine();
@@ -216,6 +219,12 @@ void UIManager::drawSlicersWindow()
     if(ImGui::Checkbox("##sphere.normalized", &normalized))
     {
         normalizedParam.Update(normalized);
+    }
+    ImGui::Text("Fade if hidden");
+    ImGui::SameLine();
+    if(ImGui::Checkbox("##sphere.fadeIfHidden", &fadeIfHidden))
+    {
+        fadeHiddenParam.Update(fadeIfHidden);
     }
 
     ImGui::Spacing();

@@ -106,6 +106,7 @@ private:
         float SH0threshold;
         float Scaling;
         unsigned int NbCoeffs;
+        unsigned int FadeIfHidden;
     };
 
     /// Struct containing the voxel grid attributes for the GPU.
@@ -138,22 +139,27 @@ private:
     /// Set sphere scaling.
     /// \param[in] previous Previous scaling multiplier.
     /// \param[in] scaling New scaling.
-    void SetSphereScaling(float previous, float scaling);
+    void setSphereScaling(float previous, float scaling);
 
     /// Set the 3D slice index.
     /// \param[in] previous Previous slice index.
     /// \param[in] indices New slice index.
-    void SetSliceIndex(glm::vec3 previous, glm::vec3 indices);
+    void setSliceIndex(glm::vec3 previous, glm::vec3 indices);
 
     /// Toggle per-voxel SH normalization by maximum radius.
     /// \param[in] previous Previous value.
     /// \param[in] normalized True to normalize SH by maximum radius.
-    void SetNormalized(bool previous, bool normalized);
+    void setNormalized(bool previous, bool normalized);
 
     /// Set the threshold on 0th SH coefficient.
     /// \param[in] previous Previous 0th SH threshold.
     /// \param[in] threshold New SH0 threshold.
-    void SetSH0Threshold(float previous, float threshold);
+    void setSH0Threshold(float previous, float threshold);
+
+    /// Toggle fading of hidden objects.
+    /// \param[in] previous Previous value.
+    /// \param[in] fadeEnabled New value for fading behaviour.
+    void setFadeIfHidden(bool previous, bool fadeEnabled);
 
     /// Generate a vertex buffer object for data.
     /// \param[in] data The data to send to the GPU.
