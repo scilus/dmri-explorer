@@ -2,7 +2,7 @@
 A real-time diffusion MRI slicing application for Linux using `OpenGL 4.6`. It can visualize spherical functions expressed as a series of spherical harmonics coefficients in DIPY's `descoteaux07` legacy real symmetric SH basis (See [this link](https://dipy.org/documentation/1.4.1./theory/sh_basis/) for more details.).
 
 ## CDMRI'21
-The software is presented as part of the CDMRI'21 workshop. It has however evolved since then and will keep getting better over time. For the implementation presented at the workshop, please refer to the release [v0.1](https://github.com/scilus/dmri-explorer/releases/tag/v0.1).
+The software is presented as part of the CDMRI'21 workshop. It has however evolved since then and will keep getting better over time. For the performances reported at the workshop, please refer to the release [v0.1](https://github.com/scilus/dmri-explorer/releases/tag/v0.1). However, **we highly encourage the user to use the latest version of the application** on the `main` branch, as efforts have been made to lower GPU and CPU memory usage.
 
 ## Installation
 
