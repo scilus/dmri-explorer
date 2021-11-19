@@ -34,6 +34,9 @@ private:
     /// Initialize GLFW, OpenGL backend, Scene, UI, Camera, etc.
     void initialize();
 
+    /// Render a frame one time.
+    void renderFrame();
+
     /// Initialize the ApplicationState object.
     /// \param[in] parser The command line arguments.
     void initApplicationState(const ArgumentParser& parser);
