@@ -36,7 +36,7 @@ SHField::SHField(const std::shared_ptr<ApplicationState>& state,
 
     initializeModel();
     initializeGPUData();
-    ScaleSpheres();
+    scaleSpheres();
 }
 
 SHField::~SHField()
@@ -242,7 +242,7 @@ void SHField::setSliceIndex(glm::vec3 prevIndices, glm::vec3 newIndices)
         glm::ivec4 sliceIndices = glm::ivec4(newIndices, 0);
         mGridInfoData.Update(sizeof(glm::ivec4), sizeof(glm::ivec4), &sliceIndices);
         mGridInfoData.Update(2*sizeof(glm::ivec4), sizeof(glm::ivec4), &isSliceDirty);
-        ScaleSpheres();
+        scaleSpheres();
     }
 }
 
@@ -254,7 +254,7 @@ void SHField::setNormalized(bool previous, bool isNormalized)
         glm::ivec4 isDirty(1, 1, 1, 0);
         mSphereInfoData.Update(sizeof(unsigned int)*2, sizeof(unsigned int), &isNormalizedInt);
         mGridInfoData.Update(2*sizeof(glm::ivec4), sizeof(glm::ivec4), &isDirty);
-        ScaleSpheres();
+        scaleSpheres();
     }
 }
 
@@ -298,7 +298,7 @@ void SHField::drawSpecific()
                                 (GLvoid*)0, mIndirectCmd.size(), 0);
 }
 
-void SHField::ScaleSpheres()
+void SHField::scaleSpheres()
 {
     glUseProgram(mComputeShader.ID());
     glDispatchCompute(mNbSpheres, 1, 1);

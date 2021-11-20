@@ -75,10 +75,10 @@ public:
     /// Destructor.
     ~SHField();
 
-    /// Scale spheres by launching a compute shader pass.
-    void ScaleSpheres();
-
 protected:
+    /// Scale spheres by launching a compute shader pass.
+    void scaleSpheres();
+
     /// \see Model::drawSpecific()
     void drawSpecific() override;
 
