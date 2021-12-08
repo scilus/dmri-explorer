@@ -26,15 +26,12 @@ void Model::initializeModel()
 
 void Model::Draw()
 {
-    if(!mIsInit)
+    if(mIsInit)
     {
-        std::string msg = "Model is not initialized.\n";
-        msg += "Initialize first by calling Model::initializeModel().";
-        throw std::runtime_error(msg);
+        mProgramPipeline.Bind();
+        uploadTransformToGPU();
+        drawSpecific();
     }
-    mProgramPipeline.Bind();
-    uploadTransformToGPU();
-    drawSpecific();
 }
 
 void Model::uploadTransformToGPU()
