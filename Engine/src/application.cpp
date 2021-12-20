@@ -88,6 +88,7 @@ void Application::initialize()
     // Render frame without the model
     renderFrame();
 
+    // Add SH field once the UI is drawn
     mScene->AddSHField();
 }
 

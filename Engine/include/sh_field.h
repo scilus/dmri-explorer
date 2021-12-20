@@ -142,7 +142,12 @@ private:
     /// \param[in] lastIndex Index (exclusive) of the last sphere to initialize.
     void initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex);
 
-    void dispatchSubsetCommand(void(SHField::*fn)(size_t, size_t),
+    /// Dispatch some method for filling arrays in parrallel.
+    /// \param[in] fn Pointer to member function to call.
+    /// \param[in] nbElements Number of elements to fill.
+    /// \param[in] nbThreads Number of threads to use.
+    /// \param[out] threads Vector of threads.
+    void dispatchSubsetCommands(void(SHField::*fn)(size_t, size_t),
                                size_t nbElements, size_t nbThreads,
                                std::vector<std::thread>& threads);
 

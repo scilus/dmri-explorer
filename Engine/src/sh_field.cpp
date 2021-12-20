@@ -111,11 +111,11 @@ void SHField::initializeMembers()
 
     // Copy SH coefficients to contiguous typed buffer.
     std::vector<std::thread> threads;
-    dispatchSubsetCommand(&SHField::copySubsetSHCoefficientsFromImage,
+    dispatchSubsetCommands(&SHField::copySubsetSHCoefficientsFromImage,
                           image.nbVox(), NB_THREADS_FOR_SH, threads);
 
     // Copy sphere indices and instantiate draw commands.
-    dispatchSubsetCommand(&SHField::initializeSubsetDrawCommand,
+    dispatchSubsetCommands(&SHField::initializeSubsetDrawCommand,
                           mNbSpheres, NB_THREADS_FOR_SPHERES, threads);
 
     // wait for all threads to finish
@@ -131,8 +131,8 @@ void SHField::initializeMembers()
     timer.Stop();
 }
 
-void SHField::dispatchSubsetCommand(void(SHField::*fn)(size_t, size_t), size_t nbElements,
-                                    size_t nbThreads, std::vector<std::thread>& threads)
+void SHField::dispatchSubsetCommands(void(SHField::*fn)(size_t, size_t), size_t nbElements,
+                                     size_t nbThreads, std::vector<std::thread>& threads)
 {
     size_t nbElementsPerThread = nbElements / nbThreads;
     size_t startIndex = 0;
