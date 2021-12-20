@@ -1,7 +1,12 @@
 #include <sh_field.h>
 #include <glad/glad.h>
-#include <thread>
 #include <timer.h>
+
+namespace
+{
+const int NB_THREADS_FOR_SH = 6;
+const int NB_THREADS_FOR_SPHERES = 2;
+}
 
 namespace Slicer
 {
@@ -85,6 +90,8 @@ void SHField::initProgramPipeline()
 
 void SHField::initializeMembers()
 {
+    Utilities::Timer timer("Initialize members");
+    timer.Start();
     // Initialize compute shader
     const std::string csPath = DMRI_EXPLORER_SHADERS_DIR + std::string("/compute.glsl");
     mComputeShader = GPU::ShaderProgram(csPath, GL_COMPUTE_SHADER);
@@ -96,71 +103,78 @@ void SHField::initializeMembers()
                + image.dims().y * image.dims().z; // X-slice
     mSphere.reset(new Primitive::Sphere(mState->Sphere.Resolution.Get(),
                                         image.dims().w));
+    const auto numIndices = mSphere->GetIndices().size();
 
-    // Child threads for copying image and instantiating draw commands.
-    std::thread imageToGPUThread(&SHField::copySHCoefficientsFromImage, this);
-    std::thread initDrawCmdThread(&SHField::initializeDrawCommand, this);
-    imageToGPUThread.join();
-    initDrawCmdThread.join();
+    mSphHarmCoeffs.resize(image.length());
+    mIndices.resize(mNbSpheres * numIndices);
+    mIndirectCmd.resize(mNbSpheres);
+
+    // Copy SH coefficients to contiguous typed buffer.
+    std::vector<std::thread> threads;
+    dispatchSubsetCommand(&SHField::copySubsetSHCoefficientsFromImage,
+                          image.nbVox(), NB_THREADS_FOR_SH, threads);
+
+    // Copy sphere indices and instantiate draw commands.
+    dispatchSubsetCommand(&SHField::initializeSubsetDrawCommand,
+                          mNbSpheres, NB_THREADS_FOR_SPHERES, threads);
+
+    // wait for all threads to finish
+    for (auto& t : threads)
+    {
+        t.join();
+    }
 
     // Bind primitives to GPU
     glCreateVertexArrays(1, &mVAO);
     mIndicesBO = genVBO<GLuint>(mIndices);
     mIndirectBO = genVBO<DrawElementsIndirectCommand>(mIndirectCmd);
+    timer.Stop();
 }
 
-void SHField::copySHCoefficientsFromImage()
+void SHField::dispatchSubsetCommand(void(SHField::*fn)(size_t, size_t), size_t nbElements,
+                                    size_t nbThreads, std::vector<std::thread>& threads)
 {
-    Utilities::Timer voxelLoopTimer("Copy SH coeffs");
-    voxelLoopTimer.Start();
+    size_t nbElementsPerThread = nbElements / nbThreads;
+    size_t startIndex = 0;
+    size_t stopIndex = nbElementsPerThread;
+    for (int i = 0; i < nbThreads - 1; ++i)
+    {
+        threads.push_back(std::thread(fn, this, startIndex, stopIndex));
+        startIndex = stopIndex;
+        stopIndex += nbElementsPerThread;
+    }
+    threads.push_back(std::thread(fn, this, startIndex, nbElements));
+}
 
+void SHField::copySubsetSHCoefficientsFromImage(size_t firstIndex, size_t lastIndex)
+{
     const auto& image = mState->FODFImage.Get();
-    // safety when allocating shared memory
-    mMutex.lock();
-    mSphHarmCoeffs.resize(image.length());
-    mMutex.unlock();
-
-    // Fill SH coefficients and model matrix
     const unsigned int nCoeffs = image.dims().w;
-    for(uint flatIndex = 0; flatIndex < image.nbVox(); ++flatIndex)
+    for(uint flatIndex = firstIndex; flatIndex < lastIndex; ++flatIndex)
     {
         glm::vec<3, uint> id3D = image.unravelIndex3d(flatIndex);
 
         // Fill SH coefficients table
         for(int k = 0; k < nCoeffs; ++k)
         {
-            //mSphHarmCoeffs.push_back(static_cast<float>(image.at(id3D.x, id3D.y, id3D.z, k)));
-            mSphHarmCoeffs[flatIndex*nCoeffs + k] = static_cast<float>(image.at(id3D.x, id3D.y, id3D.z, k));
+            mSphHarmCoeffs[flatIndex*nCoeffs + k] =
+                static_cast<float>(image.at(id3D.x, id3D.y, id3D.z, k));
         }
-
     }
-    voxelLoopTimer.Stop();
 }
 
-void SHField::initializeDrawCommand()
+void SHField::initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex)
 {
-    Utilities::Timer sphereLoopTimer("Init draw command");
-    sphereLoopTimer.Start();
-
-    const auto& image = mState->FODFImage.Get();
-    const auto numIndices = mSphere->GetIndices().size();
+    const auto& indices = mSphere->GetIndices();
+    const auto numIndices = indices.size();
     const auto numVertices = mSphere->GetPoints().size();
 
-    // safety when allocating shared memory
-    mMutex.lock();
-    mIndices.resize(mNbSpheres * numIndices);
-    mIndirectCmd.resize(mNbSpheres);
-    mMutex.unlock();
-
-    const auto& indices = mSphere->GetIndices();
-    // Prepare draw command
-    uint i, j;
-    for(i = 0; i < mNbSpheres; ++i)
+    unsigned int i, j;
+    for(i = firstIndex; i < lastIndex; ++i)
     {
         // Add sphere faces
         for(j = 0; j < numIndices; ++j)
         {
-            //mIndices.push_back(idx);
             mIndices[i*numIndices+j] = indices[j];
         }
 
@@ -173,7 +187,6 @@ void SHField::initializeDrawCommand()
                 i * numVertices, // offset in element buffer array
                 0);
     }
-    sphereLoopTimer.Stop();
 }
 
 void SHField::initializeGPUData()
