@@ -4,7 +4,7 @@
 
 namespace
 {
-const int NB_THREADS_FOR_SH = 6;
+const int NB_THREADS_FOR_SH = 4;
 const int NB_THREADS_FOR_SPHERES = 2;
 }
 
