@@ -142,7 +142,7 @@ private:
     /// \param[in] lastIndex Index (exclusive) of the last sphere to initialize.
     void initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex);
 
-    /// Dispatch some method for filling arrays in parrallel.
+    /// Dispatch some method for filling arrays in parallel.
     /// \param[in] fn Pointer to member function to call.
     /// \param[in] nbElements Number of elements to fill.
     /// \param[in] nbThreads Number of threads to use.
