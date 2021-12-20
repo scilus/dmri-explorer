@@ -1,8 +1,8 @@
 # dmri-explorer : A Diffusion MRI Visualization Application
-A real-time diffusion MRI slicing application for Linux using `OpenGL 4.6`. It can visualize spherical functions expressed as a series of spherical harmonics coefficients in DIPY's `descoteaux07` legacy real symmetric SH basis (See [this link](https://dipy.org/documentation/1.4.1./theory/sh_basis/) for more details.).
+A real-time diffusion MRI slicing application for Linux using `OpenGL 4.6`. It can visualize spherical functions expressed as a series of spherical harmonics coefficients in DIPY's `descoteaux07` legacy real symmetric or full SH basis (See [this link](https://dipy.org/documentation/1.4.1./theory/sh_basis/) for more details.).
 
 ## CDMRI'21
-The software is presented as part of the CDMRI'21 workshop. It has however evolved since then and will keep getting better over time. For the implementation presented at the workshop, please refer to the release [v0.1](https://github.com/scilus/dmri-explorer/releases/tag/v0.1).
+The software is presented as part of the CDMRI'21 workshop. It has however evolved since then and will keep getting better over time. For the performances reported at the workshop, please refer to the release [v0.1](https://github.com/scilus/dmri-explorer/releases/tag/v0.1). However, **we highly encourage the user to use the latest version of the application** on the `main` branch, as efforts have been made to lower GPU and CPU memory usage.
 
 ## Installation
 
@@ -39,12 +39,17 @@ To run the executable:
 dmriexplorer path/to/image.nii.gz
 ```
 
-## Documentation
-The repository's [website](https://scilus.github.io/dmri-explorer/html/index.html) contains up-to-date documentation on the code generated with Doxygen.
-
 ## How to cite
 If you enjoy this application, please consider citing the following work.
-
 ```
 Poirier C., Descoteaux M., Gilet G. (2021) Accelerating Geometry-Based Spherical Harmonics Glyphs Rendering for dMRI Using Modern OpenGL. In: Cetin-Karayumak S. et al. (eds) Computational Diffusion MRI. CDMRI 2021. Lecture Notes in Computer Science, vol 13006. Springer, Cham. https://doi.org/10.1007/978-3-030-87615-9_13
 ```
+
+## Contributing
+Contributions are welcome and encouraged:
+* If you discover bugs (installation problems, in-app bugs, etc.), please [raise an issue](https://github.com/scilus/dmri-explorer/issues) describing the error and the steps to reproduce it;
+* If you have a feature request, you are also encouraged to raise an issue describing your need;
+* Pull-requests are also welcome!
+
+## Documentation
+The repository's [website](https://scilus.github.io/dmri-explorer/html/index.html) contains up-to-date documentation on the code generated with Doxygen.
