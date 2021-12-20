@@ -26,12 +26,13 @@ void Model::initializeModel()
 
 void Model::Draw()
 {
-    if(mIsInit)
+    if(!mIsInit)
     {
-        mProgramPipeline.Bind();
-        uploadTransformToGPU();
-        drawSpecific();
+        throw std::runtime_error("Model::Draw() called before initializeModel()");
     }
+    mProgramPipeline.Bind();
+    uploadTransformToGPU();
+    drawSpecific();
 }
 
 void Model::uploadTransformToGPU()
