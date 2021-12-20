@@ -33,15 +33,15 @@ public:
 
     /// Get indices array describing the sphere triangulation.
     /// \return Vector of indices.
-    inline std::vector<GLuint> getIndices() const { return mIndices; };
+    inline std::vector<GLuint> GetIndices() const { return mIndices; };
 
     /// Get the sphere points.
     /// \return Vector of points on the sphere.
-    inline std::vector<glm::vec4> getPoints() const { return mPoints; };
+    inline std::vector<glm::vec4> GetPoints() const { return mPoints; };
 
     /// Get the SH function at each sphere point.
     /// \return Vector of SH functions.
-    inline std::vector<float> getSHFuncs() const { return mSphHarmFunc; };
+    inline std::vector<float> GetSHFuncs() const { return mSphHarmFunc; };
 
     /// Get the maximum SH order.
     /// \return The maximum SH order for the basis.

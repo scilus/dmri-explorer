@@ -28,9 +28,7 @@ void Model::Draw()
 {
     if(!mIsInit)
     {
-        std::string msg = "Model is not initialized.\n";
-        msg += "Initialize first by calling Model::initializeModel().";
-        throw std::runtime_error(msg);
+        throw std::runtime_error("Model::Draw() called before initializeModel()");
     }
     mProgramPipeline.Bind();
     uploadTransformToGPU();

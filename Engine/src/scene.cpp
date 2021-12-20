@@ -10,12 +10,16 @@ Scene::Scene(const std::shared_ptr<ApplicationState>& state)
 :mState(state)
 ,mCoordinateSystem(new CoordinateSystem())
 {
-    // create a SH Field model
-    mModels.push_back(std::shared_ptr<SHField>(new SHField(mState, mCoordinateSystem)));
 }
 
 Scene::~Scene()
 {
+}
+
+void Scene::AddSHField()
+{
+    // create a SH Field model
+    mModels.push_back(std::shared_ptr<SHField>(new SHField(mState, mCoordinateSystem)));
 }
 
 void Scene::Render()

@@ -74,7 +74,6 @@ void Application::initialize()
     glfwSwapInterval(0);
 
     mUI.reset(new UIManager(mWindow, GLSL_VERSION_STR, mState));
-    mScene.reset(new Scene(mState));
 
     const float aspectRatio = (float)WIN_WIDTH/(float)WIN_HEIGHT;
     mCamera.reset(new Camera(glm::vec3(0.0f, 0.0f, 10.0f), // position
@@ -83,6 +82,14 @@ void Application::initialize()
                              glm::radians(60.0f), aspectRatio,
                              0.1f, 500.0f,
                              mState));
+
+    mScene.reset(new Scene(mState));
+
+    // Render frame without the model
+    renderFrame();
+
+    // Add SH field once the UI is drawn
+    mScene->AddSHField();
 }
 
 void Application::initApplicationState(const ArgumentParser& parser)
@@ -105,23 +112,28 @@ void Application::initApplicationState(const ArgumentParser& parser)
     mState->Window.ZoomSpeed.Update(ZOOM_SPEED);
 }
 
+void Application::renderFrame()
+{
+    // Handle events
+    glfwPollEvents();
+
+    // Update camera parameters
+    mCamera->UpdateGPU();
+
+    // Draw scene
+    mScene->Render();
+
+    //Draw UI
+    mUI->DrawInterface();
+
+    glfwSwapBuffers(mWindow);
+}
+
 void Application::Run()
 {
     while (!glfwWindowShouldClose(mWindow))
     {
-        // Handle events
-        glfwPollEvents();
-
-        // Update camera parameters
-        mCamera->UpdateGPU();
-
-        // Draw scene
-        mScene->Render();
-
-        //Draw UI
-        mUI->DrawInterface();
-
-        glfwSwapBuffers(mWindow);
+        renderFrame();
     }
 }
 

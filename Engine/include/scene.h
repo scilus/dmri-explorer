@@ -22,6 +22,9 @@ public:
     /// Destructor.
     ~Scene();
 
+    /// Add an SHField instance to the scene.
+    void AddSHField();
+
     /// Render the scene.
     void Render();
 

@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <memory>
+#include <thread>
 #include <binding.h>
 #include <shader_data.h>
 #include <image.h>
@@ -75,10 +76,10 @@ public:
     /// Destructor.
     ~SHField();
 
-    /// Scale spheres by launching a compute shader pass.
-    void ScaleSpheres();
-
 protected:
+    /// Scale spheres by launching a compute shader pass.
+    void scaleSpheres();
+
     /// \see Model::drawSpecific()
     void drawSpecific() override;
 
@@ -130,11 +131,25 @@ private:
     /// Initialize data to be copied on the GPU.
     void initializeGPUData();
 
-    /// Fill SH coefficients array from image.
-    void copySHCoefficientsFromImage();
+    /// Copy a subset of the SH coefficients from the image
+    /// to contiguous array for GPU.
+    /// \param[in] firstIndex Index (flat) of the first coefficient to copy.
+    /// \param[in] lastIndex Index (exclusive) of the last coefficient to copy.
+    void copySubsetSHCoefficientsFromImage(size_t firstIndex, size_t lastIndex);
 
-    /// Initialize Draw command for instancing.
-    void initializeDrawCommand();
+    /// Initialize a subset of the Draw commands, used for instancing.
+    /// \param[in] firstIndex Index (flat) of the first sphere to initialize.
+    /// \param[in] lastIndex Index (exclusive) of the last sphere to initialize.
+    void initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex);
+
+    /// Dispatch some method for filling arrays in parallel.
+    /// \param[in] fn Pointer to member function to call.
+    /// \param[in] nbElements Number of elements to fill.
+    /// \param[in] nbThreads Number of threads to use.
+    /// \param[out] threads Vector of threads.
+    void dispatchSubsetCommands(void(SHField::*fn)(size_t, size_t),
+                               size_t nbElements, size_t nbThreads,
+                               std::vector<std::thread>& threads);
 
     /// Set sphere scaling.
     /// \param[in] previous Previous scaling multiplier.
