@@ -43,6 +43,8 @@ public:
     /// \return Vector of SH functions.
     inline std::vector<float> GetSHFuncs() const { return mSphHarmFunc; };
 
+    inline std::vector<glm::vec4> GetSHFuncsGrad() const { return mSphHarmFuncGrad; };
+
     /// Get the maximum SH order.
     /// \return The maximum SH order for the basis.
     inline unsigned int GetMaxSHOrder() const {return mSHBasis->GetMaxOrder(); };
@@ -83,6 +85,8 @@ private:
 
     /// SH functions at each point in mPoints.
     std::vector<float> mSphHarmFunc;
+
+    std::vector<glm::vec4> mSphHarmFuncGrad;
 
     /// SH basis in use.
     std::shared_ptr<SH::DescoteauxBasis> mSHBasis;

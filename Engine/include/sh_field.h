@@ -214,6 +214,8 @@ private:
     /// SH functions GPU data.
     GPU::ShaderData mSphHarmFuncsData;
 
+    GPU::ShaderData mSphHarmFuncsGradData;
+
     /// Voxel grid GPU data.
     GPU::ShaderData mGridInfoData;
 

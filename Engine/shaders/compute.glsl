@@ -54,71 +54,64 @@ layout(std430, binding=11) buffer ordersBuffer
     float L[];
 };
 
+layout(std430, binding=12) buffer shFuncGradBuffer
+{
+    vec4 shFuncsGrad[];
+};
+
 const float FLOAT_EPS = 1e-4;
 const float PI = 3.14159265358979323;
 
-float evaluateSH(uint voxID, uint sphVertID)
+void scaleSphere(uint voxID, uint firstVertID)
 {
-    float ret = 0.0f;
-    float sum = 0.0f;
     float rmax = 0.0f;
     for(int i = 0; i < nbCoeffs; ++i)
     {
-        sum += abs(shCoeffs[voxID * nbCoeffs + i]);
-        ret += shCoeffs[voxID * nbCoeffs + i]
-                * shFuncs[sphVertID * nbCoeffs + i];
         rmax += (2.0f * L[i] + 1.0f) / 4.0f / PI * pow(shCoeffs[voxID * nbCoeffs + i], 2);
     }
-    if(sum > 0.0)
+
+    float shEval;
+    vec4 shGrad;
+    vec3 normal;
+    for(uint sphVertID = 0; sphVertID < nbVertices; ++sphVertID)
     {
-        if(isNormalized > 0)
+        if(rmax > FLOAT_EPS)
         {
-            rmax = sqrt(rmax);
-            rmax *= sqrt(0.5f * float(maxOrder) + 1);
-            return ret / rmax;
-        }
-        return ret;
-    }
-    return 0.0f;
-}
-
-void scaleSphere(uint voxID, uint firstVertID, bool isVisible)
-{
-    for(uint i = 0; i < nbVertices; ++i)
-    {
-        allRadiis[firstVertID + i] = isVisible ? evaluateSH(voxID, i) : 0.0f;
-    }
-}
-
-void updateNormals(uint firstNormalID)
-{
-    vec3 ab, ac, n;
-    vec3 a, b, c;
-
-    // reset normals for sphere
-    for(uint i = 0; i < nbVertices; ++i)
-    {
-        allNormals[firstNormalID + i] = vec4(0.0, 0.0, 0.0, 0.0);
-    }
-
-    for(uint i = 0; i < nbIndices; i += 3)
-    {
-        a = allRadiis[indices[i] + firstNormalID] * vertices[indices[i]].xyz;
-        b = allRadiis[indices[i + 1] + firstNormalID] * vertices[indices[i + 1]].xyz;
-        c = allRadiis[indices[i + 2] + firstNormalID] * vertices[indices[i + 2]].xyz;
-        ab = b - a;
-        ac = c - a;
-        if(length(ab) > FLOAT_EPS && length(ac) > FLOAT_EPS)
-        {
-            ab = normalize(ab);
-            ac = normalize(ac);
-            if(abs(dot(ab, ac)) < 1.0)
+            shEval = 0.0f;
+            shGrad = vec4(0.0, 0.0, 0.0, 0.0);
+            for(int i = 0; i < nbCoeffs; ++i)
             {
-                n = normalize(cross(ab, ac));
-                allNormals[indices[i] + firstNormalID] += vec4(n, 0.0);
-                allNormals[indices[i + 1] + firstNormalID] += vec4(n, 0.0);
-                allNormals[indices[i + 2] + firstNormalID] += vec4(n, 0.0);
+                shEval += shCoeffs[voxID * nbCoeffs + i]
+                        * shFuncs[sphVertID * nbCoeffs + i];
+                
+                shGrad += shCoeffs[voxID * nbCoeffs + i]
+                        * shFuncsGrad[sphVertID * nbCoeffs + i];
             }
+
+            if(isNormalized > 0)
+            {
+                rmax = sqrt(rmax);
+                rmax *= sqrt(0.5f * float(maxOrder) + 1);
+                shEval = shEval / rmax;
+            }
+
+            if(shEval > FLOAT_EPS)
+            {
+                // compute normal vector for lighting
+                normal = normalize(vertices[sphVertID].xyz - 1.0 / shEval * shGrad.xyz);
+            }
+            else
+            {
+                normal = vec3(0.0, 0.0, 0.0);
+            }
+
+            allRadiis[firstVertID + sphVertID] = shEval;
+            allNormals[firstVertID + sphVertID] = vec4(normal, 0.0);
+        }
+        else
+        {
+            allRadiis[firstVertID + sphVertID] = 0.0f;
+            allNormals[firstVertID + sphVertID] = vec4(0.0, 0.0, 0.0, 0.0);
         }
     }
 }
@@ -182,13 +175,5 @@ void main()
        return; // skip heavy computations
 
     const uint voxID = convertInvocationIDToVoxID(invocationID);
-
-    bool isVisible = shCoeffs[voxID * nbCoeffs] > 0.0f;
-
-    scaleSphere(voxID, firstVertID, isVisible);
-    if(isVisible)
-    {
-        // skip normal computations for non-visible voxels
-        updateNormals(firstVertID);
-    }
+    scaleSphere(voxID, firstVertID);
 }
