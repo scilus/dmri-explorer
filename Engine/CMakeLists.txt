@@ -19,5 +19,5 @@ add_custom_command(TARGET dmriexplorer POST_BUILD
 
 add_custom_command(TARGET dmriexplorer POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E create_symlink
-                   ${CMAKE_SOURCE_DIR}/logo/ $<TARGET_FILE_DIR:dmriexplorer>/logo
-                   COMMENT "Creating symlink to logo directory" VERBATIM)
+                   ${CMAKE_SOURCE_DIR}/icons/ $<TARGET_FILE_DIR:dmriexplorer>/icons
+                   COMMENT "Creating symlink to icons directory" VERBATIM)

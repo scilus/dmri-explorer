@@ -54,14 +54,21 @@ void Application::initialize()
     glfwMakeContextCurrent(mWindow);
     glfwSetWindowUserPointer(mWindow, this);
 
-    Image2D image;
-    image.ReadImage(DMRI_EXPLORER_BINARY_DIR + std::string("/logo/logo-small.png"), 4);
+    const int nbImages = 4;
+    Image2D images[nbImages];
+    images[0].ReadImage(DMRI_EXPLORER_BINARY_DIR + std::string("/icons/icon16.png"), 4);
+    images[1].ReadImage(DMRI_EXPLORER_BINARY_DIR + std::string("/icons/icon32.png"), 4);
+    images[2].ReadImage(DMRI_EXPLORER_BINARY_DIR + std::string("/icons/icon48.png"), 4);
+    images[3].ReadImage(DMRI_EXPLORER_BINARY_DIR + std::string("/icons/icon64.png"), 4);
 
-    GLFWimage glfwImage;
-    glfwImage.width = image.GetWidth();
-    glfwImage.height = image.GetHeight();
-    glfwImage.pixels = image.GetData().get();
-    glfwSetWindowIcon(mWindow, 1, &glfwImage);
+    GLFWimage glfwImages[nbImages];
+    for(int i = 0; i < nbImages; ++i)
+    {
+        glfwImages[i].width = images[i].GetWidth();
+        glfwImages[i].height = images[i].GetHeight();
+        glfwImages[i].pixels = images[i].GetData().get();
+    }
+    glfwSetWindowIcon(mWindow, nbImages, glfwImages);
 
     // GLFW input callbacks
     glfwSetMouseButtonCallback(mWindow, onMouseButton);
