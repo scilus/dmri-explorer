@@ -1,3 +1,4 @@
+![Banner logo](banner-logo.png)
 # dmri-explorer : A Diffusion MRI Visualization Application
 A real-time diffusion MRI slicing application for Linux using `OpenGL 4.6`. It can visualize spherical functions expressed as a series of spherical harmonics coefficients in DIPY's `descoteaux07` legacy real symmetric or full SH basis (See [this link](https://dipy.org/documentation/1.4.1./theory/sh_basis/) for more details.).
 
