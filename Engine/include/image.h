@@ -90,4 +90,21 @@ private:
     /// Length of the image (number of scalar values).
     uint mLength;
 };
+
+class Image2D
+{
+public:
+    Image2D();
+    ~Image2D() = default;
+    void ReadImage(const std::string& filename, int desiredChannels);
+    inline int GetWidth() const { return mWidth; };
+    inline int GetHeight() const { return mHeight; };
+    inline int GetChannels() const { return mChannels; };
+    inline std::shared_ptr<unsigned char> GetData() const { return mData; };
+private:
+    int mWidth;
+    int mHeight;
+    int mChannels;
+    std::shared_ptr<unsigned char> mData;
+};
 } // namespace Slicer

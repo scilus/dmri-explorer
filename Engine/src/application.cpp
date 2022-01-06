@@ -1,6 +1,7 @@
 #include <application.h>
 #include <iostream>
 #include <application_state.h>
+#include <image.h>
 
 namespace
 {
@@ -52,6 +53,15 @@ void Application::initialize()
     mWindow = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, mTitle.c_str(), NULL, NULL);
     glfwMakeContextCurrent(mWindow);
     glfwSetWindowUserPointer(mWindow, this);
+
+    Image2D image;
+    image.ReadImage(DMRI_EXPLORER_BINARY_DIR + std::string("/logo/logo-small.png"), 4);
+
+    GLFWimage glfwImage;
+    glfwImage.width = image.GetWidth();
+    glfwImage.height = image.GetHeight();
+    glfwImage.pixels = image.GetData().get();
+    glfwSetWindowIcon(mWindow, 1, &glfwImage);
 
     // GLFW input callbacks
     glfwSetMouseButtonCallback(mWindow, onMouseButton);

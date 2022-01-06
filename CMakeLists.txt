@@ -25,4 +25,7 @@ target_link_libraries(IMGUI PRIVATE glfw GLAD)
 include_directories("third/imgui/include/")
 add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD)
 
+# std image loader include
+include_directories("third/stb/include/")
+
 add_subdirectory("Engine")
