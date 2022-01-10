@@ -1,8 +1,8 @@
 #include <application.h>
 #include <argument_parser.h>
 
-#ifndef DMRI_EXPLORER_SHADERS_DIR
-    #error "DMRI_EXPLORER_SHADERS_DIR PREPROCESSOR DEFINITION NOT FOUND."
+#ifndef DMRI_EXPLORER_BINARY_DIR
+    #error "DMRI_EXPLORER_BINARY_DIR PREPROCESSOR DEFINITION NOT FOUND."
 #endif
 
 int main(int argc, char** argv)

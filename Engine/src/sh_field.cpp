@@ -81,8 +81,8 @@ void SHField::registerStateCallbacks()
 
 void SHField::initProgramPipeline()
 {
-    const std::string vsPath = DMRI_EXPLORER_SHADERS_DIR + std::string("/triangle.vert");
-    const std::string fsPath = DMRI_EXPLORER_SHADERS_DIR + std::string("/triangle.frag");
+    const std::string vsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/triangle.vert");
+    const std::string fsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/triangle.frag");
     std::vector<GPU::ShaderProgram> shaders;
     shaders.push_back(GPU::ShaderProgram(vsPath, GL_VERTEX_SHADER));
     shaders.push_back(GPU::ShaderProgram(fsPath, GL_FRAGMENT_SHADER));
@@ -94,7 +94,7 @@ void SHField::initializeMembers()
     Utilities::Timer timer("Initialize members");
     timer.Start();
     // Initialize compute shader
-    const std::string csPath = DMRI_EXPLORER_SHADERS_DIR + std::string("/compute.glsl");
+    const std::string csPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/compute.glsl");
     mComputeShader = GPU::ShaderProgram(csPath, GL_COMPUTE_SHADER);
 
     // Initialize a sphere for SH to SF projection
