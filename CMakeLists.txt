@@ -1,5 +1,5 @@
 set(CMAKE_GENERATOR "Unix Makefiles")
-set(CMAKE_TOOLCHAIN_FILE ./third/vcpkg-export-20210512-131839/scripts/buildsystems/vcpkg.cmake)
+set(CMAKE_TOOLCHAIN_FILE ./third/glfw3/scripts/buildsystems/vcpkg.cmake)
 
 #========== Global Configurations =============#
 #----------------------------------------------#
@@ -9,7 +9,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 find_package(glfw3 CONFIG REQUIRED)
-find_package(glm CONFIG REQUIRED)
 
 # glad include
 add_library(GLAD "third/glad/src/glad.c")
@@ -27,5 +26,8 @@ add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD)
 
 # std image loader include
 include_directories("third/stb/include/")
+
+# glm math library include
+include_directories("third/glm/")
 
 add_subdirectory("Engine")
