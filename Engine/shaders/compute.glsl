@@ -64,54 +64,53 @@ const float PI = 3.14159265358979323;
 
 void scaleSphere(uint voxID, uint firstVertID)
 {
-    float rmax = 0.0f;
-    for(int i = 0; i < nbCoeffs; ++i)
-    {
-        rmax += (2.0f * L[i] + 1.0f) / 4.0f / PI * pow(shCoeffs[voxID * nbCoeffs + i], 2);
-    }
-
-    float shEval;
+    float sfEval;
     vec4 shGrad;
     vec3 normal;
+    float rmax;
+    const float sh0 = shCoeffs[voxID * nbCoeffs];
     for(uint sphVertID = 0; sphVertID < nbVertices; ++sphVertID)
     {
-        if(rmax > FLOAT_EPS)
+        if(sh0 > FLOAT_EPS)
         {
-            shEval = 0.0f;
-            shGrad = vec4(0.0, 0.0, 0.0, 0.0);
+            sfEval = 0.0f;
+            rmax = 0.0f;
+            shGrad = vec4(0.0f, 0.0f, 0.0f, 0.0f);
             for(int i = 0; i < nbCoeffs; ++i)
             {
-                shEval += shCoeffs[voxID * nbCoeffs + i]
+                sfEval += shCoeffs[voxID * nbCoeffs + i]
                         * shFuncs[sphVertID * nbCoeffs + i];
                 
                 shGrad += shCoeffs[voxID * nbCoeffs + i]
                         * shFuncsGrad[sphVertID * nbCoeffs + i];
+
+                rmax += (2.0f * L[i] + 1.0f) / 4.0f / PI * pow(shCoeffs[voxID * nbCoeffs + i], 2.0f);
             }
 
-            if(isNormalized > 0)
-            {
-                rmax = sqrt(rmax);
-                rmax *= sqrt(0.5f * float(maxOrder) + 1);
-                shEval = shEval / rmax;
-            }
-
-            if(shEval > FLOAT_EPS)
+            if(sfEval > FLOAT_EPS)
             {
                 // compute normal vector for lighting
-                normal = normalize(vertices[sphVertID].xyz - 1.0 / shEval * shGrad.xyz);
+                normal = normalize(vertices[sphVertID].xyz - 1.0 / sfEval * shGrad.xyz);
             }
             else
             {
                 normal = vec3(0.0, 0.0, 0.0);
             }
 
-            allRadiis[firstVertID + sphVertID] = shEval;
+            if(isNormalized > 0)
+            {
+                rmax = sqrt(rmax);
+                rmax *= sqrt(0.5f * float(maxOrder) + 1.0f);
+                sfEval /= rmax;
+            }
+
+            allRadiis[firstVertID + sphVertID] = sfEval;
             allNormals[firstVertID + sphVertID] = vec4(normal, 0.0);
         }
         else
         {
             allRadiis[firstVertID + sphVertID] = 0.0f;
-            allNormals[firstVertID + sphVertID] = vec4(0.0, 0.0, 0.0, 0.0);
+            allNormals[firstVertID + sphVertID] = vec4(0.0f, 0.0f, 0.0f, 0.0f);
         }
     }
 }
