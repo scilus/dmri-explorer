@@ -3,5 +3,4 @@
 third/vcpkg
 *.jpg
 *.ini
-.cache-install
 docs/
