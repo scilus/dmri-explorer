@@ -21,6 +21,7 @@ SHField::SHField(const std::shared_ptr<ApplicationState>& state,
 ,mIndirectBO(0)
 ,mSphHarmCoeffsData()
 ,mSphHarmFuncsData()
+,mSphHarmFuncsGradData()
 ,mSphereVerticesData()
 ,mSphereIndicesData()
 ,mSphereInfoData()
@@ -219,6 +220,8 @@ void SHField::initializeGPUData()
                                          sizeof(float) * mSphHarmCoeffs.size());
     mSphHarmFuncsData = GPU::ShaderData(mSphere->GetSHFuncs().data(), GPU::Binding::shFunctions,
                                         sizeof(float) * mSphere->GetSHFuncs().size());
+    mSphHarmFuncsGradData = GPU::ShaderData(mSphere->GetSHFuncsGrad().data(), GPU::Binding::shFunctionsGrad,
+                                            sizeof(glm::vec4) * mSphere->GetSHFuncsGrad().size());
     mAllOrdersData = GPU::ShaderData(allOrders.data(), GPU::Binding::allOrders,
                                      sizeof(float) * allOrders.size());
     mSphereVerticesData = GPU::ShaderData(mSphere->GetPoints().data(), GPU::Binding::sphereVertices,
@@ -233,6 +236,7 @@ void SHField::initializeGPUData()
     // push all data to GPU
     mSphHarmCoeffsData.ToGPU();
     mSphHarmFuncsData.ToGPU();
+    mSphHarmFuncsGradData.ToGPU();
     mAllOrdersData.ToGPU();
     mSphereVerticesData.ToGPU();
     mSphereIndicesData.ToGPU();

@@ -129,7 +129,7 @@ void main()
     localMatrix[3][0] = float(index3d.x - gridDims.x / 2);
     localMatrix[3][1] = float(index3d.y - gridDims.y / 2);
     localMatrix[3][2] = float(index3d.z - gridDims.z / 2);
-    localMatrix[3][3] = 1.0;
+    localMatrix[3][3] = 1.0f;
 
     vec4 currentVertex = vec4(vertices[gl_VertexID%nbVertices].xyz * allRadiis[gl_VertexID], 1.0f);
 
