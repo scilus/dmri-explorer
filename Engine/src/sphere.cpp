@@ -95,6 +95,7 @@ void Sphere::addPoint(const glm::vec3& cartesian)
     const Math::SphericalCoordinates spherical = convertToSpherical(cartesian);
     const glm::vec3 n_cartesian = convertToCartesian(spherical.theta, spherical.phi, 1.0f);
     mPoints.push_back(glm::vec4(n_cartesian, 1.0f));
+
     const auto& shFuncs = mSHBasis->at(spherical.theta, spherical.phi);
     const auto& shFuncsPlusDTheta = mSHBasis->at(spherical.theta + NUMERICAL_DERIVATIVE_DELTA,
                                                  spherical.phi);
@@ -104,6 +105,7 @@ void Sphere::addPoint(const glm::vec3& cartesian)
                                                spherical.phi + NUMERICAL_DERIVATIVE_DELTA);
     const auto& shFuncsMinusDPhi = mSHBasis->at(spherical.theta,
                                                 spherical.phi - NUMERICAL_DERIVATIVE_DELTA);
+
     const float epsilon = std::numeric_limits<float>::epsilon();
     float dx, dy, dz;
     for(int i = 0; i < shFuncs.size(); ++i)
