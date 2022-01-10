@@ -12,6 +12,10 @@ const float ROTATION_SPEED = 0.005f;
 const float ZOOM_SPEED = 1.0f;
 const std::string WIN_TITLE = "dmri-explorer";
 const std::string GLSL_VERSION_STR = "#version 460";
+const std::string ICON16_FNAME = "/icons/icon16.png";
+const std::string ICON32_FNAME = "/icons/icon32.png";
+const std::string ICON48_FNAME = "/icons/icon48.png";
+const std::string ICON64_FNAME = "/icons/icon64.png";
 }
 
 namespace Slicer
@@ -53,22 +57,7 @@ void Application::initialize()
     mWindow = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, mTitle.c_str(), NULL, NULL);
     glfwMakeContextCurrent(mWindow);
     glfwSetWindowUserPointer(mWindow, this);
-
-    const int nbImages = 4;
-    Image2D images[nbImages];
-    images[0].ReadImage(DMRI_EXPLORER_BINARY_DIR + std::string("/icons/icon16.png"), 4);
-    images[1].ReadImage(DMRI_EXPLORER_BINARY_DIR + std::string("/icons/icon32.png"), 4);
-    images[2].ReadImage(DMRI_EXPLORER_BINARY_DIR + std::string("/icons/icon48.png"), 4);
-    images[3].ReadImage(DMRI_EXPLORER_BINARY_DIR + std::string("/icons/icon64.png"), 4);
-
-    GLFWimage glfwImages[nbImages];
-    for(int i = 0; i < nbImages; ++i)
-    {
-        glfwImages[i].width = images[i].GetWidth();
-        glfwImages[i].height = images[i].GetHeight();
-        glfwImages[i].pixels = images[i].GetData().get();
-    }
-    glfwSetWindowIcon(mWindow, nbImages, glfwImages);
+    setWindowIcon();
 
     // GLFW input callbacks
     glfwSetMouseButtonCallback(mWindow, onMouseButton);
@@ -107,6 +96,25 @@ void Application::initialize()
 
     // Add SH field once the UI is drawn
     mScene->AddSHField();
+}
+
+void Application::setWindowIcon()
+{
+    const int nbImages = 4;
+    Image2D images[nbImages];
+    images[0].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON16_FNAME, 4);
+    images[1].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON32_FNAME, 4);
+    images[2].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON48_FNAME, 4);
+    images[3].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON64_FNAME, 4);
+
+    GLFWimage glfwImages[nbImages];
+    for(int i = 0; i < nbImages; ++i)
+    {
+        glfwImages[i].width = images[i].GetWidth();
+        glfwImages[i].height = images[i].GetHeight();
+        glfwImages[i].pixels = images[i].GetData().get();
+    }
+    glfwSetWindowIcon(mWindow, nbImages, glfwImages);
 }
 
 void Application::initApplicationState(const ArgumentParser& parser)

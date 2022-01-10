@@ -41,6 +41,9 @@ private:
     /// \param[in] parser The command line arguments.
     void initApplicationState(const ArgumentParser& parser);
 
+    /// Set the window icon.
+    void setWindowIcon();
+
     /// GLFW callback for mouse buttons.
     /// \param[in] window The current GLFW window.
     /// \param[in] button The current button.
