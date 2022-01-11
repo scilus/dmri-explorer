@@ -16,6 +16,10 @@ SHField::SHField(const std::shared_ptr<ApplicationState>& state,
 ,mIndices()
 ,mSphHarmCoeffs()
 ,mNbSpheres(0)
+,mNbSpheresX(0)
+,mNbSpheresY(0)
+,mNbSpheresZ(0)
+,mIsSliceDirty(true)
 ,mVAO(0)
 ,mIndicesBO(0)
 ,mIndirectBO(0)
@@ -99,9 +103,10 @@ void SHField::initializeMembers()
 
     // Initialize a sphere for SH to SF projection
     const auto& image = mState->FODFImage.Get();
-    mNbSpheres = image.dims().x * image.dims().y  // Z-slice
-               + image.dims().x * image.dims().z  // Y-slice
-               + image.dims().y * image.dims().z; // X-slice
+    mNbSpheresX = image.dims().y * image.dims().z;
+    mNbSpheresY = image.dims().x * image.dims().z;
+    mNbSpheresZ = image.dims().x * image.dims().y;
+    mNbSpheres = mNbSpheresZ + mNbSpheresY + mNbSpheresX;
     mSphere.reset(new Primitive::Sphere(mState->Sphere.Resolution.Get(),
                                         image.dims().w));
     const auto numIndices = mSphere->GetIndices().size();
@@ -208,9 +213,9 @@ void SHField::initializeGPUData()
     sphereData.FadeIfHidden = mState->Sphere.FadeIfHidden.Get();
 
     GridData gridData;
-    gridData.IsSliceDirty = glm::ivec4(1, 1, 1, 0);
     gridData.SliceIndices = glm::ivec4(mState->VoxelGrid.SliceIndices.Get(), 0);
     gridData.VolumeShape = glm::ivec4(mState->VoxelGrid.VolumeShape.Get(), 0);
+    gridData.CurrentSlice = 0;
 
     mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(), GPU::Binding::allSpheresNormals,
                                              sizeof(glm::vec4) * allVertices.size());
@@ -257,16 +262,14 @@ GLuint SHField::genVBO(const std::vector<T>& data) const
 
 void SHField::setSliceIndex(glm::vec3 prevIndices, glm::vec3 newIndices)
 {
-    glm::ivec4 isSliceDirty;
-    isSliceDirty.x = prevIndices.x != newIndices.x;
-    isSliceDirty.y = prevIndices.y != newIndices.y;
-    isSliceDirty.z = prevIndices.z != newIndices.z;
+    mIsSliceDirty.x = prevIndices.x != newIndices.x;
+    mIsSliceDirty.y = prevIndices.y != newIndices.y;
+    mIsSliceDirty.z = prevIndices.z != newIndices.z;
 
-    if(isSliceDirty.x || isSliceDirty.y || isSliceDirty.z)
+    if(mIsSliceDirty.x || mIsSliceDirty.y || mIsSliceDirty.z)
     {
         glm::ivec4 sliceIndices = glm::ivec4(newIndices, 0);
         mGridInfoData.Update(sizeof(glm::ivec4), sizeof(glm::ivec4), &sliceIndices);
-        mGridInfoData.Update(2*sizeof(glm::ivec4), sizeof(glm::ivec4), &isSliceDirty);
         scaleSpheres();
     }
 }
@@ -278,7 +281,7 @@ void SHField::setNormalized(bool previous, bool isNormalized)
         unsigned int isNormalizedInt = isNormalized ? 1 : 0;
         glm::ivec4 isDirty(1, 1, 1, 0);
         mSphereInfoData.Update(sizeof(unsigned int)*2, sizeof(unsigned int), &isNormalizedInt);
-        mGridInfoData.Update(2*sizeof(glm::ivec4), sizeof(glm::ivec4), &isDirty);
+        mIsSliceDirty = glm::bvec3(true);
         scaleSpheres();
     }
 }
@@ -326,8 +329,31 @@ void SHField::drawSpecific()
 void SHField::scaleSpheres()
 {
     glUseProgram(mComputeShader.ID());
-    glDispatchCompute(mNbSpheres, 1, 1);
-    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    unsigned int sliceId;
+    if(mIsSliceDirty.x)
+    {
+        sliceId = 0;
+        mGridInfoData.Update(2*sizeof(glm::ivec4), sizeof(unsigned int), &sliceId);
+        glDispatchCompute(mNbSpheresX, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        mIsSliceDirty.x = false;
+    }
+    if(mIsSliceDirty.y)
+    {
+        sliceId = 1;
+        mGridInfoData.Update(2*sizeof(glm::ivec4), sizeof(unsigned int), &sliceId);
+        glDispatchCompute(mNbSpheresY, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        mIsSliceDirty.y = false;
+    }
+    if(mIsSliceDirty.z)
+    {
+        sliceId = 2;
+        mGridInfoData.Update(2*sizeof(glm::ivec4), sizeof(unsigned int), &sliceId);
+        glDispatchCompute(mNbSpheresZ, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        mIsSliceDirty.z = false;
+    }
     glUseProgram(0);
 }
 } // namespace Slicer

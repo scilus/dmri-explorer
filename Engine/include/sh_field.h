@@ -119,7 +119,7 @@ private:
     {
         glm::ivec4 VolumeShape;
         glm::ivec4 SliceIndices;
-        glm::ivec4 IsSliceDirty;
+        uint CurrentSlice;
     };
 
     /// \brief Initialize class members.
@@ -189,6 +189,18 @@ private:
 
     /// Maximum number of spheres rendered.
     uint mNbSpheres;
+
+    /// Maximum number of spheres rendered in X-plane.
+    uint mNbSpheresX;
+
+    /// Maximum number of spheres rendered in Y-plane.
+    uint mNbSpheresY;
+
+    /// Maximum number of spheres rendered in Z-plane.
+    uint mNbSpheresZ;
+
+    /// Indicates what slices need to be computed.
+    glm::bvec3 mIsSliceDirty;
 
     /// Mesh triangulation for all spheres.
     std::vector<GLuint> mIndices;
