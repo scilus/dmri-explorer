@@ -80,7 +80,7 @@ void scaleSphere(uint voxID, uint firstVertID)
             {
                 sfEval += shCoeffs[voxID * nbCoeffs + i]
                         * shFuncs[sphVertID * nbCoeffs + i];
-                
+
                 shGrad += shCoeffs[voxID * nbCoeffs + i]
                         * shFuncsGrad[sphVertID * nbCoeffs + i];
 
