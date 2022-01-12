@@ -181,14 +181,17 @@ private:
     /// \return VBO index.
     template<typename T> GLuint genVBO(const std::vector<T>& data) const;
 
+    /// Get the maximum number of spheres rendered.
+    /// \return The maximum number of spheres rendered.
+    inline unsigned int getMaxNbSpheres() const { return mNbSpheresX +
+                                                         mNbSpheresY +
+                                                         mNbSpheresZ; };
+
     /// Mutex for multithreading.
     std::mutex mMutex;
 
     /// Sphere used for SH projection.
     std::shared_ptr<Primitive::Sphere> mSphere;
-
-    /// Maximum number of spheres rendered.
-    uint mNbSpheres;
 
     /// Maximum number of spheres rendered in X-plane.
     uint mNbSpheresX;

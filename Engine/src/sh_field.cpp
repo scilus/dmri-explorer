@@ -15,7 +15,6 @@ SHField::SHField(const std::shared_ptr<ApplicationState>& state,
 :Model(state)
 ,mIndices()
 ,mSphHarmCoeffs()
-,mNbSpheres(0)
 ,mNbSpheresX(0)
 ,mNbSpheresY(0)
 ,mNbSpheresZ(0)
@@ -85,8 +84,8 @@ void SHField::registerStateCallbacks()
 
 void SHField::initProgramPipeline()
 {
-    const std::string vsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/triangle.vert");
-    const std::string fsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/triangle.frag");
+    const std::string vsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_vert.glsl");
+    const std::string fsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_frag.glsl");
     std::vector<GPU::ShaderProgram> shaders;
     shaders.push_back(GPU::ShaderProgram(vsPath, GL_VERTEX_SHADER));
     shaders.push_back(GPU::ShaderProgram(fsPath, GL_FRAGMENT_SHADER));
@@ -98,7 +97,7 @@ void SHField::initializeMembers()
     Utilities::Timer timer("Initialize members");
     timer.Start();
     // Initialize compute shader
-    const std::string csPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/compute.glsl");
+    const std::string csPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_comp.glsl");
     mComputeShader = GPU::ShaderProgram(csPath, GL_COMPUTE_SHADER);
 
     // Initialize a sphere for SH to SF projection
@@ -106,14 +105,14 @@ void SHField::initializeMembers()
     mNbSpheresX = image.dims().y * image.dims().z;
     mNbSpheresY = image.dims().x * image.dims().z;
     mNbSpheresZ = image.dims().x * image.dims().y;
-    mNbSpheres = mNbSpheresZ + mNbSpheresY + mNbSpheresX;
     mSphere.reset(new Primitive::Sphere(mState->Sphere.Resolution.Get(),
                                         image.dims().w));
     const auto numIndices = mSphere->GetIndices().size();
 
+    const int nbSpheres = getMaxNbSpheres();
     mSphHarmCoeffs.resize(image.length());
-    mIndices.resize(mNbSpheres * numIndices);
-    mIndirectCmd.resize(mNbSpheres);
+    mIndices.resize(nbSpheres * numIndices);
+    mIndirectCmd.resize(nbSpheres);
 
     // Copy SH coefficients to contiguous typed buffer.
     std::vector<std::thread> threads;
@@ -122,7 +121,7 @@ void SHField::initializeMembers()
 
     // Copy sphere indices and instantiate draw commands.
     dispatchSubsetCommands(&SHField::initializeSubsetDrawCommand,
-                          mNbSpheres, NB_THREADS_FOR_SPHERES, threads);
+                          nbSpheres, NB_THREADS_FOR_SPHERES, threads);
 
     // wait for all threads to finish
     for (auto& t : threads)
@@ -197,9 +196,11 @@ void SHField::initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex)
 
 void SHField::initializeGPUData()
 {
+    const int nbSpheres = getMaxNbSpheres();
+
     // temporary zero-filled array for all spheres vertices and normals
-    std::vector<glm::vec4> allVertices(mNbSpheres * mSphere->GetPoints().size());
-    std::vector<float> allRadiis(mNbSpheres * mSphere->GetPoints().size());
+    std::vector<glm::vec4> allVertices(nbSpheres * mSphere->GetPoints().size());
+    std::vector<float> allRadiis(nbSpheres * mSphere->GetPoints().size());
     std::vector<float> allOrders = mSphere->GetOrdersList();
 
     SphereData sphereData;
