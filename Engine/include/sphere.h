@@ -60,7 +60,7 @@ private:
     void subdivide();
 
     /// Add a point to the sphere.
-    /// Also adds the SH functions and gradients evaluated for this point.
+    /// Also adds the SH functions for this point.
     /// \param[in] cartesian Point to add, expressed in cartesian coordinates
     void addPoint(const glm::vec3& cartesian);
 
