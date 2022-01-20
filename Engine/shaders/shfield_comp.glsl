@@ -46,7 +46,7 @@ layout(std430, binding=8) buffer gridInfoBuffer
 {
     ivec4 gridDims;
     ivec4 sliceIndex;
-    ivec4 isSliceDirty;
+    uint currentSlice;
 };
 
 layout(std430, binding=11) buffer ordersBuffer
@@ -75,12 +75,12 @@ void scaleSphere(uint voxID, uint firstVertID)
         {
             sfEval = 0.0f;
             rmax = 0.0f;
-            shGrad = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+            shGrad = vec4(0.0f);
             for(int i = 0; i < nbCoeffs; ++i)
             {
                 sfEval += shCoeffs[voxID * nbCoeffs + i]
                         * shFuncs[sphVertID * nbCoeffs + i];
-                
+
                 shGrad += shCoeffs[voxID * nbCoeffs + i]
                         * shFuncsGrad[sphVertID * nbCoeffs + i];
 
@@ -94,7 +94,7 @@ void scaleSphere(uint voxID, uint firstVertID)
             }
             else
             {
-                normal = vec3(0.0, 0.0, 0.0);
+                normal = vec3(0.0f);
             }
 
             if(isNormalized > 0)
@@ -105,7 +105,7 @@ void scaleSphere(uint voxID, uint firstVertID)
             }
 
             allRadiis[firstVertID + sphVertID] = sfEval;
-            allNormals[firstVertID + sphVertID] = vec4(normal, 0.0);
+            allNormals[firstVertID + sphVertID] = vec4(normal, 0.0f);
         }
         else
         {
@@ -120,59 +120,32 @@ uint convertIndex3DToVoxID(uint i, uint j, uint k)
     return k * gridDims.x * gridDims.y + j * gridDims.x + i;
 }
 
-bool belongsToXSlice(uint invocationID)
-{
-    return invocationID >= gridDims.x * gridDims.y &&
-           invocationID < gridDims.x * gridDims.y + gridDims.y * gridDims.z;
-}
-
-bool belongsToYSlice(uint invocationID)
-{
-    return invocationID >= gridDims.x * gridDims.y + gridDims.y * gridDims.z;
-}
-
-bool belongsToZSlice(uint invocationID)
-{
-    return invocationID < gridDims.x * gridDims.y;
-}
-
-uint convertInvocationIDToVoxID(uint invocationID)
-{
-    if(belongsToZSlice(invocationID))
-    {
-        // XY-slice
-        const uint j = invocationID / gridDims.x;
-        const uint i = invocationID - j * gridDims.x;
-        return convertIndex3DToVoxID(i, j, sliceIndex.z);
-    }
-    if(belongsToXSlice(invocationID))
-    {
-        // YZ-slice
-        const uint j = (invocationID - gridDims.x * gridDims.y) /gridDims.z;
-        const uint k = invocationID - gridDims.x * gridDims.y - j * gridDims.z;
-        return convertIndex3DToVoxID(sliceIndex.x, j, k);
-    }
-    // XZ-slice
-    const uint k = (invocationID - gridDims.x * gridDims.y - gridDims.y * gridDims.z) / gridDims.x;
-    const uint i = invocationID - gridDims.x * gridDims.y - gridDims.y * gridDims.z - k * gridDims.x;
-    return convertIndex3DToVoxID(i, sliceIndex.y, k);
-}
-
 void main()
 {
-    // current compute shader unit index
-    const uint invocationID = gl_GlobalInvocationID.x;
-    // first index of sphere in allRadiis and allNormals
-    const uint firstVertID = invocationID * nbVertices;
+    uint i, j, k, outSphereID;
+    if(currentSlice == 0) // x-slice
+    {
+        outSphereID = gl_GlobalInvocationID.x + gridDims.x * gridDims.y;
+        i = sliceIndex.x;
+        j = gl_GlobalInvocationID.x / gridDims.z;
+        k = gl_GlobalInvocationID.x - j * gridDims.z;
+    }
+    else if(currentSlice == 1) // y-slice
+    {
+        outSphereID = gl_GlobalInvocationID.x + gridDims.x * gridDims.y + gridDims.y * gridDims.z;
+        j = sliceIndex.y;
+        k = gl_GlobalInvocationID.x / gridDims.x;
+        i = gl_GlobalInvocationID.x - k * gridDims.x;
+    }
+    else if(currentSlice == 2) // z-slice
+    {
+        outSphereID = gl_GlobalInvocationID.x;
+        k = sliceIndex.z;
+        j = gl_GlobalInvocationID.x / gridDims.x;
+        i = gl_GlobalInvocationID.x - j * gridDims.x;
+    }
 
-    // condition is slice needs redraw and current processed sphere belongs to said slice
-    bool evaluateVoxel = (isSliceDirty.x > 0 && belongsToXSlice(invocationID)) ||
-                         (isSliceDirty.y > 0 && belongsToYSlice(invocationID)) ||
-                         (isSliceDirty.z > 0 && belongsToZSlice(invocationID));
-
-    if(!evaluateVoxel)
-       return; // skip heavy computations
-
-    const uint voxID = convertInvocationIDToVoxID(invocationID);
+    const uint voxID = convertIndex3DToVoxID(i, j, k);
+    const uint firstVertID = outSphereID * nbVertices;
     scaleSphere(voxID, firstVertID);
 }

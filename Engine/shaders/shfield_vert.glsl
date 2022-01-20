@@ -36,7 +36,7 @@ layout(std430, binding=8) buffer gridInfoBuffer
 {
     ivec4 gridDims;
     ivec4 sliceIndex;
-    ivec4 isSliceDirty;
+    uint currentSlice;
 };
 
 layout(std430, binding=9) buffer cameraBuffer
