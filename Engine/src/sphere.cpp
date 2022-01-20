@@ -46,7 +46,6 @@ Sphere::Sphere()
 ,mPoints()
 ,mSHBasis(nullptr)
 ,mSphHarmFunc()
-,mSphHarmFuncGrad()
 {
     mSHBasis.reset(new SH::DescoteauxBasis(DEFAULT_NB_COEFFS));
     genUnitIcosahedron();
@@ -59,7 +58,6 @@ Sphere::Sphere(unsigned int resolution,
 ,mPoints()
 ,mSHBasis()
 ,mSphHarmFunc()
-,mSphHarmFuncGrad()
 {
     mSHBasis.reset(new SH::DescoteauxBasis(nbSHCoeffs));
     genUnitIcosahedron();
@@ -76,7 +74,6 @@ Sphere& Sphere::operator=(const Sphere& other)
     mSHBasis = other.mSHBasis;
     mPoints = other.mPoints;
     mSphHarmFunc = other.mSphHarmFunc;
-    mSphHarmFuncGrad = other.mSphHarmFuncGrad;
     return *this;
 }
 
@@ -86,7 +83,6 @@ Sphere::Sphere(const Sphere& other)
 ,mSHBasis(other.mSHBasis)
 ,mPoints(other.mPoints)
 ,mSphHarmFunc(other.mSphHarmFunc)
-,mSphHarmFuncGrad(other.mSphHarmFuncGrad)
 {
 }
 
@@ -95,36 +91,10 @@ void Sphere::addPoint(const glm::vec3& cartesian)
     const Math::SphericalCoordinates spherical = convertToSpherical(cartesian);
     const glm::vec3 n_cartesian = convertToCartesian(spherical.theta, spherical.phi, 1.0f);
     mPoints.push_back(glm::vec4(n_cartesian, 1.0f));
-
     const auto& shFuncs = mSHBasis->at(spherical.theta, spherical.phi);
-    const auto& shFuncsPlusDTheta = mSHBasis->at(spherical.theta + NUMERICAL_DERIVATIVE_DELTA,
-                                                 spherical.phi);
-    const auto& shFuncsMinusDTheta = mSHBasis->at(spherical.theta - NUMERICAL_DERIVATIVE_DELTA,
-                                                  spherical.phi);
-    const auto& shFuncsPlusDPhi = mSHBasis->at(spherical.theta,
-                                               spherical.phi + NUMERICAL_DERIVATIVE_DELTA);
-    const auto& shFuncsMinusDPhi = mSHBasis->at(spherical.theta,
-                                                spherical.phi - NUMERICAL_DERIVATIVE_DELTA);
-
-    const float epsilon = std::numeric_limits<float>::epsilon();
-    float dx, dy, dz;
     for(int i = 0; i < shFuncs.size(); ++i)
     {
         mSphHarmFunc.push_back(shFuncs[i]);
-        const float dTheta = (shFuncsPlusDTheta[i] - shFuncsMinusDTheta[i])
-                             / (2.0 * NUMERICAL_DERIVATIVE_DELTA);
-        const float dPhi = (shFuncsPlusDPhi[i] - shFuncsMinusDPhi[i])
-                           / (2.0 * NUMERICAL_DERIVATIVE_DELTA);
-        dx = cos(spherical.theta) * cos(spherical.phi) * dTheta;
-        dy = cos(spherical.theta) * sin(spherical.phi) * dTheta;
-        dz = -sin(spherical.theta) * dTheta;
-        if(!(spherical.theta > -epsilon && spherical.theta < epsilon) &&
-           !(spherical.theta > M_PI - epsilon && spherical.theta < M_PI + epsilon))
-        {
-            dx -= 1.0/sin(spherical.theta) * sin(spherical.phi) * dPhi;
-            dy += cos(spherical.phi) * 1.0/sin(spherical.theta) * dPhi;
-        }
-        mSphHarmFuncGrad.push_back(glm::vec4(dx, dy, dz, 1.0f));
     }
 }
 

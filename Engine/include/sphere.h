@@ -43,10 +43,6 @@ public:
     /// \return Vector of SH functions.
     inline std::vector<float> GetSHFuncs() const { return mSphHarmFunc; };
 
-    /// Get the gradient of SH functions at each sphere point.
-    /// \return Vector of SH functions gradients.
-    inline std::vector<glm::vec4> GetSHFuncsGrad() const { return mSphHarmFuncGrad; };
-
     /// Get the maximum SH order.
     /// \return The maximum SH order for the basis.
     inline unsigned int GetMaxSHOrder() const {return mSHBasis->GetMaxOrder(); };
@@ -64,7 +60,7 @@ private:
     void subdivide();
 
     /// Add a point to the sphere.
-    /// Also adds the SH functions and gradients evaluated for this point.
+    /// Also adds the SH functions for this point.
     /// \param[in] cartesian Point to add, expressed in cartesian coordinates
     void addPoint(const glm::vec3& cartesian);
 
@@ -88,9 +84,6 @@ private:
 
     /// SH functions at each point in mPoints.
     std::vector<float> mSphHarmFunc;
-
-    /// Gradients of SH functions at each point in mPoints.
-    std::vector<glm::vec4> mSphHarmFuncGrad;
 
     /// SH basis in use.
     std::shared_ptr<SH::DescoteauxBasis> mSHBasis;
