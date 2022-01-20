@@ -54,47 +54,28 @@ layout(std430, binding=11) buffer ordersBuffer
     float L[];
 };
 
-layout(std430, binding=12) buffer shFuncGradBuffer
-{
-    vec4 shFuncsGrad[];
-};
-
 const float FLOAT_EPS = 1e-4;
 const float PI = 3.14159265358979323;
 
-void scaleSphere(uint voxID, uint firstVertID)
+bool scaleSphere(uint voxID, uint firstVertID)
 {
     float sfEval;
-    vec4 shGrad;
     vec3 normal;
     float rmax;
     const float sh0 = shCoeffs[voxID * nbCoeffs];
+    bool nonZero = sh0 > FLOAT_EPS;
     for(uint sphVertID = 0; sphVertID < nbVertices; ++sphVertID)
     {
-        if(sh0 > FLOAT_EPS)
+        if(nonZero)
         {
             sfEval = 0.0f;
             rmax = 0.0f;
-            shGrad = vec4(0.0f);
             for(int i = 0; i < nbCoeffs; ++i)
             {
                 sfEval += shCoeffs[voxID * nbCoeffs + i]
                         * shFuncs[sphVertID * nbCoeffs + i];
 
-                shGrad += shCoeffs[voxID * nbCoeffs + i]
-                        * shFuncsGrad[sphVertID * nbCoeffs + i];
-
                 rmax += (2.0f * L[i] + 1.0f) / 4.0f / PI * pow(shCoeffs[voxID * nbCoeffs + i], 2.0f);
-            }
-
-            if(sfEval > FLOAT_EPS)
-            {
-                // compute normal vector for lighting
-                normal = normalize(vertices[sphVertID].xyz - 1.0 / sfEval * shGrad.xyz);
-            }
-            else
-            {
-                normal = vec3(0.0f);
             }
 
             if(isNormalized > 0)
@@ -105,12 +86,44 @@ void scaleSphere(uint voxID, uint firstVertID)
             }
 
             allRadiis[firstVertID + sphVertID] = sfEval;
-            allNormals[firstVertID + sphVertID] = vec4(normal, 0.0f);
         }
         else
         {
             allRadiis[firstVertID + sphVertID] = 0.0f;
-            allNormals[firstVertID + sphVertID] = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+        }
+    }
+    return nonZero;
+}
+
+void updateNormals(uint firstNormalID)
+{
+    vec3 ab, ac, n;
+    vec3 a, b, c;
+
+    // reset normals for sphere
+    for(uint i = 0; i < nbVertices; ++i)
+    {
+        allNormals[firstNormalID + i] = vec4(0.0, 0.0, 0.0, 0.0);
+    }
+
+    for(uint i = 0; i < nbIndices; i += 3)
+    {
+        a = allRadiis[indices[i] + firstNormalID] * vertices[indices[i]].xyz;
+        b = allRadiis[indices[i + 1] + firstNormalID] * vertices[indices[i + 1]].xyz;
+        c = allRadiis[indices[i + 2] + firstNormalID] * vertices[indices[i + 2]].xyz;
+        ab = b - a;
+        ac = c - a;
+        if(length(ab) > FLOAT_EPS && length(ac) > FLOAT_EPS)
+        {
+            ab = normalize(ab);
+            ac = normalize(ac);
+            if(abs(dot(ab, ac)) < 1.0)
+            {
+                n = normalize(cross(ab, ac));
+                allNormals[indices[i] + firstNormalID] += vec4(n, 0.0);
+                allNormals[indices[i + 1] + firstNormalID] += vec4(n, 0.0);
+                allNormals[indices[i + 2] + firstNormalID] += vec4(n, 0.0);
+            }
         }
     }
 }
@@ -147,5 +160,8 @@ void main()
 
     const uint voxID = convertIndex3DToVoxID(i, j, k);
     const uint firstVertID = outSphereID * nbVertices;
-    scaleSphere(voxID, firstVertID);
+    if(scaleSphere(voxID, firstVertID))
+    {
+        updateNormals(firstVertID);
+    }
 }
