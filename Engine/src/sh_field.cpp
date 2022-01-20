@@ -330,31 +330,28 @@ void SHField::drawSpecific()
 void SHField::scaleSpheres()
 {
     glUseProgram(mComputeShader.ID());
-    unsigned int sliceId;
     if(mIsSliceDirty.x)
     {
-        sliceId = 0;
-        mGridInfoData.Update(2*sizeof(glm::ivec4), sizeof(unsigned int), &sliceId);
-        glDispatchCompute(mNbSpheresX, 1, 1);
-        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        scaleSpheres(0, mNbSpheresX);
         mIsSliceDirty.x = false;
     }
     if(mIsSliceDirty.y)
     {
-        sliceId = 1;
-        mGridInfoData.Update(2*sizeof(glm::ivec4), sizeof(unsigned int), &sliceId);
-        glDispatchCompute(mNbSpheresY, 1, 1);
-        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        scaleSpheres(1, mNbSpheresY);
         mIsSliceDirty.y = false;
     }
     if(mIsSliceDirty.z)
     {
-        sliceId = 2;
-        mGridInfoData.Update(2*sizeof(glm::ivec4), sizeof(unsigned int), &sliceId);
-        glDispatchCompute(mNbSpheresZ, 1, 1);
-        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        scaleSpheres(2, mNbSpheresZ);
         mIsSliceDirty.z = false;
     }
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     glUseProgram(0);
+}
+
+void SHField::scaleSpheres(unsigned int sliceId, unsigned int nbSpheres)
+{
+    mGridInfoData.Update(2*sizeof(glm::ivec4), sizeof(unsigned int), &sliceId);
+    glDispatchCompute(nbSpheres, 1, 1);
 }
 } // namespace Slicer

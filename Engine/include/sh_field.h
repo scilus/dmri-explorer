@@ -77,9 +77,6 @@ public:
     ~SHField();
 
 protected:
-    /// Scale spheres by launching a compute shader pass.
-    void scaleSpheres();
-
     /// \see Model::drawSpecific()
     void drawSpecific() override;
 
@@ -186,6 +183,14 @@ private:
     inline unsigned int getMaxNbSpheres() const { return mNbSpheresX +
                                                          mNbSpheresY +
                                                          mNbSpheresZ; };
+
+    /// Scale spheres by launching a compute shader pass.
+    void scaleSpheres();
+
+    /// Scale spheres for a single slice.
+    /// \param[in] sliceId Index of the slice to scale.
+    /// \param[in] nbSpheres Number of spheres for the slice of interest.
+    void scaleSpheres(unsigned int sliceId, unsigned int nbSpheres);
 
     /// Mutex for multithreading.
     std::mutex mMutex;
