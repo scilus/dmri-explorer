@@ -1,5 +1,4 @@
 set(CMAKE_GENERATOR "Unix Makefiles")
-set(CMAKE_TOOLCHAIN_FILE ./third/glfw3/scripts/buildsystems/vcpkg.cmake)
 
 #========== Global Configurations =============#
 #----------------------------------------------#
@@ -8,7 +7,11 @@ project(dmriexplorer)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-find_package(glfw3 CONFIG REQUIRED)
+# glfw include
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+add_subdirectory("third/glfw-3.3.6")
 
 # glad include
 add_library(GLAD "third/glad/src/glad.c")
