@@ -58,3 +58,9 @@ Contributions are welcome and encouraged:
 
 ## Documentation
 The repository's [website](https://scilus.github.io/dmri-explorer/html/index.html) contains up-to-date documentation on the code generated with Doxygen.
+
+##Troubleshooting
+If you have errors concerning package configuration with glfw3 you can try installing mesa-common-dev to fix package installation
+```
+sudo apt install mesa-common-dev
+```
