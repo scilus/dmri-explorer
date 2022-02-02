@@ -11,26 +11,26 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-add_subdirectory("third/glfw-3.3.6")
+add_subdirectory("deps/glfw-3.3.6")
 
 # glad include
-add_library(GLAD "third/glad/src/glad.c")
-include_directories("third/glad/include/")
+add_library(GLAD "deps/glad/src/glad.c")
+include_directories("deps/glad/include/")
 
 # nifti clib library
-add_subdirectory("third/nifti_clib")
+add_subdirectory("deps/nifti_clib")
 
 # imgui include
-file(GLOB IMGUI_SRC "third/imgui/src/*.cpp")
+file(GLOB IMGUI_SRC "deps/imgui/src/*.cpp")
 add_library(IMGUI ${IMGUI_SRC})
 target_link_libraries(IMGUI PRIVATE glfw GLAD)
-include_directories("third/imgui/include/")
+include_directories("deps/imgui/include/")
 add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD)
 
 # std image loader include
-include_directories("third/stb/include/")
+include_directories("deps/stb/include/")
 
 # glm math library include
-include_directories("third/glm/")
+include_directories("deps/glm/")
 
 add_subdirectory("Engine")
