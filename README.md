@@ -65,4 +65,4 @@ On Ubuntu, it can be installed with :
 ```
 sudo apt install mesa-common-dev
 ```
-Mesa common dev is an open-source implementation of OpenGL. See this [link from wikipedia](https://en.wikipedia.org/wiki/OpenGL#Implementations) for more information.
+`mesa-common-dev` is an open-source implementation of OpenGL. See this [link from wikipedia](https://en.wikipedia.org/wiki/OpenGL#Implementations) for more information.
