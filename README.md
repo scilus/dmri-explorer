@@ -58,3 +58,11 @@ Contributions are welcome and encouraged:
 
 ## Documentation
 The repository's [website](https://scilus.github.io/dmri-explorer/html/index.html) contains up-to-date documentation on the code generated with Doxygen.
+
+## Troubleshooting
+If you encounter errors during the compilation of the project, make sure you have an OpenGL implementation available on your system. 
+On Ubuntu, it can be installed with : 
+```
+sudo apt install mesa-common-dev
+```
+`mesa-common-dev` is an open-source implementation of OpenGL. See this [link from wikipedia](https://en.wikipedia.org/wiki/OpenGL#Implementations) for more information.
