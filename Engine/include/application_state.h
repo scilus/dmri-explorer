@@ -90,6 +90,15 @@ private:
 
 namespace State
 {
+
+/// enum for the 2D mode
+enum class ModeEnum {
+    off = 0,
+    x = 1,
+    y = 2,
+    z = 3,
+};
+
 /// Struct containing global parameters for the voxel grid.
 struct Grid
 {
@@ -159,6 +168,17 @@ struct Window
     /// Multiplier on mouse wheel movement to control camera zoom speed.
     ApplicationParameter<float> ZoomSpeed;
 };
+
+///Struct containing parameters for the 2D view mode
+struct ViewMode
+{
+    /// Default constructor
+    ViewMode()
+    :Mode(){};
+
+    ///The state of the mode (off, x, y or z)
+    ApplicationParameter<ModeEnum> Mode;
+};
 } // namespace State
 
 /// Class containing global parameters for the application.
@@ -176,6 +196,9 @@ public:
 
     /// Parameters pertaining to the Window state.
     State::Window Window;
+
+    /// Parameters pertaining to the 2D mode state.
+    State::ViewMode ViewMode;
 
     /// Parameter containing the fODF image object.
     ApplicationParameter<NiftiImageWrapper> FODFImage;

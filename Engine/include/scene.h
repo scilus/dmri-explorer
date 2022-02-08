@@ -35,6 +35,16 @@ public:
     /// Translate the scene's coordinate system based on mouse move.
     /// \param[in] v Mouse move vector.
     void TranslateCS(const glm::vec2& v);
+    
+    /// Set the state for the 2d mode
+    /// \param[in] previous Previous value.
+    /// \param[in] mode New value for fading behaviour.
+    void setMode(State::ModeEnum previous, State::ModeEnum mode);
+
+protected:
+
+    /// \see Model::registerStateCallbacks()
+    void registerStateCallbacks();
 
 private:
     /// Reference to the Scene's CoordinateSystem.
@@ -45,5 +55,8 @@ private:
 
     /// Vector of models to be rendered.
     std::vector<std::shared_ptr<Model>> mModels;
+    
+    ///Boolean to block the rotation of the scene
+    bool blockRotation;
 };
 } // namespace Slicer

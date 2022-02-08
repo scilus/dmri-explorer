@@ -184,6 +184,24 @@ void UIManager::drawSlicersWindow()
         mState->VoxelGrid.SliceIndices.Update(slice);
     }
 
+    ImGui::Text("2D mode");
+    ImGui::SameLine();
+    static int e = 0;
+    if(ImGui::RadioButton("Off", &e, 0)){
+        mState->ViewMode.Mode.Update(State::ModeEnum::off);
+    }
+    if(ImGui::RadioButton("X", &e, 1)){
+        mState->ViewMode.Mode.Update(State::ModeEnum::x);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("Y", &e, 2)){
+        mState->ViewMode.Mode.Update(State::ModeEnum::y);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("Z", &e, 3)){
+        mState->ViewMode.Mode.Update(State::ModeEnum::z);
+    }
+
     ImGui::Separator();
     auto& scalingParam = mState->Sphere.Scaling;
     auto& thresholdParam = mState->Sphere.SH0Threshold;
