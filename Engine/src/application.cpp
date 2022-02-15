@@ -143,6 +143,26 @@ namespace Slicer
         // Update camera parameters
         mCamera->UpdateGPU();
 
+        // TODO: coder ici pour le render du viewport
+
+        // Projection du curseur dans la scene
+        // intersection avec le plan
+        if (mState->Displayed)
+        {
+            std::cout << "adding new viewport" << std::endl;
+
+            glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT);
+            glScissor(0, 0, WIN_WIDTH, WIN_HEIGHT);
+            mScene->Render();
+            glViewport(0, 0, WIN_WIDTH / 4, WIN_HEIGHT / 4);
+            glScissor(0, 0, WIN_WIDTH / 4, WIN_HEIGHT / 4);
+            // mState->Displayed = !(mState->Displayed);
+            mScene->Render();
+
+            std::cout << "done" << std::endl;
+        }
+        // cnstruction de la boite qui vaetre visu
+
         // Draw scene
         mScene->Render();
 
@@ -219,30 +239,33 @@ namespace Slicer
 
     void Application::onPressSpace(GLFWwindow *window, int key, int scancode, int action, int mods)
     {
-        Application *app = (Application *)glfwGetWindowUserPointer(window);
-        bool display = app->mState->Displayed;
+        std::cout << "pressed space duh" << std::endl;
 
-        if (!display && action == GLFW_PRESS)
-        {
-            std::cout << "adding new viewport" << std::endl;
-            // app->mCamera->Zoom(30.0);
+        // Application *app = (Application *)glfwGetWindowUserPointer(window);
+        // bool display = app->mState->Displayed;
 
-            // glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT);
-            // glScissor(0, 0, WIN_WIDTH, WIN_HEIGHT);
-            // // app->renderFrame();
-            // glViewport(0, 0, WIN_WIDTH / 4, WIN_HEIGHT / 4);
-            // glScissor(0, 0, WIN_WIDTH / 4, WIN_HEIGHT / 4);
-            // app->mState->Displayed = !display;
+        // if (!display && action == GLFW_PRESS && key == GLFW_KEY_SPACE)
+        // {
+        //     std::cout << "adding new viewport" << std::endl;
 
-        }
-        // else if (display && action == GLFW_PRESS)
+        //     glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT);
+        //     glScissor(0, 0, WIN_WIDTH, WIN_HEIGHT);
+        //     app->renderFrame();
+        //     app->mCamera->Zoom(10.0);
+        //     glViewport(0, 0, WIN_WIDTH / 4, WIN_HEIGHT / 4);
+        //     glScissor(0, 0, WIN_WIDTH / 4, WIN_HEIGHT / 4);
+        //     app->mState->Displayed = !display;
+        //     app->renderFrame();
+        //     // std::cout << "done" << std::endl;
+        // }
+        // else if (display && action == GLFW_PRESS && key == GLFW_KEY_SPACE)
         // {
         //     glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT);
         //     glScissor(0, 0, WIN_WIDTH, WIN_HEIGHT);
+        //     app->renderFrame();
+
         //     std::cout << "removing viewport" << std::endl;
         //     app->mState->Displayed = !display;
-
         // }
-        // app->renderFrame();   
     }
 } // namespace Slicer
