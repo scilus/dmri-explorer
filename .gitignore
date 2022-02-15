@@ -4,3 +4,4 @@ third/vcpkg
 *.jpg
 *.ini
 docs/
+data/S1__fodf.nii.gz

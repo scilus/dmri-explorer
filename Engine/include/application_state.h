@@ -203,5 +203,8 @@ public:
 
     /// Parameter containing the fODF image object.
     ApplicationParameter<NiftiImageWrapper> FODFImage;
+
+    /// Parameter controling viewport display.
+    bool Displayed = false;
 };
 } // namespace Slicer

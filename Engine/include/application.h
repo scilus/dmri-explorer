@@ -69,6 +69,14 @@ private:
     /// \param[in] height The window height after resize.
     static void onWindowResize(GLFWwindow* window, int width, int height);
 
+    /// GLFW callback for handling pressing of space.
+    /// \param[in] window The current GLFW window.
+    /// \param[in] key The key id.
+    /// \param[in] scancode The key unique scancode.
+    /// \param[in] action The action id.
+    /// \param[in] mods The modifier bits.
+    static void onPressSpace(GLFWwindow* window, int key, int scancode, int action, int mods);
+
     /// Pointer to application main window.
     GLFWwindow* mWindow;
 
