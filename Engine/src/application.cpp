@@ -143,25 +143,33 @@ namespace Slicer
         // Update camera parameters
         mCamera->UpdateGPU();
 
-        // TODO: coder ici pour le render du viewport
+        int h, w;
+        double xPos, yPos;
+        glfwGetWindowSize(mWindow, &w, &h);
+        glfwGetCursorPos(mWindow, &xPos, &yPos);
+        std::cout << xPos << ", " << yPos << std::endl;
 
-        // Projection du curseur dans la scene
-        // intersection avec le plan
-        if (mState->Displayed)
+        if (mState->ZoomMode)
         {
-            std::cout << "adding new viewport" << std::endl;
-
-            glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT);
-            glScissor(0, 0, WIN_WIDTH, WIN_HEIGHT);
+            glViewport(0, 0, w, h);
+            glScissor(0, 0, w, h);
             mScene->Render();
-            glViewport(0, 0, WIN_WIDTH / 4, WIN_HEIGHT / 4);
-            glScissor(0, 0, WIN_WIDTH / 4, WIN_HEIGHT / 4);
-            // mState->Displayed = !(mState->Displayed);
-            mScene->Render();
+            // TODO: construction de la boite qui va etre visualiser
+            // Projection du curseur dans la scene
+            // intersection avec le plan
+            glViewport(0, 0, w / 4, h / 4);
+            glScissor(0, 0, w / 4, h / 4);
+            if (0 <= xPos && xPos <= (w / 4) && (h-(h/4)) <= yPos && yPos <= h)
+            {
+                std::cout << "in the zooone" << std::endl;
+            }
 
-            std::cout << "done" << std::endl;
         }
-        // cnstruction de la boite qui vaetre visu
+        if (!mState->ZoomMode)
+        {
+            glViewport(0, 0, w, h);
+            glScissor(0, 0, w, h);
+        }
 
         // Draw scene
         mScene->Render();
@@ -239,33 +247,16 @@ namespace Slicer
 
     void Application::onPressSpace(GLFWwindow *window, int key, int scancode, int action, int mods)
     {
-        std::cout << "pressed space duh" << std::endl;
+        if (action == GLFW_PRESS && key == GLFW_KEY_SPACE)
+        {
+            Application *app = (Application *)glfwGetWindowUserPointer(window);
+            if (app->mState->ZoomMode)
+                std::cout << "its on" << std::endl;
+            if (!app->mState->ZoomMode)
+                std::cout << "its off" << std::endl;
 
-        // Application *app = (Application *)glfwGetWindowUserPointer(window);
-        // bool display = app->mState->Displayed;
-
-        // if (!display && action == GLFW_PRESS && key == GLFW_KEY_SPACE)
-        // {
-        //     std::cout << "adding new viewport" << std::endl;
-
-        //     glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT);
-        //     glScissor(0, 0, WIN_WIDTH, WIN_HEIGHT);
-        //     app->renderFrame();
-        //     app->mCamera->Zoom(10.0);
-        //     glViewport(0, 0, WIN_WIDTH / 4, WIN_HEIGHT / 4);
-        //     glScissor(0, 0, WIN_WIDTH / 4, WIN_HEIGHT / 4);
-        //     app->mState->Displayed = !display;
-        //     app->renderFrame();
-        //     // std::cout << "done" << std::endl;
-        // }
-        // else if (display && action == GLFW_PRESS && key == GLFW_KEY_SPACE)
-        // {
-        //     glViewport(0, 0, WIN_WIDTH, WIN_HEIGHT);
-        //     glScissor(0, 0, WIN_WIDTH, WIN_HEIGHT);
-        //     app->renderFrame();
-
-        //     std::cout << "removing viewport" << std::endl;
-        //     app->mState->Displayed = !display;
-        // }
+            app->mState->ZoomMode = !app->mState->ZoomMode;
+            app->renderFrame();
+        }
     }
 } // namespace Slicer
