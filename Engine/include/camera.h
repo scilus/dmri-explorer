@@ -35,6 +35,12 @@ public:
     /// \param[in] aspect New aspect ratio (width / height).
     void Resize(const float& aspect);
 
+    /// Apply Orthogonal Projection.
+    void ApplyOrthogonalProjection();
+
+    /// Apply perspective projection.
+    void ApplyPerspectiveProjection();
+
     /// Translate camera along its view axis (zoom).
     /// \param[in] delta Mouse wheel offset.
     void Zoom(double delta);
@@ -71,6 +77,9 @@ private:
 
     /// Window aspect ratio.
     float mAspect;
+
+    /// Camera model is orthogonal.
+    bool isOrthogonal;
 
     /// Projection matrix.
     glm::mat4 mProjectionMatrix;

@@ -3,6 +3,7 @@
 #include <vector>
 #include <coordinate_system.h>
 #include <application_state.h>
+#include <camera.h>
 
 namespace Slicer
 {
@@ -17,7 +18,8 @@ public:
 
     /// Constructor.
     /// \param[in] state Reference to the ApplicationState.
-    Scene(const std::shared_ptr<ApplicationState>& state);
+    /// \param[in] camera Reference to the Camera.
+    Scene(const std::shared_ptr<ApplicationState>& state, const std::shared_ptr<Camera>& camera);
 
     /// Destructor.
     ~Scene();
@@ -52,6 +54,9 @@ private:
 
     /// Reference to the ApplicationState.
     std::shared_ptr<ApplicationState> mState;
+
+    /// Reference to the Camera.
+    std::shared_ptr<Camera> mCamera;
 
     /// Vector of models to be rendered.
     std::vector<std::shared_ptr<Model>> mModels;

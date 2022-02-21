@@ -89,7 +89,7 @@ void Application::initialize()
                              0.1f, 500.0f,
                              mState));
 
-    mScene.reset(new Scene(mState));
+    mScene.reset(new Scene(mState, mCamera));
 
     // Render frame without the model
     renderFrame();

@@ -22,7 +22,8 @@ Camera::Camera(const glm::vec3& position,
 ,mCamParamsData(GPU::Binding::camera)
 ,mState(state)
 {
-    mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
+    isOrthogonal=false;
+    ApplyPerspectiveProjection();
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
 
@@ -40,6 +41,25 @@ void Camera::UpdateGPU()
 void Camera::Resize(const float& aspect)
 {
     mAspect = aspect;
+    if(isOrthogonal){
+        ApplyOrthogonalProjection();
+    }
+    else{
+        ApplyPerspectiveProjection();
+    }
+}
+
+void Camera::ApplyOrthogonalProjection()
+{
+    isOrthogonal = true;    
+    float width = float(mState->Window.Width.Get());
+    float height = float(mState->Window.Height.Get());
+    mProjectionMatrix = glm::ortho(-width*mPosition.z*0.001f, width*mPosition.z*0.001f, -height*mPosition.z*0.001f, height*mPosition.z*0.001f, mNear, mFar);
+}
+
+void Camera::ApplyPerspectiveProjection()
+{
+    isOrthogonal = false;
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
 }
 
@@ -50,5 +70,8 @@ void Camera::Zoom(double delta)
     mPosition = mPosition + direction * (float)delta;
     mLookAt = mLookAt + direction * (float)delta;
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
+    if(isOrthogonal){
+        ApplyOrthogonalProjection();
+    }
 }
 } // namespace Slicer
