@@ -23,6 +23,10 @@ public:
     /// \return Image path.
     inline std::string GetImagePath() const { return mImagePath; };
 
+    /// Image path getter.
+    /// \return Image path.
+    inline std::string GetBackgroundPath() const { return mBackgroundPath; };
+
     /// Sphere resolution getter.
     /// \return Sphere resolution.
     inline int GetSphereResolution() const {return mSphereResolution; };
@@ -30,6 +34,9 @@ public:
 private:
     /// Path to the image.
     std::string mImagePath;
+
+    /// Path to the background.
+    std::string mBackgroundPath;
 
     /// Sphere resolution for glyphs.
     int mSphereResolution;

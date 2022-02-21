@@ -12,6 +12,7 @@ const int DEFAULT_SPHERE_RESOLUTION = 3;
 
 ArgumentParser::ArgumentParser(int argc, char** argv)
 :mImagePath()
+,mBackgroundPath()
 ,mSphereResolution(DEFAULT_SPHERE_RESOLUTION)
 {
     args::ArgumentParser parser("Those are the arguments available for dmriexplorer",
