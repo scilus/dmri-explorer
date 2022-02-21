@@ -120,6 +120,7 @@ void Application::setWindowIcon()
 void Application::initApplicationState(const ArgumentParser& parser)
 {
     mState->FODFImage.Update(NiftiImageWrapper(parser.GetImagePath()));
+    mState->BackgroundImage.Update(NiftiImageWrapper(parser.GetBackgroundPath()));
 
     mState->Sphere.Resolution.Update(parser.GetSphereResolution());
     mState->Sphere.IsNormalized.Update(false);

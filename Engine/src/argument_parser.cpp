@@ -11,6 +11,7 @@ const int DEFAULT_SPHERE_RESOLUTION = 3;
 
 ArgumentParser::ArgumentParser(int argc, char** argv)
 :mImagePath()
+,mBackgroundPath()
 ,mSphereResolution(DEFAULT_SPHERE_RESOLUTION)
 {
     if(argc < 2)
@@ -36,9 +37,15 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
                     mImagePath = argString;
                     break;
                 case 2:
+                    if(argString == "--background" ){
+                        break;
+                    }
                     // first optional argument, sphere resolution
                     mSphereResolution = atoi(argString.c_str());
                     break;
+                case 3:
+                    mBackgroundPath = argString;
+                break;
                 default:
                     std::cerr << "Error: Too many arguments for program." << std::endl;
                     PrintUsage();

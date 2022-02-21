@@ -179,5 +179,8 @@ public:
 
     /// Parameter containing the fODF image object.
     ApplicationParameter<NiftiImageWrapper> FODFImage;
+
+    /// Parameter containing the fODF image object.
+    ApplicationParameter<NiftiImageWrapper> BackgroundImage;
 };
 } // namespace Slicer
