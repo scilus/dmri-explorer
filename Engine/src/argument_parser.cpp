@@ -1,6 +1,7 @@
 #include <argument_parser.h>
 #include <iostream>
 #include <string>
+#include <args/args.hxx>
 
 namespace Slicer
 {
@@ -13,55 +14,52 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
 :mImagePath()
 ,mSphereResolution(DEFAULT_SPHERE_RESOLUTION)
 {
-    if(argc < 2)
+    args::ArgumentParser parser("Those are the arguments available for dmriexplorer",
+                                "dmri-explorer - Real-time Diffusion MRI viewer.");
+
+    args::HelpFlag help(parser, 
+                        "help", 
+                        "Display this help menu", 
+                        {'h', "help"});
+
+    args::Positional<std::string> imagePath(parser, 
+                                            "image path", 
+                                            "First argument (mandatory): Path to the SH image in nifti file format.");
+
+    args::ValueFlag<int> sphereResolution(parser, 
+                                          "sphere resolution", 
+                                          "Specify the sphere resolution used for SH projection. Default: 3.", 
+                                          {'s', "sphere_resolution"});
+
+    try
     {
-        std::cerr << "Error: Missing mandatory argument: image." << std::endl;
+        parser.ParseCLI(argc, argv);
+    }
+    catch (const args::Help&)
+    {
+        std::cout << parser;
         mIsValid = false;
-        PrintUsage();
+        return;
     }
-    else
+    catch (const args::ParseError& e)
     {
-        int count = 0;
-        std::string argString;
-        while(count < argc)
-        {
-            argString = argv[count];
-            switch(count)
-            {
-                case 0:
-                    // first argument, program name
-                    break;
-                case 1:
-                    // mandatory argument, image path
-                    mImagePath = argString;
-                    break;
-                case 2:
-                    // first optional argument, sphere resolution
-                    mSphereResolution = atoi(argString.c_str());
-                    break;
-                default:
-                    std::cerr << "Error: Too many arguments for program." << std::endl;
-                    PrintUsage();
-                    break;
-            };
-            ++count;
-        }
-        mIsValid = true;
+        std::cerr << e.what() << std::endl;
+        std::cerr << parser;
+        mIsValid = false;
+        return;
     }
-}
 
-void ArgumentParser::PrintUsage() const
-{
-    std::string usage = "Usage:\n";
-    usage += "dmri-explorer - Real-time Diffusion MRI viewer\n";
-    usage += "dmriexplorer image [sphere_resolution]\n";
-    usage += "\n";
-    usage += "Mandatory arguments\n";
-    usage += "    image: Path to the SH image in nifti file format.\n";
-    usage += "Optional arguments\n";
-    usage += "    sphere_resolution: Resolution of sphere used for SH projection.\n";
-
-    std::cout << usage <<std::endl;
+    if(imagePath)
+    {
+        // Mandatory argument, image path
+        mImagePath = args::get(imagePath);
+    }
+    if(sphereResolution)
+    {
+        // Optional argument, sphere resolution
+        mSphereResolution = args::get(sphereResolution);
+    }
+    mIsValid=true;
 }
 
 bool ArgumentParser::OK() const

@@ -33,4 +33,7 @@ include_directories("deps/stb/include/")
 # glm math library include
 include_directories("deps/glm/")
 
+#args parser library include
+include_directories("deps/args/")
+
 add_subdirectory("Engine")
