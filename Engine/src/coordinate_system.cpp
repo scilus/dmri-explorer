@@ -24,7 +24,7 @@ void CoordinateSystem::ApplyTransform(const glm::mat4& t)
     mTransformMatrix = t * mTransformMatrix;
 }
 
-void CoordinateSystem::ApplyMatrix(const glm::mat4& t)
+void CoordinateSystem::ResetMatrix(const glm::mat4& t)
 {
     mTransformMatrix = t;
 }

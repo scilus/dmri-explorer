@@ -30,7 +30,7 @@ public:
 
     /// Apply a matrix to the coordinate system.
     /// \param[in] t Matrix to be appplied.
-    void ApplyMatrix(const glm::mat4& t);
+    void ResetMatrix(const glm::mat4& t);
 
     /// Get composite transformation for expressing points in
     /// this coordinate system in World coordinates.

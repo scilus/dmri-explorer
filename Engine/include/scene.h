@@ -3,7 +3,6 @@
 #include <vector>
 #include <coordinate_system.h>
 #include <application_state.h>
-#include <camera.h>
 
 namespace Slicer
 {
@@ -19,7 +18,7 @@ public:
     /// Constructor.
     /// \param[in] state Reference to the ApplicationState.
     /// \param[in] camera Reference to the Camera.
-    Scene(const std::shared_ptr<ApplicationState>& state, const std::shared_ptr<Camera>& camera);
+    Scene(const std::shared_ptr<ApplicationState>& state);
 
     /// Destructor.
     ~Scene();
@@ -41,7 +40,7 @@ public:
     /// Set the state for the 2d mode
     /// \param[in] previous Previous value.
     /// \param[in] mode New value for fading behaviour.
-    void setMode(State::ModeEnum previous, State::ModeEnum mode);
+    void setMode(State::CameraMode previous, State::CameraMode mode);
 
 protected:
 
@@ -55,13 +54,10 @@ private:
     /// Reference to the ApplicationState.
     std::shared_ptr<ApplicationState> mState;
 
-    /// Reference to the Camera.
-    std::shared_ptr<Camera> mCamera;
-
     /// Vector of models to be rendered.
     std::vector<std::shared_ptr<Model>> mModels;
     
     ///Boolean to block the rotation of the scene
-    bool blockRotation;
+    bool mBlockRotation;
 };
 } // namespace Slicer

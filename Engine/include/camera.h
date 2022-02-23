@@ -41,12 +41,22 @@ public:
     /// Apply perspective projection.
     void ApplyPerspectiveProjection();
 
+    /// Set the projection for the camera
+    /// \param[in] previous Previous value.
+    /// \param[in] mode New value for fading behaviour.
+    void changeProjection(State::CameraMode previous, State::CameraMode mode);
+
     /// Translate camera along its view axis (zoom).
     /// \param[in] delta Mouse wheel offset.
     void Zoom(double delta);
 
     /// Update camera attributes on the GPU.
     void UpdateGPU();
+
+protected:
+
+    /// \see Model::registerStateCallbacks()
+    void registerStateCallbacks();
 
 private:
     /// Struct containing camera attributes to push on the GPU.
@@ -79,7 +89,7 @@ private:
     float mAspect;
 
     /// Camera model is orthogonal.
-    bool isOrthogonal;
+    bool mIsOrthogonal;
 
     /// Projection matrix.
     glm::mat4 mProjectionMatrix;

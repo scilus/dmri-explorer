@@ -92,11 +92,12 @@ namespace State
 {
 
 /// enum for the 2D mode
-enum class ModeEnum {
-    off = 0,
-    x = 1,
-    y = 2,
-    z = 3,
+enum class CameraMode
+{
+    projective3D = 0,
+    orthogonalX = 1,
+    orthogonalY = 2,
+    orthogonalZ = 3
 };
 
 /// Struct containing global parameters for the voxel grid.
@@ -177,7 +178,7 @@ struct ViewMode
     :Mode(){};
 
     ///The state of the mode (off, x, y or z)
-    ApplicationParameter<ModeEnum> Mode;
+    ApplicationParameter<CameraMode> Mode;
 };
 } // namespace State
 

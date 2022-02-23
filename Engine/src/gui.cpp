@@ -122,7 +122,7 @@ void UIManager::drawSlicersWindow()
         return;
 
     ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(417.f, 240.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(417.f, 250.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
     ImGui::Begin("Slices options", &mShowSlicers);
@@ -186,20 +186,20 @@ void UIManager::drawSlicersWindow()
 
     ImGui::Text("2D mode");
     ImGui::SameLine();
-    static int e = 0;
-    if(ImGui::RadioButton("Off", &e, 0)){
-        mState->ViewMode.Mode.Update(State::ModeEnum::off);
+    static int cameraMode = 0;
+    if(ImGui::RadioButton("Off", &cameraMode, 0)){
+        mState->ViewMode.Mode.Update(State::CameraMode::projective3D);
     }
-    if(ImGui::RadioButton("X", &e, 1)){
-        mState->ViewMode.Mode.Update(State::ModeEnum::x);
-    }
-    ImGui::SameLine();
-    if(ImGui::RadioButton("Y", &e, 2)){
-        mState->ViewMode.Mode.Update(State::ModeEnum::y);
+    if(ImGui::RadioButton("X", &cameraMode, 1)){
+        mState->ViewMode.Mode.Update(State::CameraMode::orthogonalX);
     }
     ImGui::SameLine();
-    if(ImGui::RadioButton("Z", &e, 3)){
-        mState->ViewMode.Mode.Update(State::ModeEnum::z);
+    if(ImGui::RadioButton("Y", &cameraMode, 2)){
+        mState->ViewMode.Mode.Update(State::CameraMode::orthogonalY);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("Z", &cameraMode, 3)){
+        mState->ViewMode.Mode.Update(State::CameraMode::orthogonalZ);
     }
 
     ImGui::Separator();

@@ -3,17 +3,15 @@
 #include <glm/gtx/transform.hpp>
 #include <utils.hpp>
 #include <application_state.h>
-#include <camera.h>
 
 namespace Slicer
 {
-Scene::Scene(const std::shared_ptr<ApplicationState>& state, const std::shared_ptr<Camera>& camera)
+Scene::Scene(const std::shared_ptr<ApplicationState>& state)
 :mState(state)
 ,mCoordinateSystem(new CoordinateSystem())
-,mCamera(camera)
 {
     registerStateCallbacks();
-    blockRotation = false;
+    mBlockRotation = false;
 }
 
 Scene::~Scene()
@@ -29,7 +27,7 @@ void Scene::AddSHField()
 void Scene::registerStateCallbacks()
 {
     mState->ViewMode.Mode.RegisterCallback(
-        [this](State::ModeEnum p, State::ModeEnum n)
+        [this](State::CameraMode p, State::CameraMode n)
         {
             this->setMode(p, n);
         }
@@ -37,31 +35,31 @@ void Scene::registerStateCallbacks()
 
 }
 
-void Scene::setMode(State::ModeEnum previous, State::ModeEnum mode)
+void Scene::setMode(State::CameraMode previous, State::CameraMode mode)
 {
     if(previous != mode)
     {
-        if(mode == State::ModeEnum::off){
-            mCamera->ApplyPerspectiveProjection();
-            blockRotation=false;
+        if(mode == State::CameraMode::projective3D)
+        {
+            mBlockRotation=false;
             return;
         }
-        blockRotation=true;
-        mCamera->ApplyOrthogonalProjection();
+        mBlockRotation=true;
         const glm::mat4 transform(1.0f);
-        mCoordinateSystem->ApplyMatrix(transform);
-        if(mode == State::ModeEnum::x){
-            glm::mat4 transform = glm::rotate(1.5708f, glm::vec3(0.0, -1.0, 0.0)); 
-            glm::mat4 transform2 = glm::rotate(1.5708f, glm::vec3(0.0, 0.0, -1.0)); 
-            mCoordinateSystem->ApplyTransform(transform);
-            mCoordinateSystem->ApplyTransform(transform2);
-
+        mCoordinateSystem->ResetMatrix(transform);
+        if(mode == State::CameraMode::orthogonalX)
+        {
+            glm::mat4 rotationY = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0, -1.0, 0.0)); 
+            glm::mat4 rotationZ = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0, 0.0, -1.0)); 
+            mCoordinateSystem->ApplyTransform(rotationY);
+            mCoordinateSystem->ApplyTransform(rotationZ);
         }
-        if(mode == State::ModeEnum::y){
-            glm::mat4 transform = glm::rotate(1.5708f, glm::vec3(1.0, 0.0, 0.0));
-            glm::mat4 transform2 = glm::rotate(3.14159f, glm::vec3(0.0, 0.0, 1.0));
-            mCoordinateSystem->ApplyTransform(transform); 
-            mCoordinateSystem->ApplyTransform(transform2);
+        else if(mode == State::CameraMode::orthogonalY)
+        {
+            glm::mat4 rotationX = glm::rotate(glm::half_pi<float>(), glm::vec3(1.0, 0.0, 0.0));
+            glm::mat4 rotationZ = glm::rotate(glm::pi<float>(), glm::vec3(0.0, 0.0, 1.0));
+            mCoordinateSystem->ApplyTransform(rotationX); 
+            mCoordinateSystem->ApplyTransform(rotationZ);
         }
     }
 }
@@ -77,7 +75,7 @@ void Scene::Render()
 
 void Scene::RotateCS(const glm::vec2& vec)
 {
-    if(!blockRotation){
+    if(!mBlockRotation){
         const float& rotationSpeed = mState->Window.RotationSpeed.Get();
         const float dx = -vec.x * rotationSpeed;
         const float dy = -vec.y * rotationSpeed;
