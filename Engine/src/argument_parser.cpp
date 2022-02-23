@@ -28,7 +28,7 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
 
     args::ValueFlag<int> sphereResolution(parser, 
                                           "sphere resolution", 
-                                          "Specify the sphere resolution used for SH projection", 
+                                          "Specify the sphere resolution used for SH projection. Default: 3.", 
                                           {'s', "sphere_resolution"});
 
     try
