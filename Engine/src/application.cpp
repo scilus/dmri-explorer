@@ -147,25 +147,30 @@ namespace Slicer
         double xPos, yPos;
         glfwGetWindowSize(mWindow, &w, &h);
         glfwGetCursorPos(mWindow, &xPos, &yPos);
-        std::cout << xPos << ", " << yPos << std::endl;
+        // std::cout << xPos << ", " << yPos << std::endl;
 
         if (mState->ZoomMode)
         {
-            glViewport(0, 0, w, h);
-            glScissor(0, 0, w, h);
-            mScene->Render();
-            // TODO: construction de la boite qui va etre visualiser
-            // Projection du curseur dans la scene
-            // intersection avec le plan
-            glViewport(0, 0, w / 4, h / 4);
-            glScissor(0, 0, w / 4, h / 4);
-            if (0 <= xPos && xPos <= (w / 4) && (h-(h/4)) <= yPos && yPos <= h)
-            {
-                std::cout << "in the zooone" << std::endl;
-            }
+            //TODO: keep old camera params
+            std::shared_ptr<Camera> camera = mCamera;
 
+            if (0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h)
+            {
+                // std::cout << "in the zooone" << std::endl;
+                //TODO: add 2nd camera for this viewport
+                glViewport(0, 0, w / 4, h / 4);
+                glScissor(0, 0, w / 4, h / 4);
+            }
+            else
+            {
+                glViewport(0, 0, w, h);
+                glScissor(0, 0, w, h);
+                mScene->Render();
+                glViewport(0, 0, w / 4, h / 4);
+                glScissor(0, 0, w / 4, h / 4);
+            }
         }
-        if (!mState->ZoomMode)
+        else
         {
             glViewport(0, 0, w, h);
             glScissor(0, 0, w, h);
@@ -250,13 +255,12 @@ namespace Slicer
         if (action == GLFW_PRESS && key == GLFW_KEY_SPACE)
         {
             Application *app = (Application *)glfwGetWindowUserPointer(window);
+            app->mState->ZoomMode = !app->mState->ZoomMode;
+            app->renderFrame();
             if (app->mState->ZoomMode)
                 std::cout << "its on" << std::endl;
             if (!app->mState->ZoomMode)
                 std::cout << "its off" << std::endl;
-
-            app->mState->ZoomMode = !app->mState->ZoomMode;
-            app->renderFrame();
         }
     }
 } // namespace Slicer
