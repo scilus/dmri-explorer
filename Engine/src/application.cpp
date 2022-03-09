@@ -87,6 +87,8 @@ namespace Slicer
                                  0.1f, 500.0f,
                                  mState));
 
+        mSecondaryCamera = mCamera;
+
         mScene.reset(new Scene(mState));
 
         // Render frame without the model
@@ -140,29 +142,29 @@ namespace Slicer
         // Handle events
         glfwPollEvents();
 
-        // Update camera parameters
-        mCamera->UpdateGPU();
+        // // Update camera parameters
+        // mCamera->UpdateGPU();
+        std::shared_ptr<Camera> temp = mCamera;
 
         int h, w;
         double xPos, yPos;
         glfwGetWindowSize(mWindow, &w, &h);
         glfwGetCursorPos(mWindow, &xPos, &yPos);
-        // std::cout << xPos << ", " << yPos << std::endl;
+        Application *app = (Application *)glfwGetWindowUserPointer(mWindow);
 
-        if (mState->ZoomMode)
+        if (app->ZoomMode)
         {
-            //TODO: keep old camera params
-            std::shared_ptr<Camera> camera = mCamera;
-
-            if (0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h)
+            //TODO: 
+            if ((app->clicInViewport && app->mLastAction == GLFW_PRESS && app->mLastButton == GLFW_MOUSE_BUTTON_LEFT))
             {
-                // std::cout << "in the zooone" << std::endl;
-                //TODO: add 2nd camera for this viewport
+                mSecondaryCamera->UpdateGPU();
                 glViewport(0, 0, w / 4, h / 4);
                 glScissor(0, 0, w / 4, h / 4);
             }
             else
             {
+                // mCamera = temp;
+                mCamera->UpdateGPU();
                 glViewport(0, 0, w, h);
                 glScissor(0, 0, w, h);
                 mScene->Render();
@@ -172,6 +174,9 @@ namespace Slicer
         }
         else
         {
+            mCamera = temp;
+            // Update camera parameters
+            mCamera->UpdateGPU();
             glViewport(0, 0, w, h);
             glScissor(0, 0, w, h);
         }
@@ -195,11 +200,22 @@ namespace Slicer
 
     void Application::onMouseButton(GLFWwindow *window, int button, int action, int mod)
     {
+        int h, w;
         double xPos, yPos;
+        glfwGetWindowSize(window, &w, &h);
         glfwGetCursorPos(window, &xPos, &yPos);
         Application *app = (Application *)glfwGetWindowUserPointer(window);
         if (app->mUI->WantCaptureMouse())
             return;
+
+        if (0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h && action == GLFW_PRESS)
+        {
+            app->clicInViewport = true;
+        }
+        else
+        {
+            app->clicInViewport = false;
+        }
 
         app->mCursorPos.x = xPos;
         app->mCursorPos.y = yPos;
@@ -210,9 +226,20 @@ namespace Slicer
 
     void Application::onMouseMove(GLFWwindow *window, double xPos, double yPos)
     {
+        int h, w;
+        glfwGetWindowSize(window, &w, &h);
+        glfwGetCursorPos(window, &xPos, &yPos);
         Application *app = (Application *)glfwGetWindowUserPointer(window);
+
         if (app->mUI->WantCaptureMouse())
             return;
+
+        //TODO: delete if not used
+        if (0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h)
+        {
+            // std::cout << "in viewport" << std::endl;
+            app->cursorInViewport = !(app->cursorInViewport);
+        }
 
         if (app->mLastAction == GLFW_PRESS)
         {
@@ -233,9 +260,21 @@ namespace Slicer
 
     void Application::onMouseScroll(GLFWwindow *window, double xoffset, double yoffset)
     {
+        int h, w;
+        double xPos, yPos;
+        glfwGetWindowSize(window, &w, &h);
+        glfwGetCursorPos(window, &xPos, &yPos);
         Application *app = (Application *)glfwGetWindowUserPointer(window);
+
         if (app->mUI->WantCaptureMouse())
             return;
+
+        //TODO: delete if not used
+        if (0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h)
+        {
+            std::cout << " scroll in viewport" << std::endl;
+            app->scrollInViewport = !(app->scrollInViewport);
+        }
 
         app->mCamera->Zoom(yoffset);
     }
@@ -255,11 +294,12 @@ namespace Slicer
         if (action == GLFW_PRESS && key == GLFW_KEY_SPACE)
         {
             Application *app = (Application *)glfwGetWindowUserPointer(window);
-            app->mState->ZoomMode = !app->mState->ZoomMode;
+            app->ZoomMode = !app->ZoomMode;
+            app->mSecondaryCamera->Zoom(3.0);
             app->renderFrame();
-            if (app->mState->ZoomMode)
+            if (app->ZoomMode)
                 std::cout << "its on" << std::endl;
-            if (!app->mState->ZoomMode)
+            if (!app->ZoomMode)
                 std::cout << "its off" << std::endl;
         }
     }
