@@ -122,7 +122,7 @@ void UIManager::drawSlicersWindow()
         return;
 
     ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(417.f, 200.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(417.f, 250.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
     ImGui::Begin("Slices options", &mShowSlicers);
@@ -182,6 +182,24 @@ void UIManager::drawSlicersWindow()
     if(updateSliceIndex)
     {
         mState->VoxelGrid.SliceIndices.Update(slice);
+    }
+
+    ImGui::Text("2D mode");
+    ImGui::SameLine();
+    static int cameraMode = 0;
+    if(ImGui::RadioButton("Off", &cameraMode, 0)){
+        mState->ViewMode.Mode.Update(State::CameraMode::projective3D);
+    }
+    if(ImGui::RadioButton("X", &cameraMode, 1)){
+        mState->ViewMode.Mode.Update(State::CameraMode::projectiveX);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("Y", &cameraMode, 2)){
+        mState->ViewMode.Mode.Update(State::CameraMode::projectiveY);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("Z", &cameraMode, 3)){
+        mState->ViewMode.Mode.Update(State::CameraMode::projectiveZ);
     }
 
     ImGui::Separator();

@@ -6,6 +6,7 @@ ApplicationState::ApplicationState()
 :VoxelGrid()
 ,Sphere()
 ,Window()
+,ViewMode()
 ,FODFImage()
 {
 }

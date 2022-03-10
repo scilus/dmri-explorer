@@ -37,6 +37,14 @@ public:
     void TranslateCS(const glm::vec2& v);
 
 private:
+    /// Set the state for the camera mode
+    /// \param[in] previous Previous value.
+    /// \param[in] mode New value for fading behaviour.
+    void setMode(State::CameraMode previous, State::CameraMode mode);
+
+    /// \see Model::registerStateCallbacks()
+    void registerStateCallbacks();
+
     /// Reference to the Scene's CoordinateSystem.
     std::shared_ptr<CoordinateSystem> mCoordinateSystem;
 
@@ -45,5 +53,8 @@ private:
 
     /// Vector of models to be rendered.
     std::vector<std::shared_ptr<Model>> mModels;
+    
+    ///Boolean to block the rotation of the scene
+    bool mBlockRotation;
 };
 } // namespace Slicer
