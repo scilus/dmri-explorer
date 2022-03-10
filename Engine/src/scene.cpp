@@ -41,14 +41,17 @@ void Scene::setMode(State::CameraMode previous, State::CameraMode mode)
     {
         if(mode == State::CameraMode::projective3D)
         {
+            mState->VoxelGrid.SliceIndices.Update(glm::vec3(mState->VoxelGrid.VolumeShape.Get() / 2));
             mBlockRotation=false;
             return;
         }
         mBlockRotation=true;
         const glm::mat4 transform(1.0f);
         mCoordinateSystem->ResetMatrix(transform);
+        mState->VoxelGrid.SliceIndices.Update(glm::vec3(0.0, 0.0, (mState->VoxelGrid.VolumeShape.Get() / 2).z));
         if(mode == State::CameraMode::projectiveX)
         {
+            mState->VoxelGrid.SliceIndices.Update(glm::vec3((mState->VoxelGrid.VolumeShape.Get() / 2).x, 0.0, 0.0));
             glm::mat4 rotationY = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0, -1.0, 0.0)); 
             glm::mat4 rotationZ = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0, 0.0, -1.0)); 
             mCoordinateSystem->ApplyTransform(rotationY);
@@ -56,6 +59,7 @@ void Scene::setMode(State::CameraMode previous, State::CameraMode mode)
         }
         else if(mode == State::CameraMode::projectiveY)
         {
+            mState->VoxelGrid.SliceIndices.Update(glm::vec3(0.0, (mState->VoxelGrid.VolumeShape.Get() / 2).y, 0.0));
             glm::mat4 rotationX = glm::rotate(glm::half_pi<float>(), glm::vec3(1.0, 0.0, 0.0));
             glm::mat4 rotationZ = glm::rotate(glm::pi<float>(), glm::vec3(0.0, 0.0, 1.0));
             mCoordinateSystem->ApplyTransform(rotationX); 
