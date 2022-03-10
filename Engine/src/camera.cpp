@@ -42,7 +42,7 @@ void Camera::Resize(const float& aspect)
     mAspect = aspect;
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
 }
-             
+
 void Camera::Zoom(double delta)
 {
     const float& speed = mState->Window.ZoomSpeed.Get();
