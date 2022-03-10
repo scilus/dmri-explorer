@@ -35,7 +35,7 @@ public:
     /// Translate the scene's coordinate system based on mouse move.
     /// \param[in] v Mouse move vector.
     void TranslateCS(const glm::vec2& v);
-    
+
 private:
     /// Set the state for the camera mode
     /// \param[in] previous Previous value.

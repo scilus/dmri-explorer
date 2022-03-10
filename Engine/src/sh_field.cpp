@@ -234,8 +234,7 @@ void SHField::initializeGPUData()
     mSphereInfoData = GPU::ShaderData(&sphereData, GPU::Binding::sphereInfo,
                                       sizeof(SphereData));
     mGridInfoData = GPU::ShaderData(&gridData, GPU::Binding::gridInfo,
-                                    sizeof(GridData));
-                                    
+                                    sizeof(GridData));                         
 
     // push all data to GPU
     mSphHarmCoeffsData.ToGPU();
