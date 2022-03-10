@@ -35,17 +35,6 @@ public:
     /// \param[in] aspect New aspect ratio (width / height).
     void Resize(const float& aspect);
 
-    /// Apply Orthogonal Projection.
-    void ApplyOrthogonalProjection();
-
-    /// Apply perspective projection.
-    void ApplyPerspectiveProjection();
-
-    /// Set the projection for the camera
-    /// \param[in] previous Previous value.
-    /// \param[in] mode New value for fading behaviour.
-    void changeProjection(State::CameraMode previous, State::CameraMode mode);
-
     /// Translate camera along its view axis (zoom).
     /// \param[in] delta Mouse wheel offset.
     void Zoom(double delta);
@@ -83,9 +72,6 @@ private:
     /// Window aspect ratio.
     float mAspect;
 
-    /// Camera model is orthogonal.
-    bool mIsOrthogonal;
-
     /// Projection matrix.
     glm::mat4 mProjectionMatrix;
 
@@ -97,8 +83,5 @@ private:
 
     /// Shader data for camera attributes.
     GPU::ShaderData mCamParamsData;
-
-    /// \see Model::registerStateCallbacks()
-    void registerStateCallbacks();
 };
 } // namespace Slicer

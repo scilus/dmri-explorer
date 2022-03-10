@@ -95,9 +95,9 @@ namespace State
 enum class CameraMode
 {
     projective3D = 0,
-    orthogonalX = 1,
-    orthogonalY = 2,
-    orthogonalZ = 3
+    projectiveX = 1,
+    projectiveY = 2,
+    projectiveZ = 3
 };
 
 /// Struct containing global parameters for the voxel grid.

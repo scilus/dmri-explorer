@@ -191,15 +191,15 @@ void UIManager::drawSlicersWindow()
         mState->ViewMode.Mode.Update(State::CameraMode::projective3D);
     }
     if(ImGui::RadioButton("X", &cameraMode, 1)){
-        mState->ViewMode.Mode.Update(State::CameraMode::orthogonalX);
+        mState->ViewMode.Mode.Update(State::CameraMode::projectiveX);
     }
     ImGui::SameLine();
     if(ImGui::RadioButton("Y", &cameraMode, 2)){
-        mState->ViewMode.Mode.Update(State::CameraMode::orthogonalY);
+        mState->ViewMode.Mode.Update(State::CameraMode::projectiveY);
     }
     ImGui::SameLine();
     if(ImGui::RadioButton("Z", &cameraMode, 3)){
-        mState->ViewMode.Mode.Update(State::CameraMode::orthogonalZ);
+        mState->ViewMode.Mode.Update(State::CameraMode::projectiveZ);
     }
 
     ImGui::Separator();

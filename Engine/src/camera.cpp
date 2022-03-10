@@ -4,11 +4,6 @@
 #include <math.h>
 #include <application_state.h>
 
-namespace 
-{
-const float ORTHOGONAL_PROJECTION_FACTOR = 0.001f;
-}
-
 namespace Slicer
 {
 Camera::Camera(const glm::vec3& position,
@@ -26,10 +21,8 @@ Camera::Camera(const glm::vec3& position,
 ,mAspect(aspect)
 ,mCamParamsData(GPU::Binding::camera)
 ,mState(state)
-,mIsOrthogonal(false)
 {
-    registerStateCallbacks();
-    ApplyPerspectiveProjection();
+    mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
 
@@ -44,64 +37,11 @@ void Camera::UpdateGPU()
     mCamParamsData.ToGPU();
 }
 
-void Camera::registerStateCallbacks()
-{
-    mState->ViewMode.Mode.RegisterCallback(
-        [this](State::CameraMode p, State::CameraMode n)
-        {
-            this->changeProjection(p, n);
-        }
-    );
-
-}
-
-void Camera::changeProjection(State::CameraMode previous, State::CameraMode mode)
-{
-    if(previous != mode)
-    {
-        if(mode == State::CameraMode::projective3D)
-        {
-            ApplyPerspectiveProjection();
-        }
-        else
-        {
-            ApplyOrthogonalProjection();
-        }
-    }
-}
-
 void Camera::Resize(const float& aspect)
 {
     mAspect = aspect;
-    if(mIsOrthogonal)
-    {
-        ApplyOrthogonalProjection();
-    }
-    else
-    {
-        ApplyPerspectiveProjection();
-    }
 }
-
-void Camera::ApplyOrthogonalProjection()
-{
-    mIsOrthogonal = true;    
-    const float width = float(mState->Window.Width.Get());
-    const float height = float(mState->Window.Height.Get());
-    mProjectionMatrix = glm::ortho(-width*mPosition.z*ORTHOGONAL_PROJECTION_FACTOR, 
-                                   width*mPosition.z*ORTHOGONAL_PROJECTION_FACTOR, 
-                                   -height*mPosition.z*ORTHOGONAL_PROJECTION_FACTOR, 
-                                   height*mPosition.z*ORTHOGONAL_PROJECTION_FACTOR, 
-                                   mNear, 
-                                   mFar);
-}                                    
-
-void Camera::ApplyPerspectiveProjection()
-{
-    mIsOrthogonal = false;
-    mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
-}
-
+                                  
 void Camera::Zoom(double delta)
 {
     const float& speed = mState->Window.ZoomSpeed.Get();
@@ -109,9 +49,5 @@ void Camera::Zoom(double delta)
     mPosition = mPosition + direction * (float)delta;
     mLookAt = mLookAt + direction * (float)delta;
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
-    if(mIsOrthogonal)
-    {
-        ApplyOrthogonalProjection();
-    }
 }
 } // namespace Slicer

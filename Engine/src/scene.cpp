@@ -47,14 +47,14 @@ void Scene::setMode(State::CameraMode previous, State::CameraMode mode)
         mBlockRotation=true;
         const glm::mat4 transform(1.0f);
         mCoordinateSystem->ResetMatrix(transform);
-        if(mode == State::CameraMode::orthogonalX)
+        if(mode == State::CameraMode::projectiveX)
         {
             glm::mat4 rotationY = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0, -1.0, 0.0)); 
             glm::mat4 rotationZ = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0, 0.0, -1.0)); 
             mCoordinateSystem->ApplyTransform(rotationY);
             mCoordinateSystem->ApplyTransform(rotationZ);
         }
-        else if(mode == State::CameraMode::orthogonalY)
+        else if(mode == State::CameraMode::projectiveY)
         {
             glm::mat4 rotationX = glm::rotate(glm::half_pi<float>(), glm::vec3(1.0, 0.0, 0.0));
             glm::mat4 rotationZ = glm::rotate(glm::pi<float>(), glm::vec3(0.0, 0.0, 1.0));
