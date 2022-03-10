@@ -75,7 +75,8 @@ void Scene::Render()
 
 void Scene::RotateCS(const glm::vec2& vec)
 {
-    if(!mBlockRotation){
+    if(!mBlockRotation)
+    {
         const float& rotationSpeed = mState->Window.RotationSpeed.Get();
         const float dx = -vec.x * rotationSpeed;
         const float dy = -vec.y * rotationSpeed;

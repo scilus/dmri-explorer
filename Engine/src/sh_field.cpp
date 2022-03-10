@@ -216,6 +216,7 @@ void SHField::initializeGPUData()
     gridData.SliceIndices = glm::ivec4(mState->VoxelGrid.SliceIndices.Get(), 0);
     gridData.VolumeShape = glm::ivec4(mState->VoxelGrid.VolumeShape.Get(), 0);
     gridData.CurrentSlice = 0;
+    //ICI
 
     mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(), GPU::Binding::allSpheresNormals,
                                              sizeof(glm::vec4) * allVertices.size());
@@ -235,6 +236,7 @@ void SHField::initializeGPUData()
                                       sizeof(SphereData));
     mGridInfoData = GPU::ShaderData(&gridData, GPU::Binding::gridInfo,
                                     sizeof(GridData));
+                                    //ICI
 
     // push all data to GPU
     mSphHarmCoeffsData.ToGPU();
@@ -267,6 +269,7 @@ void SHField::setSliceIndex(glm::vec3 prevIndices, glm::vec3 newIndices)
     {
         glm::ivec4 sliceIndices = glm::ivec4(newIndices, 0);
         mGridInfoData.Update(sizeof(glm::ivec4), sizeof(glm::ivec4), &sliceIndices);
+        //ICI
         scaleSpheres();
     }
 }

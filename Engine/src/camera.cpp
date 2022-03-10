@@ -4,8 +4,9 @@
 #include <math.h>
 #include <application_state.h>
 
-namespace {
-    const float FACTOR_ORTHOGONAL_PROJECTION = 0.001f;
+namespace 
+{
+const float ORTHOGONAL_PROJECTION_FACTOR = 0.001f;
 }
 
 namespace Slicer
@@ -25,9 +26,9 @@ Camera::Camera(const glm::vec3& position,
 ,mAspect(aspect)
 ,mCamParamsData(GPU::Binding::camera)
 ,mState(state)
+,mIsOrthogonal(false)
 {
     registerStateCallbacks();
-    mIsOrthogonal=false;
     ApplyPerspectiveProjection();
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
@@ -85,12 +86,12 @@ void Camera::Resize(const float& aspect)
 void Camera::ApplyOrthogonalProjection()
 {
     mIsOrthogonal = true;    
-    float width = float(mState->Window.Width.Get());
-    float height = float(mState->Window.Height.Get());
-    mProjectionMatrix = glm::ortho(-width*mPosition.z*FACTOR_ORTHOGONAL_PROJECTION, 
-                                   width*mPosition.z*FACTOR_ORTHOGONAL_PROJECTION, 
-                                   -height*mPosition.z*FACTOR_ORTHOGONAL_PROJECTION, 
-                                   height*mPosition.z*FACTOR_ORTHOGONAL_PROJECTION, 
+    const float width = float(mState->Window.Width.Get());
+    const float height = float(mState->Window.Height.Get());
+    mProjectionMatrix = glm::ortho(-width*mPosition.z*ORTHOGONAL_PROJECTION_FACTOR, 
+                                   width*mPosition.z*ORTHOGONAL_PROJECTION_FACTOR, 
+                                   -height*mPosition.z*ORTHOGONAL_PROJECTION_FACTOR, 
+                                   height*mPosition.z*ORTHOGONAL_PROJECTION_FACTOR, 
                                    mNear, 
                                    mFar);
 }                                    
@@ -108,7 +109,8 @@ void Camera::Zoom(double delta)
     mPosition = mPosition + direction * (float)delta;
     mLookAt = mLookAt + direction * (float)delta;
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
-    if(mIsOrthogonal){
+    if(mIsOrthogonal)
+    {
         ApplyOrthogonalProjection();
     }
 }

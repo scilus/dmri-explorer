@@ -17,7 +17,6 @@ public:
 
     /// Constructor.
     /// \param[in] state Reference to the ApplicationState.
-    /// \param[in] camera Reference to the Camera.
     Scene(const std::shared_ptr<ApplicationState>& state);
 
     /// Destructor.
@@ -37,17 +36,15 @@ public:
     /// \param[in] v Mouse move vector.
     void TranslateCS(const glm::vec2& v);
     
-    /// Set the state for the 2d mode
+private:
+    /// Set the state for the camera mode
     /// \param[in] previous Previous value.
     /// \param[in] mode New value for fading behaviour.
     void setMode(State::CameraMode previous, State::CameraMode mode);
 
-protected:
-
     /// \see Model::registerStateCallbacks()
     void registerStateCallbacks();
 
-private:
     /// Reference to the Scene's CoordinateSystem.
     std::shared_ptr<CoordinateSystem> mCoordinateSystem;
 

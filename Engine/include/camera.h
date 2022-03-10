@@ -53,11 +53,6 @@ public:
     /// Update camera attributes on the GPU.
     void UpdateGPU();
 
-protected:
-
-    /// \see Model::registerStateCallbacks()
-    void registerStateCallbacks();
-
 private:
     /// Struct containing camera attributes to push on the GPU.
     struct CameraData
@@ -102,5 +97,8 @@ private:
 
     /// Shader data for camera attributes.
     GPU::ShaderData mCamParamsData;
+
+    /// \see Model::registerStateCallbacks()
+    void registerStateCallbacks();
 };
 } // namespace Slicer
