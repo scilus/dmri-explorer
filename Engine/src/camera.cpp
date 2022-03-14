@@ -1,6 +1,7 @@
 #include <camera.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/norm.hpp>
+#include <glm/gtx/transform.hpp>
 #include <math.h>
 #include <application_state.h>
 
@@ -20,6 +21,7 @@ Camera::Camera(const glm::vec3& position,
 ,mFar(far)
 ,mAspect(aspect)
 ,mCamParamsData(GPU::Binding::camera)
+,mCoordinateSystem(new CoordinateSystem())
 ,mState(state)
 {
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
@@ -41,6 +43,24 @@ void Camera::Resize(const float& aspect)
 {
     mAspect = aspect;
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
+}
+
+void Camera::RotateCS(const glm::vec2& vec)
+{
+    const float& rotationSpeed = mState->Window.RotationSpeed.Get();
+    const float dx = -vec.x * rotationSpeed;
+    const float dy = -vec.y * rotationSpeed;
+    glm::mat4 transform = glm::rotate(dx, glm::vec3(0.0, 1.0, 0.0));
+    transform = glm::rotate(dy, glm::vec3(1.0, 0.0, 0.0)) * transform;
+    mCoordinateSystem->ApplyTransform(transform);
+    glm::vec4 lookAt(mLookAt - mPosition, 0);
+    glm::vec4 upVector(mUpVector, 0);
+    // UpdateGPU();
+    mCoordinateSystem->TransformVector(lookAt);
+    mCoordinateSystem->TransformVector(upVector);
+    mLookAt = lookAt;
+    mUpVector = upVector;
+    mPosition = glm::vec3(lookAt) * -10.0f;
 }
 
 void Camera::Zoom(double delta)

@@ -143,8 +143,7 @@ namespace Slicer
         glfwPollEvents();
 
         // // Update camera parameters
-        // mCamera->UpdateGPU();
-        std::shared_ptr<Camera> temp = mCamera;
+        mCamera->UpdateGPU();
 
         int h, w;
         double xPos, yPos;
@@ -178,8 +177,6 @@ namespace Slicer
         }
         else
         {
-            temp->UpdateGPU();
-            mCamera = temp;
             // Update camera parameters
             // mCamera->UpdateGPU();
             glViewport(0, 0, w, h);
@@ -220,7 +217,6 @@ namespace Slicer
         }
         else
         {
-            std::cout << "clic not in viewport" << std::endl;
             app->clicInViewport = false;
         }
 
@@ -248,21 +244,22 @@ namespace Slicer
         }
         else
         {
-            std::cout << "cursor not in viewport" << std::endl;
             app->cursorInViewport = false;
         }
+
         if (app->mLastAction == GLFW_PRESS)
         {
             const double dx = app->mCursorPos.x - xPos;
             const double dy = app->mCursorPos.y - yPos;
             if (app->mLastButton == GLFW_MOUSE_BUTTON_LEFT)
             {
-                app->mScene->RotateCS(glm::vec2(dx, dy));
+                app->mCamera->RotateCS(glm::vec2(dx, dy));
                 app->mCursorPos = {xPos, yPos};
+                app->renderFrame();
             }
             else if (app->mLastButton == GLFW_MOUSE_BUTTON_MIDDLE)
             {
-                app->mScene->TranslateCS(glm::vec2(dx, dy));
+                app->mScene->RotateCS(glm::vec2(dx, dy));
                 app->mCursorPos = {xPos, yPos};
             }
         }
@@ -288,7 +285,6 @@ namespace Slicer
         }
         else
         {
-            std::cout << "scroll not in viewport" << std::endl;
             app->scrollInViewport = false;
         }
 

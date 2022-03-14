@@ -35,6 +35,14 @@ public:
     /// \param[in] aspect New aspect ratio (width / height).
     void Resize(const float& aspect);
 
+    /// Rotate camera.
+    /// \param[in] v Mouse move vector.
+    void RotateCS(const glm::vec2& vec);
+
+    /// Translate the scene's coordinate system based on mouse move.
+    /// \param[in] v Mouse move vector.
+    void TranslateCS(const glm::vec2& v);
+
     /// Translate camera along its view axis (zoom).
     /// \param[in] delta Mouse wheel offset.
     void Zoom(double delta);
@@ -51,6 +59,9 @@ private:
         glm::mat4 projectionMatrix;
     };
 
+    /// Coordinate system of the camera.
+    std::shared_ptr<CoordinateSystem> mCoordinateSystem;
+    
     /// Camera position.
     glm::vec3 mPosition;
 
