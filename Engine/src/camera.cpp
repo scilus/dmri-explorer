@@ -48,23 +48,24 @@ void Camera::Resize(const float& aspect)
 void Camera::RotateCS(const glm::vec2& vec)
 {
     const float& rotationSpeed = mState->Window.RotationSpeed.Get();
-    const float dx = -vec.x * rotationSpeed;
-    const float dy = -vec.y * rotationSpeed;
-    glm::mat4 transform = glm::rotate(dx, glm::vec3(0.0, 1.0, 0.0));
-    transform = glm::rotate(dy, glm::vec3(1.0, 0.0, 0.0)) * transform;
-    mCoordinateSystem->ApplyTransform(transform);
+    const float dx = -vec.x * rotationSpeed * 0.3f;
+    const float dy = -vec.y * rotationSpeed * 0.3f;
+  
     glm::vec4 lookAt(mLookAt - mPosition, 0);
     glm::vec4 upVector(mUpVector, 0);
     glm::vec4 position(mPosition, 0);
-    // UpdateGPU();
-    mCoordinateSystem->TransformVector(lookAt);
-    mCoordinateSystem->TransformVector(upVector);
-    mCoordinateSystem->TransformVector(position);
+    glm::mat4 transform = glm::rotate(dx, glm::vec3(0.0, 1.0, 0.0));
+    transform = glm::rotate(dy, glm::vec3(1.0, 0.0, 0.0)) * transform;
+    
+    mCoordinateSystem->ApplyTransform(transform);
+    mCoordinateSystem->TransformVector(lookAt, true);
+    mCoordinateSystem->TransformVector(upVector, true);
+    mCoordinateSystem->TransformVector(position, true);
+
     mLookAt = lookAt;
     mUpVector = upVector;
     mPosition = position;
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
-    
 }
 
 void Camera::Zoom(double delta)
