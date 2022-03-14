@@ -255,7 +255,6 @@ namespace Slicer
             {
                 app->mCamera->RotateCS(glm::vec2(dx, dy));
                 app->mCursorPos = {xPos, yPos};
-                app->renderFrame();
             }
             else if (app->mLastButton == GLFW_MOUSE_BUTTON_MIDDLE)
             {

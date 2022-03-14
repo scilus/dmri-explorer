@@ -55,12 +55,16 @@ void Camera::RotateCS(const glm::vec2& vec)
     mCoordinateSystem->ApplyTransform(transform);
     glm::vec4 lookAt(mLookAt - mPosition, 0);
     glm::vec4 upVector(mUpVector, 0);
+    glm::vec4 position(mPosition, 0);
     // UpdateGPU();
     mCoordinateSystem->TransformVector(lookAt);
     mCoordinateSystem->TransformVector(upVector);
+    mCoordinateSystem->TransformVector(position);
     mLookAt = lookAt;
     mUpVector = upVector;
-    mPosition = glm::vec3(lookAt) * -10.0f;
+    mPosition = position;
+    mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
+    
 }
 
 void Camera::Zoom(double delta)
