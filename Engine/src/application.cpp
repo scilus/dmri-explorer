@@ -196,7 +196,7 @@ void Application::renderFrame()
     int scaleFactor = app->mState->Window.SecondaryViewportScale.Get();
     bool magnifyingModeOn = app->mState->MagnifyingMode.Get();
     glfwGetWindowSize(mWindow, &w, &h);
-
+    // Update camera parameters
     mCamera->UpdateGPU();
     glViewport(0, 0, w, h);
     glScissor(0, 0, w, h);

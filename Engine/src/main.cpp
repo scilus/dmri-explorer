@@ -7,7 +7,6 @@
 
 int main(int argc, char** argv)
 {
-    std::cout<<argc<<argv<<std::endl;
     const Slicer::ArgumentParser parser(argc, argv);
     if(parser.OK())
     {

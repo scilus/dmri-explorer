@@ -31,7 +31,9 @@ void Model::Draw()
         throw std::runtime_error("Model::Draw() called before initializeModel()");
     }
     mProgramPipeline.Bind();
+
     uploadTransformToGPU();
+
     drawSpecific();
 }
 
