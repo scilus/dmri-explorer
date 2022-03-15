@@ -128,7 +128,6 @@ void Application::initApplicationState(const ArgumentParser& parser)
     mState->FODFImage.Update(NiftiImageWrapper(parser.GetImagePath()));
     if(!parser.GetBackgroundImagePath().empty())
     {
-        std::cout<<parser.GetBackgroundImagePath()<<std::endl;
         mState->BackgroundImage.Update(NiftiImageWrapper(parser.GetBackgroundImagePath()));
     }
 
@@ -152,7 +151,6 @@ void Application::renderFrame()
 {
     // Handle events
     glfwPollEvents();
-
     // Update camera parameters
     mCamera->UpdateGPU();
 
