@@ -96,6 +96,12 @@ void Application::initialize()
 
     // Add SH field once the UI is drawn
     mScene->AddSHField();
+
+    if(mState->BackgroundImage.IsInit())
+    {
+        // Add texture once the UI is drawn
+        mScene->AddTexture();
+    }
 }
 
 void Application::setWindowIcon()
@@ -122,6 +128,7 @@ void Application::initApplicationState(const ArgumentParser& parser)
     mState->FODFImage.Update(NiftiImageWrapper(parser.GetImagePath()));
     if(!parser.GetBackgroundImagePath().empty())
     {
+        std::cout<<parser.GetBackgroundImagePath()<<std::endl;
         mState->BackgroundImage.Update(NiftiImageWrapper(parser.GetBackgroundImagePath()));
     }
 

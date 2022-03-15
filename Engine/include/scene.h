@@ -25,6 +25,9 @@ public:
     /// Add an SHField instance to the scene.
     void AddSHField();
 
+    /// Add a Texture instance to the scene.
+    void AddTexture();
+
     /// Render the scene.
     void Render();
 

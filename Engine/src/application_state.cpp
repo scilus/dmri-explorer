@@ -7,6 +7,7 @@ ApplicationState::ApplicationState()
 ,Sphere()
 ,Window()
 ,FODFImage()
+,BackgroundImage()
 {
 }
 } // namespace Slicer
