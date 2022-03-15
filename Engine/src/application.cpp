@@ -109,6 +109,12 @@ void Application::initialize()
     // Add SH field once the UI is drawn
     mScene->AddSHField();
 
+    if(mState->BackgroundImage.IsInit())
+    {
+        // Add texture once the UI is drawn
+        mScene->AddTexture();
+    }
+
     // Reset the secondary camera when magnifying mode is enabled from GUI
     mState->MagnifyingMode.RegisterCallback(
         [this](bool prev, bool next)
@@ -156,7 +162,10 @@ void Application::setWindowIcon()
 void Application::initApplicationState(const ArgumentParser& parser)
 {
     mState->FODFImage.Update(NiftiImageWrapper(parser.GetImagePath()));
-    mState->BackgroundImage.Update(NiftiImageWrapper(parser.GetBackgroundPath()));
+    if(!parser.GetBackgroundImagePath().empty())
+    {
+        mState->BackgroundImage.Update(NiftiImageWrapper(parser.GetBackgroundImagePath()));
+    }
 
     mState->Sphere.Resolution.Update(parser.GetSphereResolution());
     mState->Sphere.IsNormalized.Update(false);
