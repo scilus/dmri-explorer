@@ -65,6 +65,14 @@ void Camera::RotateCS(const glm::vec2& vec)
 
 void Camera::TranslateCS(const glm::vec2& vec)
 {
+    // # Custom aliases
+// alias gs="git status"
+// alias gd="git diff"
+// alias ga="git add"
+// alias ga.="git add ."
+// alias gc="git commit -m"
+// alias gpo="git push origin"
+// alias graph="git log --all --decorate --oneline --graph"
     std::cout << "here" << std::endl;
     const float& translationSpeed = mState->Window.TranslationSpeed.Get();
     const float dx = vec.x * translationSpeed;
