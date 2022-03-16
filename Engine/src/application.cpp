@@ -142,43 +142,48 @@ namespace Slicer
         // Handle events
         glfwPollEvents();
 
-        // // Update camera parameters
-        mCamera->UpdateGPU();
-
         int h, w;
-        double xPos, yPos;
-        //TODO: il a des membres dans app pour les 4 vars.
         glfwGetWindowSize(mWindow, &w, &h);
-        glfwGetCursorPos(mWindow, &xPos, &yPos);
+        // mSecondaryCamera->UpdateGPU();
+        // mCamera->UpdateGPU();
+
+        // std::shared_ptr<Camera> s = mSecondaryCamera;
+        // std::shared_ptr<Camera> m = mCamera;
+              // double xPos, yPos;
+        // glfwGetCursorPos(mWindow, &xPos, &yPos);
         Application *app = (Application *)glfwGetWindowUserPointer(mWindow);
 
+        std::cout << app->ZoomMode << std::endl;
         if (app->ZoomMode)
         {
-            // //TODO: useless if using callback
-            if (app->clicInViewport || app->scrollInViewport)
-            {
+            // if ((app->clicInViewport && app->cursorInViewport) || app->scrollInViewport)
+            // {
                 // glViewport(0, 0, w, h);
                 // glScissor(0, 0, w, h);
                 // mScene->Render();
-                mSecondaryCamera->UpdateGPU();
-                glViewport(0, 0, w / 4, h / 4);
-                glScissor(0, 0, w / 4, h / 4);
-            }
-            else
+            if(app->cursorInViewport)
             {
-                // mCamera = temp;
-                // mCamera->UpdateGPU();
-                glViewport(0, 0, w, h);
-                glScissor(0, 0, w, h);
-                mScene->Render();
-                glViewport(0, 0, w / 4, h / 4);
-                glScissor(0, 0, w / 4, h / 4);
+                mSecondaryCamera->UpdateGPU();
             }
+            glViewport(0, 0, w / 4, h / 4);
+            glScissor(0, 0, w / 4, h / 4);
+            // }
+            // else
+            // {
+            //     // mCamera = temp;
+            //     // mCamera->UpdateGPU();
+            //     glViewport(0, 0, w, h);
+            //     glScissor(0, 0, w, h);
+            //     mScene->Render();
+            //     mSecondaryCamera->UpdateGPU();
+            //     glViewport(0, 0, w / 4, h / 4);
+            //     glScissor(0, 0, w / 4, h / 4);
+            // }
         }
         else
         {
-            // Update camera parameters
-            // mCamera->UpdateGPU();
+            // Update main camera parameters.
+            mCamera->UpdateGPU();
             glViewport(0, 0, w, h);
             glScissor(0, 0, w, h);
         }
@@ -238,14 +243,9 @@ namespace Slicer
             return;
 
         if (0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h && app->ZoomMode)
-        {
-            std::cout << " cursor in viewport" << std::endl;
             app->cursorInViewport = true;
-        }
         else
-        {
             app->cursorInViewport = false;
-        }
 
         if (app->mLastAction == GLFW_PRESS)
         {
@@ -253,15 +253,33 @@ namespace Slicer
             const double dy = app->mCursorPos.y - yPos;
             if (app->mLastButton == GLFW_MOUSE_BUTTON_LEFT)
             {
-                app->mCamera->RotateCS(glm::vec2(dx, dy));
-                app->mCursorPos = {xPos, yPos};
+                if(app->cursorInViewport && app->clicInViewport)
+                {
+                    app->mSecondaryCamera->RotateCS(glm::vec2(dx, dy));
+                }
+                else
+                {
+                    app->mCamera->RotateCS(glm::vec2(dx, dy));
+                    // Rotate secondary camera to keep both view in coordination.
+                    app->mSecondaryCamera->RotateCS(glm::vec2(dx, dy));
+                }
             }
             else if (app->mLastButton == GLFW_MOUSE_BUTTON_MIDDLE)
             {
-                app->mCamera->TranslateCS(glm::vec2(dx, dy));
-                app->mCursorPos = {xPos, yPos};
+                // app->mCamera->TranslateCS(glm::vec2(dx, dy));
+                if(app->cursorInViewport)
+                {
+                    app->mSecondaryCamera->TranslateCS(glm::vec2(dx, dy));
+                }
+                else
+                {
+                    app->mCamera->TranslateCS(glm::vec2(dx, dy));
+                    // Translate secondary camera to keep both view in coordination.
+                    app->mSecondaryCamera->TranslateCS(glm::vec2(dx, dy));
+                }
             }
         }
+        app->mCursorPos = {xPos, yPos};
     }
 
     void Application::onMouseScroll(GLFWwindow *window, double xoffset, double yoffset)
@@ -278,16 +296,15 @@ namespace Slicer
         //TODO: delete if not used
         if (0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h && app->ZoomMode)
         {
-            std::cout << " scroll in viewport" << std::endl;
             app->mSecondaryCamera->Zoom(yoffset);
             app->scrollInViewport = true;
         }
         else
         {
             app->scrollInViewport = false;
+            app->mCamera->Zoom(yoffset);
         }
 
-        app->mCamera->Zoom(yoffset);
     }
 
     void Application::onWindowResize(GLFWwindow *window, int width, int height)
@@ -306,8 +323,17 @@ namespace Slicer
         {
             Application *app = (Application *)glfwGetWindowUserPointer(window);
             app->ZoomMode = !app->ZoomMode;
+
             if (app->ZoomMode)
-                app->mSecondaryCamera->Zoom(30.0);
+            {
+                app->mSecondaryCamera->Zoom(10.0);
+            }    
+            else
+            {
+                app->mSecondaryCamera = app->mCamera;
+                app->mSecondaryCamera->UpdateGPU();
+            }
+
             app->renderFrame();
         }
     }
