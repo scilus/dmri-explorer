@@ -19,6 +19,8 @@ enum class Binding
     camera = 9,
     modelTransform = 10,
     allOrders = 11,
+    textureVertices = 12,
+    textureInfo = 13,
     none = 30
 };
 } // namespace GPU

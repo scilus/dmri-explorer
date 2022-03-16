@@ -95,6 +95,30 @@ protected:
     void initProgramPipeline() override;
 
 private:
+    /// Struct containing sphere attributes for the GPU.
+    ///
+    /// The order of members is critical. The same order must be used
+    /// when declaring the struct on the GPU and the order is used for
+    /// modifying shader subdata from the CPU.
+    struct TextureData
+    {
+        unsigned int NumVertices;
+        unsigned int NumIndices;
+        unsigned int NbCoeffs;
+    };
+
+    /// Struct containing the voxel grid attributes for the GPU.
+    ///
+    /// The order of members is critical. The same order must be used
+    /// when declaring the struct on the GPU and the order is used for
+    /// modifying shader subdata from the CPU.
+    struct GridData
+    {
+        glm::ivec4 VolumeShape;
+        glm::ivec4 SliceIndices;
+        uint CurrentSlice;
+    };
+
     /// \brief Initialize class members.
     ///
     /// Calls copySHCoefficientsFromImage() and
@@ -121,7 +145,23 @@ private:
     /// DrawElementsIndirect buffer object.
     GLuint mIndirectBO;
 
+    /// All SH orders, repeated.
+    std::vector<float> mAllVertices;
+
+    /// Sphere parameters GPU data.
+    /// \see SphereData
+    GPU::ShaderData mTextureInfoData;
+
+      /// Glyphs radiis GPU data.
+    GPU::ShaderData mAllRadiisData;
+
+        /// SH coefficients GPU data.
+    GPU::ShaderData mAllVerticesData;
+
     /// DrawArrays array.
     std::vector<DrawArrays> mIndirectCmd;
+
+    /// Voxel grid GPU data.
+    GPU::ShaderData mGridInfoData;
 };
 } // namespace Slicer
