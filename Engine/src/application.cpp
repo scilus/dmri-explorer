@@ -258,7 +258,7 @@ namespace Slicer
             }
             else if (app->mLastButton == GLFW_MOUSE_BUTTON_MIDDLE)
             {
-                app->mScene->RotateCS(glm::vec2(dx, dy));
+                app->mCamera->TranslateCS(glm::vec2(dx, dy));
                 app->mCursorPos = {xPos, yPos};
             }
         }

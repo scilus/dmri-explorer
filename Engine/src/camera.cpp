@@ -21,7 +21,6 @@ Camera::Camera(const glm::vec3& position,
 ,mFar(far)
 ,mAspect(aspect)
 ,mCamParamsData(GPU::Binding::camera)
-,mCoordinateSystem(new CoordinateSystem())
 ,mState(state)
 {
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
@@ -48,23 +47,37 @@ void Camera::Resize(const float& aspect)
 void Camera::RotateCS(const glm::vec2& vec)
 {
     const float& rotationSpeed = mState->Window.RotationSpeed.Get();
-    const float dx = -vec.x * rotationSpeed * 0.3f;
-    const float dy = -vec.y * rotationSpeed * 0.3f;
-  
-    glm::vec4 lookAt(mLookAt - mPosition, 0);
-    glm::vec4 upVector(mUpVector, 0);
-    glm::vec4 position(mPosition, 0);
-    glm::mat4 transform = glm::rotate(dx, glm::vec3(0.0, 1.0, 0.0));
-    transform = glm::rotate(dy, glm::vec3(1.0, 0.0, 0.0)) * transform;
-    
-    mCoordinateSystem->ApplyTransform(transform);
-    mCoordinateSystem->TransformVector(lookAt, true);
-    mCoordinateSystem->TransformVector(upVector, true);
-    mCoordinateSystem->TransformVector(position, true);
+    const float dx = vec.x * rotationSpeed;
+    const float dy = -vec.y * rotationSpeed;
+    glm::vec3 lookAt = mLookAt - mPosition;
 
-    mLookAt = lookAt;
-    mUpVector = upVector;
-    mPosition = position;
+    // Compute the rotation axis.
+    const glm::vec3 leftAxis = glm::normalize(glm::cross(mUpVector, lookAt));
+
+    // Compute transform and new position.
+    glm::mat4 transform = glm::rotate(dy, leftAxis) * glm::rotate(dx, mUpVector);
+    mPosition = mLookAt - glm::vec3(transform * glm::vec4(lookAt, 0.0f));
+
+    // Rotation and view matrix update.
+    mUpVector = transform * glm::vec4(mUpVector, 0.0f);
+    mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
+}
+
+void Camera::TranslateCS(const glm::vec2& vec)
+{
+    std::cout << "here" << std::endl;
+    const float& translationSpeed = mState->Window.TranslationSpeed.Get();
+    const float dx = vec.x * translationSpeed;
+    const float dy = vec.y * translationSpeed;
+    std::cout << vec.x <<  " " << vec.y << std::endl;
+    std::cout << mPosition.x <<  " " << mPosition.y << " " << mPosition.z << std::endl;
+
+    const glm::mat4 transform = glm::translate(-dx * glm::vec3(1.0, 0.0, 0.0)
+                                               + dy * glm::vec3(0.0, 1.0, 0.0));
+    
+    mPosition = transform * glm::vec4(mPosition, 0.0f);
+    std::cout << mPosition.x <<  " " << mPosition.y << " " << mPosition.z << std::endl;
+
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
 
@@ -73,7 +86,6 @@ void Camera::Zoom(double delta)
     const float& speed = mState->Window.ZoomSpeed.Get();
     const glm::vec3 direction = speed * glm::normalize(mLookAt - mPosition);
     mPosition = mPosition + direction * (float)delta;
-    mLookAt = mLookAt + direction * (float)delta;
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
 } // namespace Slicer

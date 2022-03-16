@@ -58,9 +58,6 @@ private:
         glm::mat4 viewMatrix;
         glm::mat4 projectionMatrix;
     };
-
-    /// Coordinate system of the camera.
-    std::shared_ptr<CoordinateSystem> mCoordinateSystem;
     
     /// Camera position.
     glm::vec3 mPosition;
