@@ -36,6 +36,7 @@ layout(std430, binding=8) buffer gridInfoBuffer
 {
     ivec4 gridDims;
     ivec4 sliceIndex;
+    ivec4 isSliceVisible;
     uint currentSlice;
 };
 
@@ -66,8 +67,11 @@ out vec4 world_eye_pos;
 out vec4 vertex_slice;
 
 // An object is not visible if its SH0 coefficient
-// is below the threshold.
+// is below the threshold or if the 2D mode is enabled.
 out float is_visible;
+
+// Fade is disabled when in 2D!
+out float fade_enabled;
 
 bool belongsToXSlice(uint invocationID)
 {
@@ -116,11 +120,32 @@ vec4 GetVertexSlice(ivec3 index3d)
     return vec4(i, j, k, 0.0f);
 }
 
+
+bool getIsVisible(const uint invocationID)
+{
+    if(belongsToXSlice(invocationID))
+    {
+        return isSliceVisible.x != 0;
+    }
+    if(belongsToZSlice(invocationID))
+    {
+        return isSliceVisible.z != 0;
+    }
+    return isSliceVisible.y != 0;
+}
+
+
+bool is3DMode()
+{
+    return isSliceVisible.x !=0 && isSliceVisible.y != 0 && isSliceVisible.z != 0;
+}
+
+
 void main()
 {
     const ivec3 index3d = convertInvocationIDToIndex3D(gl_DrawID);
     const uint voxID = convertIndex3DToVoxID(index3d.x, index3d.y, index3d.z);
-    bool isVisible = shCoeffs[voxID * nbCoeffs] > sh0Threshold;
+    bool isAboveThreshold = shCoeffs[voxID * nbCoeffs] > sh0Threshold;
 
     mat4 localMatrix;
     localMatrix[0][0] = scaling;
@@ -146,7 +171,8 @@ void main()
     world_normal = modelMatrix
                  * allNormals[gl_VertexID];
     color = abs(vec4(normalize(currentVertex.xyz), 1.0f));
-    is_visible = isVisible ? 1.0f : -1.0f;
+    is_visible = getIsVisible(gl_DrawID) && isAboveThreshold ? 1.0f : -1.0f;
     world_eye_pos = vec4(eye.xyz, 1.0f);
     vertex_slice = GetVertexSlice(index3d);
+    fade_enabled = fadeIfHidden > 0 && is3DMode() ? 1.0 : -1.0;
 }

@@ -46,6 +46,7 @@ layout(std430, binding=8) buffer gridInfoBuffer
 {
     ivec4 gridDims;
     ivec4 sliceIndex;
+    ivec4 isSliceVisible;
     uint currentSlice;
 };
 
