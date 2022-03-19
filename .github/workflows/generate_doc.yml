@@ -5,8 +5,9 @@ name: Generate-documentation
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push events on the main branch
-  push:
+  pull_request:
+    types:
+      - closed
     branches: [ main ]
 
   # Allows you to run this workflow manually from the Actions tab
@@ -16,6 +17,9 @@ on:
 jobs:
   # This workflow contains a single job called "update-documentation"
   update-documentation:
+    # Only triggered if PR is merged
+    if: github.event.pull_request.merged == true
+
     # The job will run on latest version of ubuntu
     runs-on: ubuntu-latest
 
