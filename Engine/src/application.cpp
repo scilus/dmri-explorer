@@ -144,45 +144,30 @@ namespace Slicer
 
         int h, w;
         glfwGetWindowSize(mWindow, &w, &h);
-        // mSecondaryCamera->UpdateGPU();
-        // mCamera->UpdateGPU();
-
-        // std::shared_ptr<Camera> s = mSecondaryCamera;
-        // std::shared_ptr<Camera> m = mCamera;
-              // double xPos, yPos;
-        // glfwGetCursorPos(mWindow, &xPos, &yPos);
         Application *app = (Application *)glfwGetWindowUserPointer(mWindow);
 
-        std::cout << app->ZoomMode << std::endl;
-        if (app->ZoomMode)
+        if (app->MagnifyingMode)
         {
-            // if ((app->clicInViewport && app->cursorInViewport) || app->scrollInViewport)
-            // {
-                // glViewport(0, 0, w, h);
-                // glScissor(0, 0, w, h);
-                // mScene->Render();
-            if(app->cursorInViewport)
+            // Changes render to the secondary viewport.
+            if (app->scrollInViewport || app->clicInViewport)
             {
                 mSecondaryCamera->UpdateGPU();
+                glViewport(0, 0, w / 4, h / 4);
+                glScissor(0, 0, w / 4, h / 4);
             }
-            glViewport(0, 0, w / 4, h / 4);
-            glScissor(0, 0, w / 4, h / 4);
-            // }
-            // else
-            // {
-            //     // mCamera = temp;
-            //     // mCamera->UpdateGPU();
-            //     glViewport(0, 0, w, h);
-            //     glScissor(0, 0, w, h);
-            //     mScene->Render();
-            //     mSecondaryCamera->UpdateGPU();
-            //     glViewport(0, 0, w / 4, h / 4);
-            //     glScissor(0, 0, w / 4, h / 4);
-            // }
+            // FIXME: should only update mainViewport, not both.
+            else
+            {
+                mCamera->UpdateGPU();
+                glViewport(0, 0, w, h);
+                glScissor(0, 0, w, h);
+                mScene->Render();
+                glViewport(0, 0, w / 4, h / 4);
+                glScissor(0, 0, w / 4, h / 4);
+            }
         }
         else
         {
-            // Update main camera parameters.
             mCamera->UpdateGPU();
             glViewport(0, 0, w, h);
             glScissor(0, 0, w, h);
@@ -215,15 +200,13 @@ namespace Slicer
         if (app->mUI->WantCaptureMouse())
             return;
 
-        if (app->ZoomMode && 0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h && action == GLFW_PRESS && button == GLFW_MOUSE_BUTTON_LEFT)
-        {
-            std::cout << " clic in viewport" << std::endl;
+        if (app->MagnifyingMode && 0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h && action == GLFW_PRESS &&
+            (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_MIDDLE))
             app->clicInViewport = true;
-        }
+        else if (action == GLFW_RELEASE && app->clicInViewport)
+            app->clicInViewport = true;
         else
-        {
             app->clicInViewport = false;
-        }
 
         app->mCursorPos.x = xPos;
         app->mCursorPos.y = yPos;
@@ -242,40 +225,30 @@ namespace Slicer
         if (app->mUI->WantCaptureMouse())
             return;
 
-        if (0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h && app->ZoomMode)
-            app->cursorInViewport = true;
-        else
-            app->cursorInViewport = false;
-
         if (app->mLastAction == GLFW_PRESS)
         {
             const double dx = app->mCursorPos.x - xPos;
             const double dy = app->mCursorPos.y - yPos;
             if (app->mLastButton == GLFW_MOUSE_BUTTON_LEFT)
             {
-                if(app->cursorInViewport && app->clicInViewport)
+                if (app->clicInViewport)
                 {
                     app->mSecondaryCamera->RotateCS(glm::vec2(dx, dy));
                 }
                 else
                 {
                     app->mCamera->RotateCS(glm::vec2(dx, dy));
-                    // Rotate secondary camera to keep both view in coordination.
-                    app->mSecondaryCamera->RotateCS(glm::vec2(dx, dy));
                 }
             }
             else if (app->mLastButton == GLFW_MOUSE_BUTTON_MIDDLE)
             {
-                // app->mCamera->TranslateCS(glm::vec2(dx, dy));
-                if(app->cursorInViewport)
+                if (app->clicInViewport && app->mLastAction == GLFW_PRESS)
                 {
                     app->mSecondaryCamera->TranslateCS(glm::vec2(dx, dy));
                 }
                 else
                 {
                     app->mCamera->TranslateCS(glm::vec2(dx, dy));
-                    // Translate secondary camera to keep both view in coordination.
-                    app->mSecondaryCamera->TranslateCS(glm::vec2(dx, dy));
                 }
             }
         }
@@ -293,18 +266,16 @@ namespace Slicer
         if (app->mUI->WantCaptureMouse())
             return;
 
-        //TODO: delete if not used
-        if (0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h && app->ZoomMode)
+        if (0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h && app->MagnifyingMode)
         {
             app->mSecondaryCamera->Zoom(yoffset);
             app->scrollInViewport = true;
         }
         else
         {
-            app->scrollInViewport = false;
             app->mCamera->Zoom(yoffset);
+            app->scrollInViewport = false;
         }
-
     }
 
     void Application::onWindowResize(GLFWwindow *window, int width, int height)
@@ -322,18 +293,14 @@ namespace Slicer
         if (action == GLFW_RELEASE && key == GLFW_KEY_SPACE)
         {
             Application *app = (Application *)glfwGetWindowUserPointer(window);
-            app->ZoomMode = !app->ZoomMode;
+            app->MagnifyingMode = !app->MagnifyingMode;
 
-            if (app->ZoomMode)
-            {
-                app->mSecondaryCamera->Zoom(10.0);
-            }    
-            else
+            //FIXME: mCamera updates with secondaryCamera parameters.
+            //FIXME: secondaryCamera should zoom.
+            if (!app->MagnifyingMode)
             {
                 app->mSecondaryCamera = app->mCamera;
-                app->mSecondaryCamera->UpdateGPU();
             }
-
             app->renderFrame();
         }
     }

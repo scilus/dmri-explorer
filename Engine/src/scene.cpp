@@ -73,6 +73,7 @@ void Scene::Render()
     }
 }
 
+// TODO: delete if not used
 void Scene::RotateCS(const glm::vec2& vec)
 {
     if(!mBlockRotation)
@@ -86,6 +87,7 @@ void Scene::RotateCS(const glm::vec2& vec)
     }
 }
 
+// TODO: delete if not used
 void Scene::TranslateCS(const glm::vec2& vec)
 {
     const float& translationSpeed = mState->Window.TranslationSpeed.Get();

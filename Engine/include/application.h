@@ -111,7 +111,7 @@ namespace Slicer
         std::string mTitle;
 
         /// Parameter controling viewport display.
-        bool ZoomMode;
+        bool MagnifyingMode;
 
         /// Parameters for control transfer between the viewports.
         /// For mouse clic detection.

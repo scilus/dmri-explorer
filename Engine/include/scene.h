@@ -28,10 +28,12 @@ public:
     /// Render the scene.
     void Render();
 
+// TODO: delete if not used
     /// Rotate the scene coordinate system based on mouse move.
     /// \param[in] v Mouse move vector.
     void RotateCS(const glm::vec2& v);
 
+// TODO: delete if not used
     /// Translate the scene's coordinate system based on mouse move.
     /// \param[in] v Mouse move vector.
     void TranslateCS(const glm::vec2& v);

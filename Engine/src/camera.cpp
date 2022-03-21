@@ -65,19 +65,17 @@ void Camera::RotateCS(const glm::vec2& vec)
 
 void Camera::TranslateCS(const glm::vec2& vec)
 {
-    std::cout << "here" << std::endl;
     const float& translationSpeed = mState->Window.TranslationSpeed.Get();
-    const float dx = vec.x * translationSpeed;
-    const float dy = vec.y * translationSpeed;
-    std::cout << vec.x <<  " " << vec.y << std::endl;
-    std::cout << mPosition.x <<  " " << mPosition.y << " " << mPosition.z << std::endl;
+    const float dx = -vec.x * translationSpeed;
+    const float dy = -vec.y * translationSpeed;
 
+    // Compute translation.
     const glm::mat4 transform = glm::translate(-dx * glm::vec3(1.0, 0.0, 0.0)
                                                + dy * glm::vec3(0.0, 1.0, 0.0));
     
-    mPosition = transform * glm::vec4(mPosition, 0.0f);
-    std::cout << mPosition.x <<  " " << mPosition.y << " " << mPosition.z << std::endl;
-
+    // Parameters update.
+    mPosition = transform * glm::vec4(mPosition, 1.0f);
+    mLookAt = transform * glm::vec4(mLookAt, 1.0f);
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
 
