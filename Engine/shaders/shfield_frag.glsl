@@ -9,19 +9,8 @@ layout(std430, binding=8) buffer gridInfoBuffer
 {
     ivec4 gridDims;
     ivec4 sliceIndex;
+    ivec4 isSliceVisible;
     uint currentSlice;
-};
-
-layout(std430, binding=7) buffer sphereInfoBuffer
-{
-    uint nbVertices;
-    uint nbIndices;
-    uint isNormalized; // bool
-    uint maxOrder;
-    float sh0Threshold;
-    float scaling;
-    uint nbCoeffs;
-    uint fadeIfHidden; // bool
 };
 
 in vec4 world_frag_pos;
@@ -30,6 +19,7 @@ in vec4 world_normal;
 in vec4 world_eye_pos;
 in vec4 vertex_slice;
 in float is_visible;
+in float fade_enabled;
 
 out vec4 shaded_color;
 
@@ -155,6 +145,6 @@ void main()
     vec3 ambient = color.xyz * KA;
     vec3 specular = vec3(1.0f) * dot(r, frag_to_eye) * KS;
 
-    vec3 outColor = (ambient + diffuse + specular) * (fadeIfHidden > 0 ? GetFading() : 1.0f);
+    vec3 outColor = (ambient + diffuse + specular) * (fade_enabled > 0 ? GetFading() : 1.0f);
     shaded_color = vec4(outColor, 1.0f);
 }

@@ -116,6 +116,7 @@ private:
     {
         glm::ivec4 VolumeShape;
         glm::ivec4 SliceIndices;
+        glm::ivec4 IsVisible;
         uint CurrentSlice;
     };
 
@@ -172,6 +173,11 @@ private:
     /// \param[in] previous Previous value.
     /// \param[in] fadeEnabled New value for fading behaviour.
     void setFadeIfHidden(bool previous, bool fadeEnabled);
+
+    /// Set slices to visible or invisible.
+    /// \param[in] previous Previous view mode.
+    /// \param[in] fadeEnabled New view mode.
+    void setVisibleSlices(State::CameraMode previous, State::CameraMode next);
 
     /// Generate a vertex buffer object for data.
     /// \param[in] data The data to send to the GPU.

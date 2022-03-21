@@ -79,6 +79,12 @@ void SHField::registerStateCallbacks()
             this->setFadeIfHidden(p, n);
         }
     );
+    mState->ViewMode.Mode.RegisterCallback(
+        [this](State::CameraMode p, State::CameraMode n)
+        {
+            this->setVisibleSlices(p, n);
+        }
+    );
 }
 
 void SHField::initProgramPipeline()
@@ -215,6 +221,7 @@ void SHField::initializeGPUData()
     GridData gridData;
     gridData.SliceIndices = glm::ivec4(mState->VoxelGrid.SliceIndices.Get(), 0);
     gridData.VolumeShape = glm::ivec4(mState->VoxelGrid.VolumeShape.Get(), 0);
+    gridData.IsVisible = glm::ivec4(1, 1, 1, 0);
     gridData.CurrentSlice = 0;
 
     mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(), GPU::Binding::allSpheresNormals,
@@ -314,6 +321,31 @@ void SHField::setFadeIfHidden(bool previous, bool fadeEnabled)
     }
 }
 
+void SHField::setVisibleSlices(State::CameraMode previous, State::CameraMode next)
+{
+    if(previous != next)
+    {
+        glm::ivec4 isVisible;
+        switch(next)
+        {
+            case State::CameraMode::projectiveX:
+                isVisible = glm::ivec4(1, 0, 0, 0);
+                break;
+            case State::CameraMode::projectiveY:
+                isVisible = glm::ivec4(0, 1, 0, 0);
+                break;
+            case State::CameraMode::projectiveZ:
+                isVisible = glm::ivec4(0, 0, 1, 0);
+                break;
+            case State::CameraMode::projective3D:
+            default:
+                isVisible = glm::ivec4(1, 1, 1, 0);
+                break;
+        }
+        mGridInfoData.Update(2*sizeof(glm::ivec4), sizeof(glm::ivec4), &isVisible);
+    }
+}
+
 void SHField::drawSpecific()
 {
     glBindVertexArray(mVAO);
@@ -347,7 +379,7 @@ void SHField::scaleSpheres()
 
 void SHField::scaleSpheres(unsigned int sliceId, unsigned int nbSpheres)
 {
-    mGridInfoData.Update(2*sizeof(glm::ivec4), sizeof(unsigned int), &sliceId);
+    mGridInfoData.Update(3*sizeof(glm::ivec4), sizeof(unsigned int), &sliceId);
     glDispatchCompute(nbSpheres, 1, 1);
 }
 } // namespace Slicer
