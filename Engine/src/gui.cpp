@@ -12,6 +12,7 @@ UIManager::UIManager()
 ,mIO(nullptr)
 ,mState(nullptr)
 ,mShowDemoWindow(false)
+,mShowMagnifyingMode(false)
 ,mShowSlicers(false)
 {
 }
@@ -21,6 +22,7 @@ UIManager::UIManager(GLFWwindow* window, const std::string& glslVersion,
 :mWindow(window)
 ,mIO(nullptr)
 ,mShowDemoWindow(false)
+,mShowMagnifyingMode(false)
 ,mShowSlicers(false)
 ,mState(state)
 {
@@ -47,6 +49,7 @@ void UIManager::DrawInterface()
     drawDemoWindow();
     drawSlicersWindow();
     drawPreferencesWindow();
+    drawMagnifyingModeWindow();
 
     // Rendering
     ImGui::Render();
@@ -72,12 +75,57 @@ void UIManager::drawMainMenuBar()
     if(ImGui::BeginMenu("Options"))
     {
         ImGui::MenuItem("Show slicers window", NULL, &mShowSlicers);
+        ImGui::MenuItem("Magnifying Mode", NULL, &mShowMagnifyingMode);
         ImGui::MenuItem("Preferences", NULL, &mShowPreferences);
         ImGui::Separator();
         ImGui::MenuItem("Show demo window", NULL, &mShowDemoWindow);
         ImGui::EndMenu();
     }
     ImGui::EndMainMenuBar();
+}
+
+void UIManager::drawMagnifyingModeWindow()
+{
+    if(!mShowMagnifyingMode)
+        return;
+    
+    ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(406.f, 108.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
+    bool updateSliceIndex = false;
+    int ratio = mState->Window.Ratio.Get();
+    bool show = mState->MagnifyingMode.Get();
+    ImGui::Begin("Magnifying mode", &mShowPreferences);
+    ImGui::Text("Show (space)");
+    ImGui::SameLine();
+    if(ImGui::Checkbox("##sphere.fadeIfHidden", &show))
+    {
+        mState->MagnifyingMode.Update(show);
+    }
+    ImGui::Text("Size ratio");
+    ImGui::SameLine();
+    updateSliceIndex |= ImGui::SliderInt("##xslicer", &ratio, 2, 5);
+    ImGui::SameLine();
+    if(ImGui::ArrowButton("##xleft", ImGuiDir_Left))
+    {
+        if (ratio - 1 >= 2)
+        {
+            mState->Window.Ratio.Update(ratio - 1);
+            updateSliceIndex = true;
+        }
+
+    }
+    ImGui::SameLine();
+    if(ImGui::ArrowButton("##xright", ImGuiDir_Right))
+    {
+        if (ratio + 1 <= 5)
+        {
+            mState->Window.Ratio.Update(ratio + 1);
+            updateSliceIndex = true;
+        }
+
+    }
+    ImGui::End();
 }
 
 void UIManager::drawPreferencesWindow()

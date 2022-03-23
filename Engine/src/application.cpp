@@ -10,6 +10,7 @@ namespace
     const float TRANSLATION_SPEED = 0.02f;
     const float ROTATION_SPEED = 0.005f;
     const float ZOOM_SPEED = 1.0f;
+    const int RATIO = 4;
     const std::string WIN_TITLE = "dmri-explorer";
     const std::string GLSL_VERSION_STR = "#version 460";
     const std::string ICON16_FNAME = "/icons/icon16.png";
@@ -135,6 +136,9 @@ void Application::initApplicationState(const ArgumentParser &parser)
     mState->Window.TranslationSpeed.Update(TRANSLATION_SPEED);
     mState->Window.RotationSpeed.Update(ROTATION_SPEED);
     mState->Window.ZoomSpeed.Update(ZOOM_SPEED);
+    mState->Window.Ratio.Update(RATIO);
+
+    mState->MagnifyingMode.Update(false);
 }
 
 void Application::renderFrame()
@@ -142,9 +146,11 @@ void Application::renderFrame()
     // Handle events
     glfwPollEvents();
 
-    int h, w;
-    glfwGetWindowSize(mWindow, &w, &h);
     Application *app = (Application *)glfwGetWindowUserPointer(mWindow);
+    int h, w;
+    int ratio = app->mState->Window.Ratio.Get();
+    bool show = app->mState->MagnifyingMode.Get();
+    glfwGetWindowSize(mWindow, &w, &h);
 
     mCamera->UpdateGPU();
     glViewport(0, 0, w, h);
@@ -152,11 +158,11 @@ void Application::renderFrame()
     // Draw scene
     mScene->Render();
 
-    if (app->MagnifyingMode)
+    if (show)
     {
         mSecondaryCamera->UpdateGPU();
-        glViewport(0, 0, w / 4, h / 4);
-        glScissor(0, 0, w / 4, h / 4);
+        glViewport(0, 0, w / ratio, h / ratio);
+        glScissor(0, 0, w / ratio, h / ratio);
         mScene->Render();
     }
 
@@ -176,15 +182,16 @@ void Application::Run()
 
 void Application::onMouseButton(GLFWwindow *window, int button, int action, int mod)
 {
+    Application *app = (Application *)glfwGetWindowUserPointer(window);
     int h, w;
+    int ratio = app->mState->Window.Ratio.Get(); 
     double xPos, yPos;
     glfwGetWindowSize(window, &w, &h);
     glfwGetCursorPos(window, &xPos, &yPos);
-    Application *app = (Application *)glfwGetWindowUserPointer(window);
     if (app->mUI->WantCaptureMouse())
         return;
 
-    if (app->MagnifyingMode && 0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h && action == GLFW_PRESS &&
+    if (app->mState->MagnifyingMode.Get() && 0 <= xPos && xPos <= (w / ratio) && (h - (h / ratio)) <= yPos && yPos <= h && action == GLFW_PRESS &&
         (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_MIDDLE))
         app->clicInViewport = true;
     else if (action == GLFW_RELEASE && app->clicInViewport)
@@ -201,10 +208,10 @@ void Application::onMouseButton(GLFWwindow *window, int button, int action, int 
 
 void Application::onMouseMove(GLFWwindow *window, double xPos, double yPos)
 {
+    Application *app = (Application *)glfwGetWindowUserPointer(window);
     int h, w;
     glfwGetWindowSize(window, &w, &h);
     glfwGetCursorPos(window, &xPos, &yPos);
-    Application *app = (Application *)glfwGetWindowUserPointer(window);
 
     if (app->mUI->WantCaptureMouse())
         return;
@@ -246,16 +253,18 @@ void Application::onMouseMove(GLFWwindow *window, double xPos, double yPos)
 
 void Application::onMouseScroll(GLFWwindow *window, double xoffset, double yoffset)
 {
+    Application *app = (Application *)glfwGetWindowUserPointer(window);
     int h, w;
+    int ratio = app->mState->Window.Ratio.Get(); 
     double xPos, yPos;
     glfwGetWindowSize(window, &w, &h);
     glfwGetCursorPos(window, &xPos, &yPos);
-    Application *app = (Application *)glfwGetWindowUserPointer(window);
+    
 
     if (app->mUI->WantCaptureMouse())
         return;
 
-    if (0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h && app->MagnifyingMode)
+    if (0 <= xPos && xPos <= (w / ratio) && (h - (h / ratio)) <= yPos && yPos <= h && app->mState->MagnifyingMode.Get())
     {
         app->mSecondaryCamera->Zoom(yoffset);
         app->mSecondaryCamera->UpdateGPU();
@@ -282,9 +291,9 @@ void Application::onPressSpace(GLFWwindow *window, int key, int scancode, int ac
     if (action == GLFW_RELEASE && key == GLFW_KEY_SPACE)
     {
         Application *app = (Application *)glfwGetWindowUserPointer(window);
-        app->MagnifyingMode = !app->MagnifyingMode;
+        app->mState->MagnifyingMode.Update(!app->mState->MagnifyingMode.Get());
 
-        if (!app->MagnifyingMode)
+        if (!app->mState->MagnifyingMode.Get())
             app->mSecondaryCamera.reset(new Camera(*app->mCamera));
         else
             app->mSecondaryCamera->Zoom(7.5f);
