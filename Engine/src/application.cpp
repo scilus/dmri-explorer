@@ -20,276 +20,276 @@ namespace
 
 namespace Slicer
 {
-    Application::Application(const ArgumentParser &parser)
-        : mTitle(WIN_TITLE), mState(new ApplicationState()), mUI(nullptr), mScene(nullptr), mCursorPos(-1, -1)
+Application::Application(const ArgumentParser &parser)
+    : mTitle(WIN_TITLE), mState(new ApplicationState()), mUI(nullptr), mScene(nullptr), mCursorPos(-1, -1)
+{
+    initApplicationState(parser);
+    initialize();
+}
+
+Application::~Application()
+{
+    mUI->Terminate();
+    // GLFW cleanup
+    glfwTerminate();
+}
+
+/// initialize glad, glfw, imgui
+void Application::initialize()
+{
+    // Init GLFW
+    glfwInit();
+
+    if (!glfwInit())
     {
-        initApplicationState(parser);
-        initialize();
+        std::cerr << "Failed to initialize GLFW" << std::endl;
+        return;
     }
 
-    Application::~Application()
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    mWindow = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, mTitle.c_str(), NULL, NULL);
+    glfwMakeContextCurrent(mWindow);
+    glfwSetWindowUserPointer(mWindow, this);
+    setWindowIcon();
+
+    // GLFW input callbacks
+    glfwSetMouseButtonCallback(mWindow, onMouseButton);
+    glfwSetCursorPosCallback(mWindow, onMouseMove);
+    glfwSetScrollCallback(mWindow, onMouseScroll);
+    glfwSetWindowSizeCallback(mWindow, onWindowResize);
+    glfwSetKeyCallback(mWindow, onPressSpace);
+
+    // Load all OpenGL functions using the glfw loader function
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        mUI->Terminate();
-        // GLFW cleanup
+        std::cerr << "Failed to initialize OpenGL context" << std::endl;
         glfwTerminate();
+        return;
     }
 
-    /// initialize glad, glfw, imgui
-    void Application::initialize()
+    // OpenGL render parameters
+    glEnable(GL_SCISSOR_TEST);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glfwSwapInterval(0);
+
+    mUI.reset(new UIManager(mWindow, GLSL_VERSION_STR, mState));
+
+    const float aspectRatio = (float)WIN_WIDTH / (float)WIN_HEIGHT;
+    mCamera.reset(new Camera(glm::vec3(0.0f, 0.0f, 10.0f), // position
+                                glm::vec3(0.0f, 1.0f, 0.0f),  // upvector
+                                glm::vec3(0.0f, 0.0f, 0.0f),  //lookat
+                                glm::radians(60.0f), aspectRatio,
+                                0.1f, 500.0f,
+                                mState));
+
+    mSecondaryCamera.reset(new Camera(*mCamera));
+
+    mScene.reset(new Scene(mState));
+
+    // Render frame without the model
+    renderFrame();
+
+    // Add SH field once the UI is drawn
+    mScene->AddSHField();
+}
+
+void Application::setWindowIcon()
+{
+    const int nbImages = 4;
+    Image2D images[nbImages];
+    images[0].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON16_FNAME, 4);
+    images[1].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON32_FNAME, 4);
+    images[2].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON48_FNAME, 4);
+    images[3].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON64_FNAME, 4);
+
+    GLFWimage glfwImages[nbImages];
+    for (int i = 0; i < nbImages; ++i)
     {
-        // Init GLFW
-        glfwInit();
-
-        if (!glfwInit())
-        {
-            std::cerr << "Failed to initialize GLFW" << std::endl;
-            return;
-        }
-
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-        mWindow = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, mTitle.c_str(), NULL, NULL);
-        glfwMakeContextCurrent(mWindow);
-        glfwSetWindowUserPointer(mWindow, this);
-        setWindowIcon();
-
-        // GLFW input callbacks
-        glfwSetMouseButtonCallback(mWindow, onMouseButton);
-        glfwSetCursorPosCallback(mWindow, onMouseMove);
-        glfwSetScrollCallback(mWindow, onMouseScroll);
-        glfwSetWindowSizeCallback(mWindow, onWindowResize);
-        glfwSetKeyCallback(mWindow, onPressSpace);
-
-        // Load all OpenGL functions using the glfw loader function
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-        {
-            std::cerr << "Failed to initialize OpenGL context" << std::endl;
-            glfwTerminate();
-            return;
-        }
-
-        // OpenGL render parameters
-        glEnable(GL_SCISSOR_TEST);
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);
-        glfwSwapInterval(0);
-
-        mUI.reset(new UIManager(mWindow, GLSL_VERSION_STR, mState));
-
-        const float aspectRatio = (float)WIN_WIDTH / (float)WIN_HEIGHT;
-        mCamera.reset(new Camera(glm::vec3(0.0f, 0.0f, 10.0f), // position
-                                 glm::vec3(0.0f, 1.0f, 0.0f),  // upvector
-                                 glm::vec3(0.0f, 0.0f, 0.0f),  //lookat
-                                 glm::radians(60.0f), aspectRatio,
-                                 0.1f, 500.0f,
-                                 mState));
-
-        mSecondaryCamera.reset(new Camera(*mCamera));
-
-        mScene.reset(new Scene(mState));
-
-        // Render frame without the model
-        renderFrame();
-
-        // Add SH field once the UI is drawn
-        mScene->AddSHField();
+        glfwImages[i].width = images[i].GetWidth();
+        glfwImages[i].height = images[i].GetHeight();
+        glfwImages[i].pixels = images[i].GetData().get();
     }
+    glfwSetWindowIcon(mWindow, nbImages, glfwImages);
+}
 
-    void Application::setWindowIcon()
+void Application::initApplicationState(const ArgumentParser &parser)
+{
+    mState->FODFImage.Update(NiftiImageWrapper(parser.GetImagePath()));
+
+    mState->Sphere.Resolution.Update(parser.GetSphereResolution());
+    mState->Sphere.IsNormalized.Update(false);
+    mState->Sphere.Scaling.Update(0.5f);
+    mState->Sphere.SH0Threshold.Update(0.0f);
+    mState->Sphere.FadeIfHidden.Update(true);
+
+    mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().dims());
+    mState->VoxelGrid.SliceIndices.Update(mState->VoxelGrid.VolumeShape.Get() / 2);
+
+    mState->Window.Height.Update(WIN_HEIGHT);
+    mState->Window.Width.Update(WIN_WIDTH);
+    mState->Window.TranslationSpeed.Update(TRANSLATION_SPEED);
+    mState->Window.RotationSpeed.Update(ROTATION_SPEED);
+    mState->Window.ZoomSpeed.Update(ZOOM_SPEED);
+}
+
+void Application::renderFrame()
+{
+    // Handle events
+    glfwPollEvents();
+
+    int h, w;
+    glfwGetWindowSize(mWindow, &w, &h);
+    Application *app = (Application *)glfwGetWindowUserPointer(mWindow);
+
+    mCamera->UpdateGPU();
+    glViewport(0, 0, w, h);
+    glScissor(0, 0, w, h);
+    // Draw scene
+    mScene->Render();
+
+    if (app->MagnifyingMode)
     {
-        const int nbImages = 4;
-        Image2D images[nbImages];
-        images[0].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON16_FNAME, 4);
-        images[1].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON32_FNAME, 4);
-        images[2].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON48_FNAME, 4);
-        images[3].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON64_FNAME, 4);
-
-        GLFWimage glfwImages[nbImages];
-        for (int i = 0; i < nbImages; ++i)
-        {
-            glfwImages[i].width = images[i].GetWidth();
-            glfwImages[i].height = images[i].GetHeight();
-            glfwImages[i].pixels = images[i].GetData().get();
-        }
-        glfwSetWindowIcon(mWindow, nbImages, glfwImages);
-    }
-
-    void Application::initApplicationState(const ArgumentParser &parser)
-    {
-        mState->FODFImage.Update(NiftiImageWrapper(parser.GetImagePath()));
-
-        mState->Sphere.Resolution.Update(parser.GetSphereResolution());
-        mState->Sphere.IsNormalized.Update(false);
-        mState->Sphere.Scaling.Update(0.5f);
-        mState->Sphere.SH0Threshold.Update(0.0f);
-        mState->Sphere.FadeIfHidden.Update(true);
-
-        mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().dims());
-        mState->VoxelGrid.SliceIndices.Update(mState->VoxelGrid.VolumeShape.Get() / 2);
-
-        mState->Window.Height.Update(WIN_HEIGHT);
-        mState->Window.Width.Update(WIN_WIDTH);
-        mState->Window.TranslationSpeed.Update(TRANSLATION_SPEED);
-        mState->Window.RotationSpeed.Update(ROTATION_SPEED);
-        mState->Window.ZoomSpeed.Update(ZOOM_SPEED);
-    }
-
-    void Application::renderFrame()
-    {
-        // Handle events
-        glfwPollEvents();
-
-        int h, w;
-        glfwGetWindowSize(mWindow, &w, &h);
-        Application *app = (Application *)glfwGetWindowUserPointer(mWindow);
-
-        mCamera->UpdateGPU();
-        glViewport(0, 0, w, h);
-        glScissor(0, 0, w, h);
-        // Draw scene
+        mSecondaryCamera->UpdateGPU();
+        glViewport(0, 0, w / 4, h / 4);
+        glScissor(0, 0, w / 4, h / 4);
         mScene->Render();
-
-        if (app->MagnifyingMode)
-        {
-            mSecondaryCamera->UpdateGPU();
-            glViewport(0, 0, w / 4, h / 4);
-            glScissor(0, 0, w / 4, h / 4);
-            mScene->Render();
-        }
-
-        //Draw UI
-        mUI->DrawInterface();
-
-        glfwSwapBuffers(mWindow);
     }
 
-    void Application::Run()
+    //Draw UI
+    mUI->DrawInterface();
+
+    glfwSwapBuffers(mWindow);
+}
+
+void Application::Run()
+{
+    while (!glfwWindowShouldClose(mWindow))
     {
-        while (!glfwWindowShouldClose(mWindow))
-        {
-            renderFrame();
-        }
+        renderFrame();
     }
+}
 
-    void Application::onMouseButton(GLFWwindow *window, int button, int action, int mod)
+void Application::onMouseButton(GLFWwindow *window, int button, int action, int mod)
+{
+    int h, w;
+    double xPos, yPos;
+    glfwGetWindowSize(window, &w, &h);
+    glfwGetCursorPos(window, &xPos, &yPos);
+    Application *app = (Application *)glfwGetWindowUserPointer(window);
+    if (app->mUI->WantCaptureMouse())
+        return;
+
+    if (app->MagnifyingMode && 0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h && action == GLFW_PRESS &&
+        (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_MIDDLE))
+        app->clicInViewport = true;
+    else if (action == GLFW_RELEASE && app->clicInViewport)
+        app->clicInViewport = true;
+    else
+        app->clicInViewport = false;
+
+    app->mCursorPos.x = xPos;
+    app->mCursorPos.y = yPos;
+    app->mLastButton = button;
+    app->mLastAction = action;
+    app->mLastModifier = mod;
+}
+
+void Application::onMouseMove(GLFWwindow *window, double xPos, double yPos)
+{
+    int h, w;
+    glfwGetWindowSize(window, &w, &h);
+    glfwGetCursorPos(window, &xPos, &yPos);
+    Application *app = (Application *)glfwGetWindowUserPointer(window);
+
+    if (app->mUI->WantCaptureMouse())
+        return;
+
+    if (app->mLastAction == GLFW_PRESS)
     {
-        int h, w;
-        double xPos, yPos;
-        glfwGetWindowSize(window, &w, &h);
-        glfwGetCursorPos(window, &xPos, &yPos);
-        Application *app = (Application *)glfwGetWindowUserPointer(window);
-        if (app->mUI->WantCaptureMouse())
-            return;
-
-        if (app->MagnifyingMode && 0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h && action == GLFW_PRESS &&
-            (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_MIDDLE))
-            app->clicInViewport = true;
-        else if (action == GLFW_RELEASE && app->clicInViewport)
-            app->clicInViewport = true;
-        else
-            app->clicInViewport = false;
-
-        app->mCursorPos.x = xPos;
-        app->mCursorPos.y = yPos;
-        app->mLastButton = button;
-        app->mLastAction = action;
-        app->mLastModifier = mod;
-    }
-
-    void Application::onMouseMove(GLFWwindow *window, double xPos, double yPos)
-    {
-        int h, w;
-        glfwGetWindowSize(window, &w, &h);
-        glfwGetCursorPos(window, &xPos, &yPos);
-        Application *app = (Application *)glfwGetWindowUserPointer(window);
-
-        if (app->mUI->WantCaptureMouse())
-            return;
-
-        if (app->mLastAction == GLFW_PRESS)
+        const double dx = app->mCursorPos.x - xPos;
+        const double dy = app->mCursorPos.y - yPos;
+        if (app->mLastButton == GLFW_MOUSE_BUTTON_LEFT)
         {
-            const double dx = app->mCursorPos.x - xPos;
-            const double dy = app->mCursorPos.y - yPos;
-            if (app->mLastButton == GLFW_MOUSE_BUTTON_LEFT)
+            // Controls each viewport's camera update accordingly.
+            if (app->clicInViewport)
             {
-                // Controls each viewport's camera update accordingly.
-                if (app->clicInViewport)
-                {
-                    app->mSecondaryCamera->RotateCS(glm::vec2(dx, dy));
-                    app->mSecondaryCamera->UpdateGPU();
-                }
-                else
-                {
-                    app->mCamera->RotateCS(glm::vec2(dx, dy));
-                    app->mCamera->UpdateGPU();
-                }
+                app->mSecondaryCamera->RotateCS(glm::vec2(dx, dy));
+                app->mSecondaryCamera->UpdateGPU();
             }
-            else if (app->mLastButton == GLFW_MOUSE_BUTTON_MIDDLE)
-            {
-                if (app->clicInViewport && app->mLastAction == GLFW_PRESS)
-                {
-                    app->mSecondaryCamera->TranslateCS(glm::vec2(dx, dy));
-                    app->mSecondaryCamera->UpdateGPU();
-                }
-                else
-                {
-                    app->mCamera->TranslateCS(glm::vec2(dx, dy));
-                    app->mCamera->UpdateGPU();
-                }
-            }
-        }
-        app->mCursorPos = {xPos, yPos};
-    }
-
-    void Application::onMouseScroll(GLFWwindow *window, double xoffset, double yoffset)
-    {
-        int h, w;
-        double xPos, yPos;
-        glfwGetWindowSize(window, &w, &h);
-        glfwGetCursorPos(window, &xPos, &yPos);
-        Application *app = (Application *)glfwGetWindowUserPointer(window);
-
-        if (app->mUI->WantCaptureMouse())
-            return;
-
-        if (0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h && app->MagnifyingMode)
-        {
-            app->mSecondaryCamera->Zoom(yoffset);
-            app->mSecondaryCamera->UpdateGPU();
-        }
-        else
-        {
-            app->mCamera->Zoom(yoffset);
-            app->mCamera->UpdateGPU();
-        }
-    }
-
-    void Application::onWindowResize(GLFWwindow *window, int width, int height)
-    {
-        const float aspect = static_cast<float>(width) / static_cast<float>(height);
-        Application *app = (Application *)glfwGetWindowUserPointer(window);
-        app->mCamera->Resize(aspect);
-        glViewport(0, 0, width, height);
-        app->mState->Window.Width.Update(width);
-        app->mState->Window.Height.Update(height);
-    }
-
-    void Application::onPressSpace(GLFWwindow *window, int key, int scancode, int action, int mods)
-    {
-        if (action == GLFW_RELEASE && key == GLFW_KEY_SPACE)
-        {
-            Application *app = (Application *)glfwGetWindowUserPointer(window);
-            app->MagnifyingMode = !app->MagnifyingMode;
-
-            if (!app->MagnifyingMode)
-                app->mSecondaryCamera.reset(new Camera(*app->mCamera));
             else
-                app->mSecondaryCamera->Zoom(7.5f);
-
-            app->renderFrame();
+            {
+                app->mCamera->RotateCS(glm::vec2(dx, dy));
+                app->mCamera->UpdateGPU();
+            }
+        }
+        else if (app->mLastButton == GLFW_MOUSE_BUTTON_MIDDLE)
+        {
+            if (app->clicInViewport && app->mLastAction == GLFW_PRESS)
+            {
+                app->mSecondaryCamera->TranslateCS(glm::vec2(dx, dy));
+                app->mSecondaryCamera->UpdateGPU();
+            }
+            else
+            {
+                app->mCamera->TranslateCS(glm::vec2(dx, dy));
+                app->mCamera->UpdateGPU();
+            }
         }
     }
+    app->mCursorPos = {xPos, yPos};
+}
+
+void Application::onMouseScroll(GLFWwindow *window, double xoffset, double yoffset)
+{
+    int h, w;
+    double xPos, yPos;
+    glfwGetWindowSize(window, &w, &h);
+    glfwGetCursorPos(window, &xPos, &yPos);
+    Application *app = (Application *)glfwGetWindowUserPointer(window);
+
+    if (app->mUI->WantCaptureMouse())
+        return;
+
+    if (0 <= xPos && xPos <= (w / 4) && (h - (h / 4)) <= yPos && yPos <= h && app->MagnifyingMode)
+    {
+        app->mSecondaryCamera->Zoom(yoffset);
+        app->mSecondaryCamera->UpdateGPU();
+    }
+    else
+    {
+        app->mCamera->Zoom(yoffset);
+        app->mCamera->UpdateGPU();
+    }
+}
+
+void Application::onWindowResize(GLFWwindow *window, int width, int height)
+{
+    const float aspect = static_cast<float>(width) / static_cast<float>(height);
+    Application *app = (Application *)glfwGetWindowUserPointer(window);
+    app->mCamera->Resize(aspect);
+    glViewport(0, 0, width, height);
+    app->mState->Window.Width.Update(width);
+    app->mState->Window.Height.Update(height);
+}
+
+void Application::onPressSpace(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+    if (action == GLFW_RELEASE && key == GLFW_KEY_SPACE)
+    {
+        Application *app = (Application *)glfwGetWindowUserPointer(window);
+        app->MagnifyingMode = !app->MagnifyingMode;
+
+        if (!app->MagnifyingMode)
+            app->mSecondaryCamera.reset(new Camera(*app->mCamera));
+        else
+            app->mSecondaryCamera->Zoom(7.5f);
+
+        app->renderFrame();
+    }
+}
 } // namespace Slicer
