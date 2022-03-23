@@ -68,14 +68,17 @@ void Camera::TranslateCS(const glm::vec2& vec)
     const float& translationSpeed = mState->Window.TranslationSpeed.Get();
     const float dx = -vec.x * translationSpeed;
     const float dy = -vec.y * translationSpeed;
+    glm::vec3 lookAt = mLookAt - mPosition;
+
+    // Compute the translation axis.
+    const glm::vec3 leftAxis = glm::normalize(glm::cross(mUpVector, lookAt));
 
     // Compute translation.
-    const glm::mat4 transform = glm::translate(-dx * glm::vec3(1.0, 0.0, 0.0)
-                                               + dy * glm::vec3(0.0, 1.0, 0.0));
+    const glm::mat4 transform = glm::translate(dx * leftAxis + dy * mUpVector);
     
     // Parameters update.
-    mPosition = transform * glm::vec4(mPosition, 1.0f);
-    mLookAt = transform * glm::vec4(mLookAt, 1.0f);
+    mPosition = glm::vec3(transform * glm::vec4(mPosition, 1.0f));
+    mLookAt = glm::vec3(transform * glm::vec4(mLookAt, 1.0f));
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
 
