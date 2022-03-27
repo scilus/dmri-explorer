@@ -59,4 +59,4 @@ In shader code, we distinguish between variables shared between shaders (`in` an
 
 ### Third-party libraries
 
-Third-party libraries should be included under the `deps` folder, in their own folder identified by their name. Be sure to include the license notice with the library you wish to add.
+Third-party libraries should be included under the `deps` folder, in their own folder identified by their name. Make sure to include the license notice with the library you wish to add.
