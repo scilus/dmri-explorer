@@ -1,6 +1,6 @@
 # Contributing Guidelines
 
-Of course, your contributions to the `dmri-explorer` project are very much welcomed!
+Your contributions to the `dmri-explorer` project are very much welcomed!
 
 ## Feature Requests or Bug Reporting
 
@@ -23,15 +23,20 @@ __Class members__
 Classes should be defined in header files. Instead of setting default values in the header files, do so in the constructor. Whenever possible, initialize member variables in [member initializer lists](https://en.cppreference.com/w/cpp/language/constructor).
 
 __Class access modifiers__
-Always use the most restrictive access modifier possible for class members and functions. Always prefer getters and setters to `friend` classes, or public class members. Use `struct` for classes containing only public members.
+
+Always use the most restrictive access modifier possible for class members and functions. Always prefer getters and setters to `friend` classes, or public class members.
 
 __Curly braces__
 
 Always put curly braces on their own line. Always use curly braces, even for oneline `if` and `for` statements.
 
+__Pointers and reference__
+
+When declaring pointers (`*`) and reference (`&`) arguments, put the appropriate symbol right next to the type. For example, prefer `const type* myArg` to `const type *myArg`.
+
 __Documentation__
 
-Please write documentation in header files using the [doxygen](https://www.doxygen.nl/index.html) standard. A doxyfile is available for generating the doxygen documentation locally.
+Please write documentation in header files using the [doxygen](https://www.doxygen.nl/index.html) standard. A `doxyfile` is available for generating the doxygen documentation locally.
 
 
 ### `GLSL` Shaders
@@ -48,8 +53,8 @@ If you use a different shader type, please propose a suffix following this conve
 __Variable name style__
 
 In shader code, we distinguish between variables shared between shaders (`in` and `out` keywords) and local variables by using a different style:
-* Use snake case (`this_is_snake_case`) for `in` and `out` variables;
-* Use camel case (`thisIsCamelCase`) for local variables.
+* Use `snake_case` for `in` and `out` variables;
+* Use `camelCase` for local variables.
 
 
 ### Third-party libraries
