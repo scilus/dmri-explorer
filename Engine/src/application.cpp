@@ -280,8 +280,17 @@ void Application::onWindowResize(GLFWwindow *window, int width, int height)
 {
     const float aspect = static_cast<float>(width) / static_cast<float>(height);
     Application *app = (Application *)glfwGetWindowUserPointer(window);
+    const int ratio = app->mState->Window.Ratio.Get(); 
+
     app->mCamera->Resize(aspect);
     glViewport(0, 0, width, height);
+    // Scale secondary viewport to keep proportions.
+    if (app->MagnifyingMode)
+    {
+        app->mSecondaryCamera->Resize(aspect);
+        glViewport(0, 0, width / ratio, height / ratio);
+
+    }
     app->mState->Window.Width.Update(width);
     app->mState->Window.Height.Update(height);
 }
