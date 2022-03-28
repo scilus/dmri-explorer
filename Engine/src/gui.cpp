@@ -93,37 +93,35 @@ void UIManager::drawMagnifyingModeWindow()
     ImGui::SetNextWindowSize(ImVec2(406.f, 108.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
     bool updateSliceIndex = false;
-    int ratio = mState->Window.SecondaryViewportScale.Get();
+    int scaleFactor = mState->Window.SecondaryViewportScale.Get();
     bool show = mState->magnifyingMode.Get();
+    static int scaling = 2;
     ImGui::Begin("Magnifying mode", &mShowMagnifyingMode);
-    ImGui::Text("Show (space)");
     ImGui::SameLine();
-    if(ImGui::Checkbox("##sphere.fadeIfHidden", &show))
+    if(ImGui::Checkbox("Enable magnifying mode (press space)", &show))
     {
         mState->magnifyingMode.Update(show);
     }
-    ImGui::Text("Size ratio");
-    ImGui::SameLine();
-    updateSliceIndex |= ImGui::SliderInt("##xslicer", &ratio, 2, 5);
-    ImGui::SameLine();
-    if(ImGui::ArrowButton("##xleft", ImGuiDir_Left))
-    {
-        if (ratio - 1 >= 2)
-        {
-            mState->Window.SecondaryViewportScale.Update(ratio - 1);
-            updateSliceIndex = true;
-        }
+    ImGui::Text("Window Scaling");
 
+    if(ImGui::RadioButton("1/2", &scaling, 0))
+    {
+        mState->Window.SecondaryViewportScale.Update(2);
     }
     ImGui::SameLine();
-    if(ImGui::ArrowButton("##xright", ImGuiDir_Right))
+    if(ImGui::RadioButton("1/3", &scaling, 1))
     {
-        if (ratio + 1 <= 5)
-        {
-            mState->Window.SecondaryViewportScale.Update(ratio + 1);
-            updateSliceIndex = true;
-        }
-
+        mState->Window.SecondaryViewportScale.Update(3);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("1/4", &scaling, 2))
+    {
+        mState->Window.SecondaryViewportScale.Update(4);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("1/5", &scaling, 3))
+    {
+        mState->Window.SecondaryViewportScale.Update(5);
     }
     ImGui::End();
 }
@@ -255,7 +253,7 @@ void UIManager::drawSlicersWindow()
     auto& thresholdParam = mState->Sphere.SH0Threshold;
     auto& normalizedParam = mState->Sphere.IsNormalized;
     auto& fadeHiddenParam = mState->Sphere.FadeIfHidden;
-    if (!scalingParam.IsInit() || !thresholdParam.IsInit() ||
+    if(!scalingParam.IsInit() || !thresholdParam.IsInit() ||
         !normalizedParam.IsInit() || !fadeHiddenParam.IsInit())
     {
         ImGui::Spacing();

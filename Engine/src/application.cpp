@@ -44,7 +44,7 @@ void Application::initialize()
     // Init GLFW
     glfwInit();
 
-    if (!glfwInit())
+    if(!glfwInit())
     {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         return;
@@ -67,7 +67,7 @@ void Application::initialize()
     glfwSetKeyCallback(mWindow, onPressSpace);
 
     // Load all OpenGL functions using the glfw loader function
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cerr << "Failed to initialize OpenGL context" << std::endl;
         glfwTerminate();
@@ -104,10 +104,10 @@ void Application::initialize()
 
 bool Application::insideSecondaryViewport(int& height, int& width, double& xPos, double& yPos)
 {
-    Application *app = (Application *)glfwGetWindowUserPointer(mWindow);
+    Application* app = (Application*)glfwGetWindowUserPointer(mWindow);
     int scaleFactor = app->mState->Window.SecondaryViewportScale.Get(); 
 
-    if (0 <= xPos && xPos <= (width / scaleFactor) && (height - (height / scaleFactor)) <= yPos && yPos <= height)
+    if(0 <= xPos && xPos <= (width / scaleFactor) && (height - (height / scaleFactor)) <= yPos && yPos <= height)
     {
         return true;
     }
@@ -124,7 +124,7 @@ void Application::setWindowIcon()
     images[3].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON64_FNAME, 4);
 
     GLFWimage glfwImages[nbImages];
-    for (int i = 0; i < nbImages; ++i)
+    for(int i = 0; i < nbImages; ++i)
     {
         glfwImages[i].width = images[i].GetWidth();
         glfwImages[i].height = images[i].GetHeight();
@@ -161,7 +161,7 @@ void Application::renderFrame()
     // Handle events
     glfwPollEvents();
 
-    Application *app = (Application *)glfwGetWindowUserPointer(mWindow);
+    Application* app = (Application*)glfwGetWindowUserPointer(mWindow);
     int h, w;
     int scaleFactor = app->mState->Window.SecondaryViewportScale.Get();
     bool magnifyingModeOn = app->mState->magnifyingMode.Get();
@@ -173,7 +173,7 @@ void Application::renderFrame()
     // Draw scene
     mScene->Render();
 
-    if (magnifyingModeOn)
+    if(magnifyingModeOn)
     {
         mSecondaryCamera->UpdateGPU();
         glViewport(0, 0, w / scaleFactor, h / scaleFactor);
@@ -195,24 +195,24 @@ void Application::Run()
     }
 }
 
-void Application::onMouseButton(GLFWwindow *window, int button, int action, int mod)
+void Application::onMouseButton(GLFWwindow* window, int button, int action, int mod)
 {
-    Application *app = (Application *)glfwGetWindowUserPointer(window);
+    Application* app = (Application*)glfwGetWindowUserPointer(window);
     bool magnifyingModeOn = app->mState->magnifyingMode.Get();
     int h, w;
     double xPos, yPos;
     glfwGetWindowSize(window, &w, &h);
     glfwGetCursorPos(window, &xPos, &yPos);
     
-    if (app->mUI->WantCaptureMouse())
+    if(app->mUI->WantCaptureMouse())
         return;
 
-    if (magnifyingModeOn && app->insideSecondaryViewport(h, w, xPos, yPos) && action == GLFW_PRESS &&
+    if(magnifyingModeOn && app->insideSecondaryViewport(h, w, xPos, yPos) && action == GLFW_PRESS &&
         (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_MIDDLE))
     {
         app->clicInViewport = true;
     }
-    else if (action == GLFW_RELEASE && app->clicInViewport)
+    else if(action == GLFW_RELEASE && app->clicInViewport)
     {
         app->clicInViewport = true;
     }
@@ -228,24 +228,24 @@ void Application::onMouseButton(GLFWwindow *window, int button, int action, int 
     app->mLastModifier = mod;
 }
 
-void Application::onMouseMove(GLFWwindow *window, double xPos, double yPos)
+void Application::onMouseMove(GLFWwindow* window, double xPos, double yPos)
 {
-    Application *app = (Application *)glfwGetWindowUserPointer(window);
+    Application* app = (Application*)glfwGetWindowUserPointer(window);
     int h, w;
     glfwGetWindowSize(window, &w, &h);
     glfwGetCursorPos(window, &xPos, &yPos);
 
-    if (app->mUI->WantCaptureMouse())
+    if(app->mUI->WantCaptureMouse())
         return;
 
-    if (app->mLastAction == GLFW_PRESS)
+    if(app->mLastAction == GLFW_PRESS)
     {
         const double dx = app->mCursorPos.x - xPos;
         const double dy = app->mCursorPos.y - yPos;
-        if (app->mLastButton == GLFW_MOUSE_BUTTON_LEFT)
+        if(app->mLastButton == GLFW_MOUSE_BUTTON_LEFT)
         {
             // Controls each viewport's camera update accordingly.
-            if (app->clicInViewport)
+            if(app->clicInViewport)
             {
                 app->mSecondaryCamera->RotateCS(glm::vec2(dx, dy));
                 app->mSecondaryCamera->UpdateGPU();
@@ -256,9 +256,9 @@ void Application::onMouseMove(GLFWwindow *window, double xPos, double yPos)
                 app->mCamera->UpdateGPU();
             }
         }
-        else if (app->mLastButton == GLFW_MOUSE_BUTTON_MIDDLE)
+        else if(app->mLastButton == GLFW_MOUSE_BUTTON_MIDDLE)
         {
-            if (app->clicInViewport && app->mLastAction == GLFW_PRESS)
+            if(app->clicInViewport && app->mLastAction == GLFW_PRESS)
             {
                 app->mSecondaryCamera->TranslateCS(glm::vec2(dx, dy));
                 app->mSecondaryCamera->UpdateGPU();
@@ -273,9 +273,9 @@ void Application::onMouseMove(GLFWwindow *window, double xPos, double yPos)
     app->mCursorPos = {xPos, yPos};
 }
 
-void Application::onMouseScroll(GLFWwindow *window, double xoffset, double yoffset)
+void Application::onMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
 {
-    Application *app = (Application *)glfwGetWindowUserPointer(window);
+    Application* app = (Application*)glfwGetWindowUserPointer(window);
     int h, w;
     int ratio = app->mState->Window.SecondaryViewportScale.Get(); 
     double xPos, yPos;
@@ -283,10 +283,10 @@ void Application::onMouseScroll(GLFWwindow *window, double xoffset, double yoffs
     glfwGetCursorPos(window, &xPos, &yPos);
     
 
-    if (app->mUI->WantCaptureMouse())
+    if(app->mUI->WantCaptureMouse())
         return;
 
-    if (app->insideSecondaryViewport(h, w, xPos, yPos) && app->mState->magnifyingMode.Get())
+    if(app->insideSecondaryViewport(h, w, xPos, yPos) && app->mState->magnifyingMode.Get())
     {
         app->mSecondaryCamera->Zoom(yoffset);
         app->mSecondaryCamera->UpdateGPU();
@@ -298,17 +298,17 @@ void Application::onMouseScroll(GLFWwindow *window, double xoffset, double yoffs
     }
 }
 
-void Application::onWindowResize(GLFWwindow *window, int width, int height)
+void Application::onWindowResize(GLFWwindow* window, int width, int height)
 {
     const float aspect = static_cast<float>(width) / static_cast<float>(height);
-    Application *app = (Application *)glfwGetWindowUserPointer(window);
+    Application* app = (Application*)glfwGetWindowUserPointer(window);
     const int scaleFactor = app->mState->Window.SecondaryViewportScale.Get(); 
 
     app->mCamera->Resize(aspect);
     glViewport(0, 0, width, height);
 
     // Scale secondary viewport to keep proportions.
-    if (app->magnifyingMode)
+    if(app->magnifyingMode)
     {
         app->mSecondaryCamera->Resize(aspect);
         glViewport(0, 0, width / scaleFactor, height / scaleFactor);
@@ -318,14 +318,14 @@ void Application::onWindowResize(GLFWwindow *window, int width, int height)
     app->mState->Window.Height.Update(height);
 }
 
-void Application::onPressSpace(GLFWwindow *window, int key, int scancode, int action, int mods)
+void Application::onPressSpace(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    if (action == GLFW_RELEASE && key == GLFW_KEY_SPACE)
+    if(action == GLFW_RELEASE && key == GLFW_KEY_SPACE)
     {
-        Application *app = (Application *)glfwGetWindowUserPointer(window);
+        Application* app = (Application*)glfwGetWindowUserPointer(window);
         app->mState->magnifyingMode.Update(!app->mState->magnifyingMode.Get());
 
-        if (!app->mState->magnifyingMode.Get())
+        if(!app->mState->magnifyingMode.Get())
             app->mSecondaryCamera.reset(new Camera(*app->mCamera));
         else
             app->mSecondaryCamera->Zoom(7.5f);
