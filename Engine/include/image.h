@@ -73,6 +73,10 @@ public:
     /// \return 1D flat index.
     size_t flattenIndex(uint i, uint j, uint k, uint l) const;
 
+    /// Convert a 4D index to a 1D flat index.
+    /// \return 1D flat index.
+    void * getData() const;
+
     /// Get pixel value at voxel coordinate (i, j, k, l).
     /// \return Value at voxel coordinate as double.
     double at(uint i, uint j, uint k, uint l) const;

@@ -35,6 +35,9 @@ void Model::Draw()
     uploadTransformToGPU();
 
     drawSpecific();
+
+    glBindProgramPipeline(0);
+
 }
 
 void Model::uploadTransformToGPU()
