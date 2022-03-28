@@ -62,6 +62,11 @@ size_t NiftiImageWrapper::flattenIndex(uint i, uint j, uint k, uint l) const
     return l * mDims.x * mDims.y * mDims.z + k * mDims.x * mDims.y + j * mDims.x + i;
 }
 
+void * NiftiImageWrapper::getData() const
+{
+    return mImage->data;
+}
+
 double NiftiImageWrapper::at(uint i, uint j, uint k, uint l) const
 {
     const size_t flatIndex = flattenIndex(i, j, k, l);
