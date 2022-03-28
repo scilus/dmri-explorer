@@ -22,7 +22,7 @@ public:
     /// Constructor
     /// \param[in] parser The ArgumentParser containing the
     ///                   value of command line arguments.
-    Application(const ArgumentParser &parser);
+    Application(const ArgumentParser& parser);
 
     /// Destructor
     ~Application();
@@ -34,12 +34,20 @@ private:
     /// Initialize GLFW, OpenGL backend, Scene, UI, Camera, etc.
     void initialize();
 
+    /// Verify if the cursor is in the secondary viewport.
+    /// \param[in] height Window height.
+    /// \param[in] width Window width.
+    /// \param[in] xPos The position of the cursor in x.
+    /// \param[in] yPos The position of the cursor in y.
+    /// \return If cursor is in viewport.
+    bool insideSecondaryViewport(int& height, int& width, double& xPos, double& yPos);
+
     /// Render a frame one time.
     void renderFrame();
 
     /// Initialize the ApplicationState object.
     /// \param[in] parser The command line arguments.
-    void initApplicationState(const ArgumentParser &parser);
+    void initApplicationState(const ArgumentParser& parser);
 
     /// Set the window icon.
     void setWindowIcon();
@@ -49,25 +57,25 @@ private:
     /// \param[in] button The current button.
     /// \param[in] action The current action on the button.
     /// \param[in] mod The modifier used with the mouse button.
-    static void onMouseButton(GLFWwindow *window, int button, int action, int mod);
+    static void onMouseButton(GLFWwindow* window, int button, int action, int mod);
 
     /// GLFW callback for mouse movement.
     /// \param[in] window The current GLFW window.
     /// \param[in] xPos The position of the cursor in x.
     /// \param[in] yPos The position of the cursor in y.
-    static void onMouseMove(GLFWwindow *window, double xPos, double yPos);
+    static void onMouseMove(GLFWwindow* window, double xPos, double yPos);
 
     /// GLFW callback for mouse wheel scrolling.
     /// \param[in] window The current GLFW window.
     /// \param[in] xoffset Mouse scroll along x axis.
     /// \param[in] yoffset Mouse scroll along y axis.
-    static void onMouseScroll(GLFWwindow *window, double xoffset, double yoffset);
+    static void onMouseScroll(GLFWwindow* window, double xoffset, double yoffset);
 
     /// GLFW callback for handling resizing of the window.
     /// \param[in] window The current GLFW window.
     /// \param[in] width The window width after resize.
     /// \param[in] height The window height after resize.
-    static void onWindowResize(GLFWwindow *window, int width, int height);
+    static void onWindowResize(GLFWwindow* window, int width, int height);
 
     /// GLFW callback for handling pressing of space.
     /// \param[in] window The current GLFW window.
@@ -75,10 +83,10 @@ private:
     /// \param[in] scancode The key unique scancode.
     /// \param[in] action The action id.
     /// \param[in] mods The modifier bits.
-    static void onPressSpace(GLFWwindow *window, int key, int scancode, int action, int mods);
+    static void onPressSpace(GLFWwindow* window, int key, int scancode, int action, int mods);
 
     /// Pointer to application main window.
-    GLFWwindow *mWindow;
+    GLFWwindow* mWindow;
 
     /// Position of the mouse cursor on the application window.
     glm::vec2 mCursorPos;
@@ -111,16 +119,10 @@ private:
     std::string mTitle;
 
     /// Parameter controling viewport display.
-    bool MagnifyingMode;
+    bool magnifyingMode;
 
     /// Parameters for control transfer between the viewports.
     /// For mouse clic detection.
     bool clicInViewport;
-
-    /// For cursor position detection.
-    bool cursorInViewport;
-
-    /// For scrolling detection.
-    bool scrollInViewport;
 };
 } // namespace Slicer

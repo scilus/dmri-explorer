@@ -93,14 +93,14 @@ void UIManager::drawMagnifyingModeWindow()
     ImGui::SetNextWindowSize(ImVec2(406.f, 108.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
     bool updateSliceIndex = false;
-    int ratio = mState->Window.Ratio.Get();
-    bool show = mState->MagnifyingMode.Get();
-    ImGui::Begin("Magnifying mode", &mShowPreferences);
+    int ratio = mState->Window.SecondaryViewportScale.Get();
+    bool show = mState->magnifyingMode.Get();
+    ImGui::Begin("Magnifying mode", &mShowMagnifyingMode);
     ImGui::Text("Show (space)");
     ImGui::SameLine();
     if(ImGui::Checkbox("##sphere.fadeIfHidden", &show))
     {
-        mState->MagnifyingMode.Update(show);
+        mState->magnifyingMode.Update(show);
     }
     ImGui::Text("Size ratio");
     ImGui::SameLine();
@@ -110,7 +110,7 @@ void UIManager::drawMagnifyingModeWindow()
     {
         if (ratio - 1 >= 2)
         {
-            mState->Window.Ratio.Update(ratio - 1);
+            mState->Window.SecondaryViewportScale.Update(ratio - 1);
             updateSliceIndex = true;
         }
 
@@ -120,7 +120,7 @@ void UIManager::drawMagnifyingModeWindow()
     {
         if (ratio + 1 <= 5)
         {
-            mState->Window.Ratio.Update(ratio + 1);
+            mState->Window.SecondaryViewportScale.Update(ratio + 1);
             updateSliceIndex = true;
         }
 
