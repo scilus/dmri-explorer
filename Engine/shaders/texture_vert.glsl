@@ -48,14 +48,15 @@ void main()
 
     if(currentSlice == 0) //X
     {
-        frag_tex_coord=vec3(sliceIndex.x, texCoord);
+        frag_tex_coord=vec3(sliceIndex.x/gridDims.x, texCoord);
     }
     if(currentSlice == 1) //Y
     {
-        frag_tex_coord=vec3(texCoord[0], sliceIndex.y, texCoord[1]);;
+        frag_tex_coord=vec3(texCoord.x, sliceIndex.y/gridDims.y, texCoord.y);
     }
     if(currentSlice == 2) //Z
     {
-        frag_tex_coord=vec3(texCoord, sliceIndex.z);;
+        frag_tex_coord=vec3(texCoord, sliceIndex.z/gridDims.z);
     }
+
 }
