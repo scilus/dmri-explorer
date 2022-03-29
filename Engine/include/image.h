@@ -81,6 +81,10 @@ public:
     /// \return Value at voxel coordinate as double.
     double at(uint i, uint j, uint k, uint l) const;
 
+        /// Get pixel value at voxel coordinate (i, j, k, l).
+    /// \return Value at voxel coordinate as double.
+    uint8_t uintAt(uint i, uint j, uint k, uint l) const;
+
 private:
     /// Reference to the loaded image.
     std::shared_ptr<nifti_image> mImage;
