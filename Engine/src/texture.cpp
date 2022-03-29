@@ -58,31 +58,42 @@ void Texture::initializeMembers()
     const int dimZ = image.dims().z;
     const int nCoeffs = image.dims().w;
 
-    for(int i = 0; i < image.nbVox(); ++i)
+    for(int i = 0; i < dimX; ++i)
     {
-        glm::vec<3, uint> id3D = image.unravelIndex3d(i);
-        for(int j = 0; j < nCoeffs; ++j)
+        for(int j = 0; j < dimY; ++j)
         {
-            mData.push_back(static_cast<float>(image.at(id3D.x,id3D.y,id3D.z,j)));
+            for(int k = 0; k < dimZ; ++k)
+            {
+                for(int l = 0; l < nCoeffs; ++l)
+                {
+                    mData.push_back(static_cast<float>(image.at(i,j,k,l)));
+                }
+            }
         }
     }
 
-    //Plan XYid3D,dimY,ceil(dimZ/2)));
-    mVertices.push_back(glm::vec3(dimX,0.0f,ceil(dimZ/2)));
+    //Plan XY    
+    mVertices.push_back(glm::vec3(0.0f,0.0f,ceil(dimZ/2.0f)));
+    mVertices.push_back(glm::vec3(0.0f,dimY,ceil(dimZ/2.0f)));
+    mVertices.push_back(glm::vec3(dimX,0.0f,ceil(dimZ/2.0f)));
+
+    mVertices.push_back(glm::vec3(0.0f,dimY,ceil(dimZ/2.0f)));
+    mVertices.push_back(glm::vec3(dimX,dimY,ceil(dimZ/2.0f)));
+    mVertices.push_back(glm::vec3(dimX,0.0f,ceil(dimZ/2.0f)));
 
     //Plan YZ
-    mVertices.push_back(glm::vec3(ceil(dimX/2),0.0f,0.0f));
-    mVertices.push_back(glm::vec3(ceil(dimX/2),0.0f,dimZ));
-    mVertices.push_back(glm::vec3(ceil(dimX/2),dimY,0.0f));
+    mVertices.push_back(glm::vec3(ceil(dimX/2.0f),0.0f,0.0f));
+    mVertices.push_back(glm::vec3(ceil(dimX/2.0f),0.0f,dimZ));
+    mVertices.push_back(glm::vec3(ceil(dimX/2.0f),dimY,0.0f));
 
-    mVertices.push_back(glm::vec3(ceil(dimX/2),0.0f,dimZ));
-    mVertices.push_back(glm::vec3(ceil(dimX/2),dimY,dimZ));
-    mVertices.push_back(glm::vec3(ceil(dimX/2),dimY,0.0f));
+    mVertices.push_back(glm::vec3(ceil(dimX/2.0f),0.0f,dimZ));
+    mVertices.push_back(glm::vec3(ceil(dimX/2.0f),dimY,dimZ));
+    mVertices.push_back(glm::vec3(ceil(dimX/2.0f),dimY,0.0f));
 
     //Plan XZ
-    mVertices.push_back(glm::vec3(0.0f,ceil(dimY/2),0.0f));
-    mVertices.push_back(glm::vec3(0.0f,ceil(dimY/2),dimZ));
-    mVertices.push_back(glm::vec3(dimX,ceil(dimY/2),0.0f));
+    mVertices.push_back(glm::vec3(0.0f,ceil(dimY/2.0f),0.0f));
+    mVertices.push_back(glm::vec3(0.0f,ceil(dimY/2.0f),dimZ));
+    mVertices.push_back(glm::vec3(dimX,ceil(dimY/2.0f),0.0f));
 
     mVertices.push_back(glm::vec3(0.0f,ceil(dimY/2),dimZ));
     mVertices.push_back(glm::vec3(dimX,ceil(dimY/2),dimZ));
@@ -91,42 +102,33 @@ void Texture::initializeMembers()
 
     //Plan XY
     mTextureCoords.push_back(glm::vec2(0.0f,0.0f));
-    mTextureCoords.push_back(glm::vec2(0.0f,dimY));
-    mTextureCoords.push_back(glm::vec2(dimX,0.0f));
+    mTextureCoords.push_back(glm::vec2(0.0f,1.0f));
+    mTextureCoords.push_back(glm::vec2(1.0f,0.0f));
 
-    mTextureCoords.push_back(glm::vec2(0.0f,dimY));
-    mTextureCoords.push_back(glm::vec2(dimX,dimY));
-    mTextureCoords.push_back(glm::vec2(dimX,0.0f));
-
-    mTextureCoords.push_back(glm::vec2(0.0f,0.0f));
-    mTextureCoords.push_back(glm::vec2(0.0f,dimZ));
-    mTextureCoords.push_back(glm::vec2(dimY,0.0f));
-
-    mTextureCoords.push_back(glm::vec2(0.0f,dimZ));
-    mTextureCoords.push_back(glm::vec2(dimY,dimZ));
-    mTextureCoords.push_back(glm::vec2(dimY,0.0f));
+    mTextureCoords.push_back(glm::vec2(0.0f,1.0f));
+    mTextureCoords.push_back(glm::vec2(1.0f,1.0f));
+    mTextureCoords.push_back(glm::vec2(1.0f,0.0f));
 
     mTextureCoords.push_back(glm::vec2(0.0f,0.0f));
-    mTextureCoords.push_back(glm::vec2(0.0f,dimZ));
-    mTextureCoords.push_back(glm::vec2(dimX,0.0f));
+    mTextureCoords.push_back(glm::vec2(0.0f,1.0f));
+    mTextureCoords.push_back(glm::vec2(1.0f,0.0f));
 
-    mTextureCoords.push_back(glm::vec2(0.0f,dimZ));
-    mTextureCoords.push_back(glm::vec2(dimX,dimZ));
-    mTextureCoords.push_back(glm::vec2(dimX,0.0f));
+    mTextureCoords.push_back(glm::vec2(0.0f,1.0f));
+    mTextureCoords.push_back(glm::vec2(1.0f,1.0f));
+    mTextureCoords.push_back(glm::vec2(1.0f,0.0f));
+
+    mTextureCoords.push_back(glm::vec2(0.0f,0.0f));
+    mTextureCoords.push_back(glm::vec2(0.0f,1.0f));
+    mTextureCoords.push_back(glm::vec2(1.0f,0.0f));
+
+    mTextureCoords.push_back(glm::vec2(0.0f,1.0f));
+    mTextureCoords.push_back(glm::vec2(1.0f,1.0f));
+    mTextureCoords.push_back(glm::vec2(1.0f,0.0f));
+
 
     // Bind primitives to GPU
     glCreateVertexArrays(1, &mVAO);
-    // void * data = &mData;
-    void* data = image.getData();
-    //Create texture
-    unsigned int texture;
-
-    glGenTextures(1, &texture);  
-    glBindTexture(GL_TEXTURE_3D, texture);  
-
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, dimX, dimY, dimZ, 0, GL_RGB, GL_FLOAT, data);
-    glGenerateMipmap(GL_TEXTURE_3D);
-
+    
     const GLuint VAOIndex = 0;
     mVerticesBO = genVBO<glm::vec3>(mVertices);
 
@@ -136,6 +138,16 @@ void Texture::initializeMembers()
     glVertexArrayBindingDivisor(mVAO, VAOIndex, 0);
     glVertexArrayAttribBinding(mVAO, VAOIndex, 0);
 
+    void * data = &mData;
+    //Create texture
+    unsigned int texture;
+
+    glGenTextures(1, &texture);  
+    glBindTexture(GL_TEXTURE_3D, texture);  
+
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, dimX, dimY, dimZ, 0, GL_RGB, GL_FLOAT, data);
+    glGenerateMipmap(GL_TEXTURE_3D);
+
     const GLuint TexIndex = 1;
     mTextureCoordsBO = genVBO<glm::vec2>(mTextureCoords);
 
@@ -144,7 +156,6 @@ void Texture::initializeMembers()
     glVertexArrayVertexBuffer(mVAO, TexIndex, mTextureCoordsBO, 0, sizeof(float)*2);
     glVertexArrayBindingDivisor(mVAO, TexIndex, 0);
     glVertexArrayAttribBinding(mVAO, TexIndex, 0);
-
 
     timer.Stop();
 }
