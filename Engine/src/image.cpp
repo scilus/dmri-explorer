@@ -67,6 +67,7 @@ void * NiftiImageWrapper::getData() const
     return mImage->data;
 }
 
+//Changer la fonction 
 double NiftiImageWrapper::at(uint i, uint j, uint k, uint l) const
 {
     const size_t flatIndex = flattenIndex(i, j, k, l);
@@ -78,6 +79,18 @@ double NiftiImageWrapper::at(uint i, uint j, uint k, uint l) const
     else if(dtype() == DataType::float32)
     {
         value = static_cast<double>(((float*)(mImage->data))[flatIndex]);
+    }
+    return value;
+}
+
+//Changer la fonction 
+uint8_t NiftiImageWrapper::uintAt(uint i, uint j, uint k, uint l) const
+{
+    const size_t flatIndex = flattenIndex(i, j, k, l);
+    double value = 0.0;
+    if(dtype() == DataType::uint8)
+    {
+        value = ((uint8_t*)(mImage->data))[flatIndex];
     }
     return value;
 }
