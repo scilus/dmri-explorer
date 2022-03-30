@@ -51,8 +51,6 @@ public:
     void UpdateGPU();
 
 private:
-
-
     /// Set the state for the camera mode
     /// \param[in] previous Previous value.
     /// \param[in] mode New value for fading behaviour.

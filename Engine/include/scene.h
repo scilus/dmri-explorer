@@ -1,8 +1,8 @@
 #pragma once
+#include <application_state.h>
+#include <coordinate_system.h>
 #include <model.h>
 #include <vector>
-#include <coordinate_system.h>
-#include <application_state.h>
 
 namespace Slicer
 {
@@ -29,15 +29,6 @@ public:
     void Render();
 
 private:
-//TODO: delete
-    // /// Set the state for the camera mode
-    // /// \param[in] previous Previous value.
-    // /// \param[in] mode New value for fading behaviour.
-    // void setMode(State::CameraMode previous, State::CameraMode mode);
-
-    // /// \see Model::registerStateCallbacks()
-    // void registerStateCallbacks();
-
     /// Reference to the Scene's CoordinateSystem.
     std::shared_ptr<CoordinateSystem> mCoordinateSystem;
 
@@ -46,9 +37,5 @@ private:
 
     /// Vector of models to be rendered.
     std::vector<std::shared_ptr<Model>> mModels;
-    
-    //TODO: delete
-    ///Boolean to block the rotation of the scene
-    // bool mBlockRotation;
 };
 } // namespace Slicer

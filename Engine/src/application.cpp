@@ -92,7 +92,12 @@ void Application::initialize()
                                 0.1f, 500.0f,
                                 mState));
 
-    mSecondaryCamera.reset(new Camera(*mCamera));
+    mSecondaryCamera.reset(new Camera(glm::vec3(0.0f, 0.0f, 10.0f), // position
+                                glm::vec3(0.0f, 1.0f, 0.0f),  // upvector
+                                glm::vec3(0.0f, 0.0f, 0.0f),  //lookat
+                                glm::radians(60.0f), aspectRatio,
+                                0.1f, 500.0f,
+                                mState));
 
     mScene.reset(new Scene(mState));
 
@@ -284,7 +289,6 @@ void Application::onMouseScroll(GLFWwindow* window, double xoffset, double yoffs
     glfwGetWindowSize(window, &w, &h);
     glfwGetCursorPos(window, &xPos, &yPos);
     
-
     if(app->mUI->WantCaptureMouse())
         return;
 
@@ -326,7 +330,8 @@ void Application::onPressSpace(GLFWwindow* window, int key, int scancode, int ac
     {
         Application* app = (Application*)glfwGetWindowUserPointer(window);
         app->mState->magnifyingMode.Update(!app->mState->magnifyingMode.Get());
-        app->mSecondaryCamera.reset(new Camera(*app->mCamera));
+        // FIXME: use copy constructor
+        // app->mSecondaryCamera.reset(new Camera(*app->mCamera));
 
         if(app->mState->magnifyingMode.Get())
         {
