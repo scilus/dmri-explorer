@@ -11,6 +11,7 @@ namespace
     const float ROTATION_SPEED = 0.005f;
     const float ZOOM_SPEED = 1.0f;
     const int SECONDARY_VIEWPORT_SCALE = 4;
+    const float MAGNIFYING_MODE_ZOOM = 7.5f;
     const std::string WIN_TITLE = "dmri-explorer";
     const std::string GLSL_VERSION_STR = "#version 460";
     const std::string ICON16_FNAME = "/icons/icon16.png";
@@ -244,6 +245,7 @@ void Application::onMouseMove(GLFWwindow* window, double xPos, double yPos)
         const double dy = app->mCursorPos.y - yPos;
         if(app->mLastButton == GLFW_MOUSE_BUTTON_LEFT)
         {
+            if(app->mCamera)
             // Controls each viewport's camera update accordingly.
             if(app->clicInViewport)
             {
@@ -324,12 +326,12 @@ void Application::onPressSpace(GLFWwindow* window, int key, int scancode, int ac
     {
         Application* app = (Application*)glfwGetWindowUserPointer(window);
         app->mState->magnifyingMode.Update(!app->mState->magnifyingMode.Get());
+        app->mSecondaryCamera.reset(new Camera(*app->mCamera));
 
-        if(!app->mState->magnifyingMode.Get())
-            app->mSecondaryCamera.reset(new Camera(*app->mCamera));
-        else
-            app->mSecondaryCamera->Zoom(7.5f);
-
+        if(app->mState->magnifyingMode.Get())
+        {
+            app->mSecondaryCamera->Zoom(MAGNIFYING_MODE_ZOOM);    
+        }
         app->renderFrame();
     }
 }

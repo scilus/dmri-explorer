@@ -23,10 +23,76 @@ Camera::Camera(const glm::vec3& position,
 ,mCamParamsData(GPU::Binding::camera)
 ,mState(state)
 {
+    registerStateCallbacks();
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
+    mBlockRotation = false;
+
 }
 
+void Camera::registerStateCallbacks()
+{
+    mState->ViewMode.Mode.RegisterCallback(
+        [this](State::CameraMode p, State::CameraMode n)
+        {
+            this->setMode(p, n);
+        }
+    );
+
+}
+
+void Camera::setMode(State::CameraMode previous, State::CameraMode mode)
+{
+    if(previous != mode)
+    {
+        if(mode == State::CameraMode::projective3D)
+        {
+            mBlockRotation=false;
+            return;
+        }
+        mBlockRotation=true;
+        const glm::mat4 transform(1.0f);
+        // mCoordinateSystem->ResetMatrix(transform);
+        if(mode == State::CameraMode::projectiveX)
+        {
+            glm::mat4 rotationY = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0, -1.0, 0.0)); 
+            glm::mat4 rotationZ = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0, 0.0, -1.0)); 
+            // mCoordinateSystem->ApplyTransform(rotationY);
+            // mCoordinateSystem->ApplyTransform(rotationZ);
+            glm::vec3 lookAt = mLookAt - mPosition;
+
+            // Compute the rotation axis.
+            // const glm::vec3 leftAxis = glm::normalize(glm::cross(mUpVector, lookAt));
+
+            // Compute transform and new position.
+            glm::mat4 transform = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0, -1.0, 0.0))* glm::rotate(glm::half_pi<float>(), glm::vec3(0.0, 0.0, -1.0));
+            mPosition = mLookAt - glm::vec3(transform * glm::vec4(lookAt, 0.0f));
+
+            // Rotation and view matrix update.
+            mUpVector = transform * glm::vec4(mUpVector, 0.0f);
+            mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
+        }
+        else if(mode == State::CameraMode::projectiveY)
+        {
+            glm::mat4 rotationX = glm::rotate(glm::half_pi<float>(), glm::vec3(1.0, 0.0, 0.0));
+            glm::mat4 rotationZ = glm::rotate(glm::pi<float>(), glm::vec3(0.0, 0.0, 1.0));
+            // mCoordinateSystem->ApplyTransform(rotationX); 
+            // mCoordinateSystem->ApplyTransform(rotationZ);
+            glm::vec3 lookAt = mLookAt - mPosition;
+
+            // Compute the rotation axis.
+            // const glm::vec3 leftAxis = glm::normalize(glm::cross(mUpVector, lookAt));
+
+            // Compute transform and new position.
+            glm::mat4 transform = glm::rotate(glm::half_pi<float>(), glm::vec3(0.0, 0.0, 1.0))* glm::rotate(glm::pi<float>(), glm::vec3(0.0, 0.0, 1.0));
+            mPosition = mLookAt - glm::vec3(transform * glm::vec4(lookAt, 0.0f));
+
+            // Rotation and view matrix update.
+            mUpVector = transform * glm::vec4(mUpVector, 0.0f);
+            mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
+        } 
+    }
+}
 void Camera::UpdateGPU()
 {
     CameraData cameraData;
@@ -46,6 +112,10 @@ void Camera::Resize(const float& aspect)
 
 void Camera::RotateCS(const glm::vec2& vec)
 {
+    if(mBlockRotation)
+    {
+        return;
+    }
     const float& rotationSpeed = mState->Window.RotationSpeed.Get();
     const float dx = vec.x * rotationSpeed;
     const float dy = -vec.y * rotationSpeed;

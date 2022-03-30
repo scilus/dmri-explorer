@@ -29,13 +29,14 @@ public:
     void Render();
 
 private:
-    /// Set the state for the camera mode
-    /// \param[in] previous Previous value.
-    /// \param[in] mode New value for fading behaviour.
-    void setMode(State::CameraMode previous, State::CameraMode mode);
+//TODO: delete
+    // /// Set the state for the camera mode
+    // /// \param[in] previous Previous value.
+    // /// \param[in] mode New value for fading behaviour.
+    // void setMode(State::CameraMode previous, State::CameraMode mode);
 
-    /// \see Model::registerStateCallbacks()
-    void registerStateCallbacks();
+    // /// \see Model::registerStateCallbacks()
+    // void registerStateCallbacks();
 
     /// Reference to the Scene's CoordinateSystem.
     std::shared_ptr<CoordinateSystem> mCoordinateSystem;
@@ -46,7 +47,8 @@ private:
     /// Vector of models to be rendered.
     std::vector<std::shared_ptr<Model>> mModels;
     
+    //TODO: delete
     ///Boolean to block the rotation of the scene
-    bool mBlockRotation;
+    // bool mBlockRotation;
 };
 } // namespace Slicer

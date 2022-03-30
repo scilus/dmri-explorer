@@ -51,14 +51,23 @@ public:
     void UpdateGPU();
 
 private:
+
+
+    /// Set the state for the camera mode
+    /// \param[in] previous Previous value.
+    /// \param[in] mode New value for fading behaviour.
+    void setMode(State::CameraMode previous, State::CameraMode mode);
+
+    /// \see Model::registerStateCallbacks()
+    void registerStateCallbacks();
+
     /// Struct containing camera attributes to push on the GPU.
     struct CameraData
     {
         glm::vec4 eye;
         glm::mat4 viewMatrix;
         glm::mat4 projectionMatrix;
-    };
-    
+    };    
     /// Camera position.
     glm::vec3 mPosition;
 
@@ -91,5 +100,9 @@ private:
 
     /// Shader data for camera attributes.
     GPU::ShaderData mCamParamsData;
+
+    //Boolean to block the rotation of the scene
+    bool mBlockRotation;
+
 };
 } // namespace Slicer
