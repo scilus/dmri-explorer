@@ -7,7 +7,6 @@
 namespace Slicer
 {
 /// \brief Class describing the 3D scene, itself containing models.
-///
 /// The class is also responsible for rendering the models.
 class Scene
 {

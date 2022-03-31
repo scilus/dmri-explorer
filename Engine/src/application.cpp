@@ -92,12 +92,7 @@ void Application::initialize()
                                 0.1f, 500.0f,
                                 mState));
 
-    mSecondaryCamera.reset(new Camera(glm::vec3(0.0f, 0.0f, 10.0f), // position
-                                glm::vec3(0.0f, 1.0f, 0.0f),  // upvector
-                                glm::vec3(0.0f, 0.0f, 0.0f),  //lookat
-                                glm::radians(60.0f), aspectRatio,
-                                0.1f, 500.0f,
-                                mState));
+    mSecondaryCamera.reset(new Camera(*mCamera));
 
     mScene.reset(new Scene(mState));
 
@@ -329,9 +324,10 @@ void Application::onPressSpace(GLFWwindow* window, int key, int scancode, int ac
     if(action == GLFW_RELEASE && key == GLFW_KEY_SPACE)
     {
         Application* app = (Application*)glfwGetWindowUserPointer(window);
+        Camera temp = Camera(*app->mCamera);
+        
         app->mState->magnifyingMode.Update(!app->mState->magnifyingMode.Get());
-        // FIXME: use copy constructor
-        // app->mSecondaryCamera.reset(new Camera(*app->mCamera));
+        app->mSecondaryCamera.reset(new Camera(temp));
 
         if(app->mState->magnifyingMode.Get())
         {

@@ -29,7 +29,22 @@ Camera::Camera(const glm::vec3& position,
     mBlockRotation = false;
 }
 
-//TODO: copy constructor
+Camera::Camera(const Camera& camera)
+:mLookAt(camera.mLookAt)
+,mPosition(camera.mPosition)
+,mUpVector(camera.mUpVector)
+,mFov(camera.mFov)
+,mNear(camera.mNear)
+,mFar(camera.mFar)
+,mAspect(camera.mAspect)
+,mCamParamsData(camera.mCamParamsData)
+,mState(camera.mState)
+,mBlockRotation(camera.mBlockRotation)
+{
+    registerStateCallbacks();
+    mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
+    mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
+}
 
 void Camera::registerStateCallbacks()
 {

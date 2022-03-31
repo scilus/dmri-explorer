@@ -31,6 +31,10 @@ public:
            const float& near, const float& far,
            const std::shared_ptr<ApplicationState>& state);
 
+    /// Constructor.
+    /// \param[in] camera The camera object used for instantiation.
+    Camera(const Camera& camera);
+
     /// Resize camera.
     /// \param[in] aspect New aspect ratio (width / height).
     void Resize(const float& aspect);
