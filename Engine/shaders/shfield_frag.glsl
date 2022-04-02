@@ -1,16 +1,11 @@
 #version 460
+#extension GL_ARB_shading_language_include : require
+
+#include "/include/orthogrid_util.glsl"
 
 layout(std430, binding=10) buffer modelTransformsBuffer
 {
     mat4 modelMatrix;
-};
-
-layout(std430, binding=8) buffer gridInfoBuffer
-{
-    ivec4 gridDims;
-    ivec4 sliceIndex;
-    ivec4 isSliceVisible;
-    uint currentSlice;
 };
 
 in vec4 world_frag_pos;
