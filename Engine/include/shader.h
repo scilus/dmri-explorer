@@ -22,14 +22,6 @@ public:
     /// \param[in] shaderType Type for the shader.
     ShaderProgram(const std::string& filepath, const GLenum shaderType);
 
-    /// Constructor.
-    /// \param[in] filePath Path to shader code.
-    /// \param[in] includePaths Paths to include shader code.
-    /// \param[in] shaderType Type for the shader.
-    ShaderProgram(const std::string& filePath,
-                  std::vector<std::string>& includePaths,
-                  const GLenum shaderType);
-
     /// Shader program ID getter.
     /// \return Program ID.
     inline const GLuint ID() const { return mProgramID; };
@@ -39,6 +31,15 @@ public:
     inline const GLenum Type() const { return mShaderType; };
 
 private:
+    /// Create the virtual filesystem for include directives.
+    static void createFilesystemForInclude();
+
+    /// Static array of shader include paths (shared across all instances).
+    inline static std::vector<const char*> mShaderIncludePaths = {};
+
+    /// Static array of shader include path lengths (shared across all instances).
+    inline static std::vector<int> mShaderIncludeLengths = {};
+
     /// Program ID.
     GLuint mProgramID = 0;
 
