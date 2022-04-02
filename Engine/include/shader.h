@@ -22,6 +22,14 @@ public:
     /// \param[in] shaderType Type for the shader.
     ShaderProgram(const std::string& filepath, const GLenum shaderType);
 
+    /// Constructor.
+    /// \param[in] filePath Path to shader code.
+    /// \param[in] includePaths Paths to include shader code.
+    /// \param[in] shaderType Type for the shader.
+    ShaderProgram(const std::string& filePath,
+                  std::vector<std::string>& includePaths,
+                  const GLenum shaderType);
+
     /// Shader program ID getter.
     /// \return Program ID.
     inline const GLuint ID() const { return mProgramID; };
