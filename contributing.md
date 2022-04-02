@@ -50,6 +50,8 @@ OpenGL shaders are written in the OpenGL shading language (`glsl`) version 4.60.
 
 If you use a different shader type, please propose a suffix following this convention.
 
+Shader `#include` directives are supported. Utilities files should be located under the `Engine/shaders/include/` directory and end with `_util.glsl`.
+
 __Variable name style__
 
 In shader code, we distinguish between variables shared between shaders (`in` and `out` keywords) and local variables by using a different style:
