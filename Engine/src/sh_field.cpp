@@ -91,9 +91,19 @@ void SHField::initProgramPipeline()
 {
     const std::string vsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_vert.glsl");
     const std::string fsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_frag.glsl");
+
+    std::vector<std::string> vsIncludes = {
+        "/include/camera_util.glsl",
+        "/include/shfield_util.glsl",
+        "/include/orthogrid_util.glsl"};
+    
+    std::vector<std::string> fsIncludes = {
+        "/include/orthogrid_util.glsl"
+    };
+
     std::vector<GPU::ShaderProgram> shaders;
-    shaders.push_back(GPU::ShaderProgram(vsPath, GL_VERTEX_SHADER));
-    shaders.push_back(GPU::ShaderProgram(fsPath, GL_FRAGMENT_SHADER));
+    shaders.push_back(GPU::ShaderProgram(vsPath, vsIncludes, GL_VERTEX_SHADER));
+    shaders.push_back(GPU::ShaderProgram(fsPath, fsIncludes, GL_FRAGMENT_SHADER));
     mProgramPipeline = GPU::ProgramPipeline(shaders);
 }
 
@@ -103,7 +113,10 @@ void SHField::initializeMembers()
     timer.Start();
     // Initialize compute shader
     const std::string csPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_comp.glsl");
-    mComputeShader = GPU::ShaderProgram(csPath, GL_COMPUTE_SHADER);
+    std::vector<std::string> includes = {
+        "/include/shfield_util.glsl",
+        "/include/orthogrid_util.glsl"};
+    mComputeShader = GPU::ShaderProgram(csPath, includes, GL_COMPUTE_SHADER);
 
     // Initialize a sphere for SH to SF projection
     const auto& image = mState->FODFImage.Get();
