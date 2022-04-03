@@ -118,11 +118,8 @@ private:
     /// Title of the window.
     std::string mTitle;
 
-    /// Parameter controling viewport display.
-    bool magnifyingMode;
-
     /// Parameters for control transfer between the viewports.
     /// For mouse clic detection.
-    bool clicInViewport;
+    bool mClicSecondaryViewport;
 };
 } // namespace Slicer

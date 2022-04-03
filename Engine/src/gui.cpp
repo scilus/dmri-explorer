@@ -94,13 +94,13 @@ void UIManager::drawMagnifyingModeWindow()
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
     bool updateSliceIndex = false;
     int scaleFactor = mState->Window.SecondaryViewportScale.Get();
-    bool show = mState->magnifyingMode.Get();
+    bool show = mState->mMagnifyingMode.Get();
     static int scaling = 2;
     ImGui::Begin("Magnifying mode", &mShowMagnifyingMode);
     ImGui::SameLine();
     if(ImGui::Checkbox("Enable magnifying mode (press space)", &show))
     {
-        mState->magnifyingMode.Update(show);
+        mState->mMagnifyingMode.Update(show);
     }
     ImGui::Text("Window Scaling");
 

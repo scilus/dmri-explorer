@@ -5,25 +5,25 @@
 
 namespace
 {
-    const unsigned int WIN_WIDTH = 800;
-    const unsigned int WIN_HEIGHT = 600;
-    const float TRANSLATION_SPEED = 0.02f;
-    const float ROTATION_SPEED = 0.005f;
-    const float ZOOM_SPEED = 1.0f;
-    const int SECONDARY_VIEWPORT_SCALE = 4;
-    const float MAGNIFYING_MODE_ZOOM = 7.5f;
-    const std::string WIN_TITLE = "dmri-explorer";
-    const std::string GLSL_VERSION_STR = "#version 460";
-    const std::string ICON16_FNAME = "/icons/icon16.png";
-    const std::string ICON32_FNAME = "/icons/icon32.png";
-    const std::string ICON48_FNAME = "/icons/icon48.png";
-    const std::string ICON64_FNAME = "/icons/icon64.png";
+const unsigned int WIN_WIDTH = 800;
+const unsigned int WIN_HEIGHT = 600;
+const float TRANSLATION_SPEED = 0.02f;
+const float ROTATION_SPEED = 0.005f;
+const float ZOOM_SPEED = 1.0f;
+const int SECONDARY_VIEWPORT_SCALE = 4;
+const float MAGNIFYING_MODE_ZOOM = 7.5f;
+const std::string WIN_TITLE = "dmri-explorer";
+const std::string GLSL_VERSION_STR = "#version 460";
+const std::string ICON16_FNAME = "/icons/icon16.png";
+const std::string ICON32_FNAME = "/icons/icon32.png";
+const std::string ICON48_FNAME = "/icons/icon48.png";
+const std::string ICON64_FNAME = "/icons/icon64.png";
 }
 
 namespace Slicer
 {
-Application::Application(const ArgumentParser &parser)
-: mTitle(WIN_TITLE)
+Application::Application(const ArgumentParser& parser)
+:mTitle(WIN_TITLE)
 ,mState(new ApplicationState())
 ,mUI(nullptr), mScene(nullptr)
 ,mCursorPos(-1, -1)
@@ -108,7 +108,8 @@ bool Application::insideSecondaryViewport(int& height, int& width, double& xPos,
     Application* app = (Application*)glfwGetWindowUserPointer(mWindow);
     int scaleFactor = app->mState->Window.SecondaryViewportScale.Get(); 
 
-    if(0 <= xPos && xPos <= (width / scaleFactor) && (height - (height / scaleFactor)) <= yPos && yPos <= height)
+    if(0 <= xPos && xPos <= (width / scaleFactor) && \
+      (height - (height / scaleFactor)) <= yPos && yPos <= height)
     {
         return true;
     }
@@ -134,7 +135,7 @@ void Application::setWindowIcon()
     glfwSetWindowIcon(mWindow, nbImages, glfwImages);
 }
 
-void Application::initApplicationState(const ArgumentParser &parser)
+void Application::initApplicationState(const ArgumentParser& parser)
 {
     mState->FODFImage.Update(NiftiImageWrapper(parser.GetImagePath()));
 
@@ -154,7 +155,7 @@ void Application::initApplicationState(const ArgumentParser &parser)
     mState->Window.ZoomSpeed.Update(ZOOM_SPEED);
     mState->Window.SecondaryViewportScale.Update(SECONDARY_VIEWPORT_SCALE);
 
-    mState->magnifyingMode.Update(false);
+    mState->mMagnifyingMode.Update(false);
 }
 
 void Application::renderFrame()
@@ -165,7 +166,7 @@ void Application::renderFrame()
     Application* app = (Application*)glfwGetWindowUserPointer(mWindow);
     int h, w;
     int scaleFactor = app->mState->Window.SecondaryViewportScale.Get();
-    bool magnifyingModeOn = app->mState->magnifyingMode.Get();
+    bool magnifyingModeOn = app->mState->mMagnifyingMode.Get();
     glfwGetWindowSize(mWindow, &w, &h);
 
     mCamera->UpdateGPU();
@@ -199,7 +200,7 @@ void Application::Run()
 void Application::onMouseButton(GLFWwindow* window, int button, int action, int mod)
 {
     Application* app = (Application*)glfwGetWindowUserPointer(window);
-    bool magnifyingModeOn = app->mState->magnifyingMode.Get();
+    bool magnifyingModeOn = app->mState->mMagnifyingMode.Get();
     int h, w;
     double xPos, yPos;
     glfwGetWindowSize(window, &w, &h);
@@ -211,15 +212,15 @@ void Application::onMouseButton(GLFWwindow* window, int button, int action, int 
     if(magnifyingModeOn && app->insideSecondaryViewport(h, w, xPos, yPos) && action == GLFW_PRESS &&
         (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_MIDDLE))
     {
-        app->clicInViewport = true;
+        app->mClicSecondaryViewport = true;
     }
-    else if(action == GLFW_RELEASE && app->clicInViewport)
+    else if(action == GLFW_RELEASE && app->mClicSecondaryViewport)
     {
-        app->clicInViewport = true;
+        app->mClicSecondaryViewport = true;
     }
     else
     {
-        app->clicInViewport = false;
+        app->mClicSecondaryViewport = false;
     }
 
     app->mCursorPos.x = xPos;
@@ -247,7 +248,7 @@ void Application::onMouseMove(GLFWwindow* window, double xPos, double yPos)
         {
             if(app->mCamera)
             // Controls each viewport's camera update accordingly.
-            if(app->clicInViewport)
+            if(app->mClicSecondaryViewport)
             {
                 app->mSecondaryCamera->RotateCS(glm::vec2(dx, dy));
                 app->mSecondaryCamera->UpdateGPU();
@@ -260,7 +261,7 @@ void Application::onMouseMove(GLFWwindow* window, double xPos, double yPos)
         }
         else if(app->mLastButton == GLFW_MOUSE_BUTTON_MIDDLE)
         {
-            if(app->clicInViewport && app->mLastAction == GLFW_PRESS)
+            if(app->mClicSecondaryViewport && app->mLastAction == GLFW_PRESS)
             {
                 app->mSecondaryCamera->TranslateCS(glm::vec2(dx, dy));
                 app->mSecondaryCamera->UpdateGPU();
@@ -287,7 +288,7 @@ void Application::onMouseScroll(GLFWwindow* window, double xoffset, double yoffs
     if(app->mUI->WantCaptureMouse())
         return;
 
-    if(app->insideSecondaryViewport(h, w, xPos, yPos) && app->mState->magnifyingMode.Get())
+    if(app->insideSecondaryViewport(h, w, xPos, yPos) && app->mState->mMagnifyingMode.Get())
     {
         app->mSecondaryCamera->Zoom(yoffset);
         app->mSecondaryCamera->UpdateGPU();
@@ -309,7 +310,7 @@ void Application::onWindowResize(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 
     // Scale secondary viewport to keep proportions.
-    if(app->magnifyingMode)
+    if(app->mState->mMagnifyingMode.Get())
     {
         app->mSecondaryCamera->Resize(aspect);
         glViewport(0, 0, width / scaleFactor, height / scaleFactor);
@@ -326,10 +327,10 @@ void Application::onPressSpace(GLFWwindow* window, int key, int scancode, int ac
         Application* app = (Application*)glfwGetWindowUserPointer(window);
         Camera temp = Camera(*app->mCamera);
         
-        app->mState->magnifyingMode.Update(!app->mState->magnifyingMode.Get());
-        app->mSecondaryCamera.reset(new Camera(temp));
+        app->mState->mMagnifyingMode.Update(!app->mState->mMagnifyingMode.Get());
+        app->mSecondaryCamera->ResetViewForOther(*app->mCamera);
 
-        if(app->mState->magnifyingMode.Get())
+        if(app->mState->mMagnifyingMode.Get())
         {
             app->mSecondaryCamera->Zoom(MAGNIFYING_MODE_ZOOM);    
         }

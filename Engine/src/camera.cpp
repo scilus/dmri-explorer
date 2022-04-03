@@ -66,7 +66,7 @@ void Camera::setMode(State::CameraMode previous, State::CameraMode mode)
             return;
         }
         mBlockRotation=true;
-        float dst = distance(mLookAt, mPosition);
+        const float dst = distance(mLookAt, mPosition);
 
         if(mode == State::CameraMode::projectiveX)
         {
@@ -90,6 +90,22 @@ void Camera::setMode(State::CameraMode previous, State::CameraMode mode)
 
     }
 }
+
+void Camera::ResetViewForOther(const Camera& camera)
+{
+    mPosition = camera.mPosition;
+    mLookAt = camera.mLookAt;
+    mUpVector = camera.mUpVector;
+    mFov = camera.mFov;
+    mNear = camera.mNear;
+    mFar = camera.mFar;
+    mAspect = camera.mAspect;
+    mProjectionMatrix = camera.mProjectionMatrix;
+    mViewMatrix = camera.mViewMatrix;
+    mBlockRotation = camera.mBlockRotation;
+    mCamParamsData = camera.mCamParamsData;
+}
+
 void Camera::UpdateGPU()
 {
     CameraData cameraData;
