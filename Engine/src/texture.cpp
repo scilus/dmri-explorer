@@ -67,11 +67,10 @@ void Texture::initializeMembers()
             {
                 for(int l = 0; l < nCoeffs; ++l)
                 {
-                    if(image.uintAt(i,j,k,l)!=0){
-
-                     std::cout<<image.uintAt(i,j,k,l)<<std::endl;
+                    if(image.at(i,j,k,l)!=0){
+                     std::cout<<image.at(i,j,k,l)<<std::endl;
                     }
-                    mData.push_back(image.uintAt(i,j,k,l));
+                    mData.push_back(image.at(i,j,k,l));
                 }
             }
         }
@@ -145,12 +144,18 @@ void Texture::initializeMembers()
 
     //Create texture
     void * data = image.getData();
+    std::cout<<dimY<<std::endl;
+    std::cout<<dimZ<<std::endl;
+    std::cout<<dimX<<std::endl;
+
+    // void * data = &mData;
+
     unsigned int texture;
 
     glGenTextures(1, &texture);  
     glBindTexture(GL_TEXTURE_3D, texture);  
 
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, dimX, dimY, dimZ, 0, GL_RGB, GL_UNSIGNED_BYTE_2_3_3_REV, data);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, dimX, dimY, dimZ, 0, GL_RGB, GL_UNSIGNED_BYTE_3_3_2_EXT, data);
     glGenerateMipmap(GL_TEXTURE_3D);
 
     const GLuint TexIndex = 1;
@@ -159,8 +164,6 @@ void Texture::initializeMembers()
     glEnableVertexArrayAttrib(mVAO, TexIndex);
     glVertexArrayAttribFormat(mVAO, TexIndex, 2, GL_FLOAT, GL_FALSE, 0);
     glVertexArrayVertexBuffer(mVAO, TexIndex, mTextureCoordsBO, 0, sizeof(float)*2);
-    // glVertexArrayBindingDivisor(mVAO, TexIndex, 0);
-    // glVertexArrayAttribBinding(mVAO, TexIndex, 0);
 
     timer.Stop();
 }
