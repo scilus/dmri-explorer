@@ -80,6 +80,10 @@ double NiftiImageWrapper::at(uint i, uint j, uint k, uint l) const
     {
         value = static_cast<double>(((float*)(mImage->data))[flatIndex]);
     }
+     if(dtype() == DataType::uint8)
+    {
+        value = static_cast<double>(((uint8_t*)(mImage->data))[flatIndex]);
+    }
     return value;
 }
 
@@ -88,10 +92,7 @@ uint8_t NiftiImageWrapper::uintAt(uint i, uint j, uint k, uint l) const
 {
     const size_t flatIndex = flattenIndex(i, j, k, l);
     double value = 0.0;
-    if(dtype() == DataType::uint8)
-    {
-        value = ((uint8_t*)(mImage->data))[flatIndex];
-    }
+   
     return value;
 }
 
