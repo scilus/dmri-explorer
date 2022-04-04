@@ -171,10 +171,6 @@ void Texture::initializeMembers()
 
     //Create texture
     void * data = image.getData();
-    std::cout<<dimY<<std::endl;
-    std::cout<<dimZ<<std::endl;
-    std::cout<<dimX<<std::endl;
-
     // void * data = &mData;
 
     unsigned int texture;
