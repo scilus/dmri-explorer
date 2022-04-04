@@ -29,6 +29,7 @@ out gl_PerVertex{
     vec4 gl_Position;
 };
 out vec3 frag_tex_coord;
+out vec4 color;
 
 void main()
 {
@@ -45,6 +46,7 @@ void main()
 
     if(slice == 1) //X
     {
+        color = vec4(1.0f,0.0f,0.0f,1.0f);
         localMatrix[0][0] = 1.0f;
         localMatrix[1][1] = 1.0f;
         localMatrix[2][2] = 1.0f;
@@ -57,6 +59,8 @@ void main()
     }
     else if(slice == 2) //Y
     {
+        color = vec4(0.0f,1.0f,0.0f,1.0f);
+
         localMatrix[0][0] = 1.0f;
         localMatrix[1][1] = 1.0f;
         localMatrix[2][2] = 1.0f;
@@ -69,6 +73,9 @@ void main()
     }
     else if(slice == 0) //Z
     {
+
+        color = vec4(0.0f,0.0f,1.0f,1.0f);
+
         localMatrix[0][0] = 1.0f;
         localMatrix[1][1] = 1.0f;
         localMatrix[2][2] = 1.0f;
@@ -90,6 +97,8 @@ void main()
         localMatrix[3][3] = 1.0f;
 
         frag_tex_coord=vec3(sliceIndex.x/gridDims.x, texCoord);
+        color = vec4(1.0f,1.0f,1.0f,1.0f);
+
 
     }
     gl_Position = projectionMatrix
