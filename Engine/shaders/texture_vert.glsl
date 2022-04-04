@@ -2,6 +2,7 @@
 
 layout (location = 0) in vec3 position;
 layout (location = 1) in vec2 texCoord;
+layout (location = 2) in uint slice;
 
 
 layout(std430, binding=9) buffer cameraBuffer
@@ -42,7 +43,7 @@ void main()
     otherMatrix[3][2] = float(floor(-gridDims.z/2.0f));
     otherMatrix[3][3] = 1.0f;
 
-    if(currentSlice == 0) //X
+    if(slice == 1) //X
     {
         localMatrix[0][0] = 1.0f;
         localMatrix[1][1] = 1.0f;
@@ -52,9 +53,9 @@ void main()
         localMatrix[3][2] = 0.0f;
         localMatrix[3][3] = 1.0f;
 
-        frag_tex_coord=vec3(sliceIndex.x/gridDims.x, texCoord.x, texCoord.y);
+        frag_tex_coord=vec3(sliceIndex.x/gridDims.x, texCoord);
     }
-    if(currentSlice == 1) //Y
+    else if(slice == 2) //Y
     {
         localMatrix[0][0] = 1.0f;
         localMatrix[1][1] = 1.0f;
@@ -66,7 +67,7 @@ void main()
 
         frag_tex_coord=vec3(texCoord.x, sliceIndex.y/gridDims.y, texCoord.y);
     }
-    if(currentSlice == 2) //Z
+    else if(slice == 0) //Z
     {
         localMatrix[0][0] = 1.0f;
         localMatrix[1][1] = 1.0f;
@@ -78,12 +79,23 @@ void main()
 
         frag_tex_coord=vec3(texCoord, sliceIndex.z/gridDims.z);
     }
+    else
+    {
+        localMatrix[0][0] = 1.0f;
+        localMatrix[1][1] = 1.0f;
+        localMatrix[2][2] = 1.0f;
+        localMatrix[3][0] = float(sliceIndex.x-floor((gridDims.x/2.0f)));
+        localMatrix[3][1] = float(sliceIndex.y-floor((gridDims.y/2.0f)));
+        localMatrix[3][2] = 1.0f;
+        localMatrix[3][3] = 1.0f;
 
-        gl_Position = projectionMatrix
-                * viewMatrix
-                * modelMatrix
-                * localMatrix
-                * otherMatrix
-                * vec4(position,1.0f);
+        frag_tex_coord=vec3(sliceIndex.x/gridDims.x, texCoord);
 
+    }
+    gl_Position = projectionMatrix
+            * viewMatrix
+            * modelMatrix
+            * localMatrix
+            * otherMatrix
+            * vec4(position,1.0f);
 }

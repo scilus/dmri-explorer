@@ -13,6 +13,8 @@ Texture::Texture(const std::shared_ptr<ApplicationState>& state,
 ,mVertices()
 ,mTextureCoordsBO(0)
 ,mTextureCoords()
+,mSliceBO(0)
+,mSlice()
 ,mData()
 ,mIsSliceDirty(true)
 {
@@ -129,6 +131,31 @@ void Texture::initializeMembers()
     mTextureCoords.push_back(glm::vec2(1.0f,1.0f));
     mTextureCoords.push_back(glm::vec2(1.0f,0.0f));
 
+        //Plan XY
+    mSlice.push_back(glm::uint(0));
+    mSlice.push_back(glm::uint(0));
+    mSlice.push_back(glm::uint(0));
+
+    mSlice.push_back(glm::uint(0));
+    mSlice.push_back(glm::uint(0));
+    mSlice.push_back(glm::uint(0));
+
+    mSlice.push_back(glm::uint(1));
+    mSlice.push_back(glm::uint(1));
+    mSlice.push_back(glm::uint(1));
+
+    mSlice.push_back(glm::uint(1));
+    mSlice.push_back(glm::uint(1));
+    mSlice.push_back(glm::uint(1));
+
+    mSlice.push_back(glm::uint(2));
+    mSlice.push_back(glm::uint(2));
+    mSlice.push_back(glm::uint(2));
+
+    mSlice.push_back(glm::uint(2));
+    mSlice.push_back(glm::uint(2));
+    mSlice.push_back(glm::uint(2));
+
 
     // Bind primitives to GPU
     glCreateVertexArrays(1, &mVAO);
@@ -164,6 +191,13 @@ void Texture::initializeMembers()
     glEnableVertexArrayAttrib(mVAO, TexIndex);
     glVertexArrayAttribFormat(mVAO, TexIndex, 2, GL_FLOAT, GL_FALSE, 0);
     glVertexArrayVertexBuffer(mVAO, TexIndex, mTextureCoordsBO, 0, sizeof(float)*2);
+
+    const GLuint SliceIndex = 2;
+    mSliceBO = genVBO<glm::uint>(mSlice);
+
+    glEnableVertexArrayAttrib(mVAO, SliceIndex);
+    glVertexArrayAttribFormat(mVAO, SliceIndex, 1, GL_UNSIGNED_INT, GL_FALSE, 0);
+    glVertexArrayVertexBuffer(mVAO, SliceIndex, mSliceBO, 0, sizeof(int));
 
     timer.Stop();
 }

@@ -102,6 +102,9 @@ private:
     GLuint mTextureCoordsBO;
 
     /// Elements buffer object.
+    GLuint mSliceBO;
+
+    /// Elements buffer object.
     std::vector<glm::vec3> mVertices;
 
     /// Elements buffer object.
@@ -109,5 +112,8 @@ private:
 
     /// Elements buffer object.
     std::vector<glm::vec2> mTextureCoords;
+
+    /// Elements buffer object.
+    std::vector<glm::uint> mSlice;
 };
 } // namespace Slicer
