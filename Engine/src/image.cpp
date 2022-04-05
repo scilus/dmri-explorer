@@ -82,7 +82,7 @@ double NiftiImageWrapper::at(uint i, uint j, uint k, uint l) const
     }
      if(dtype() == DataType::uint8)
     {
-        value = static_cast<double>(((uint8_t*)(mImage->data))[flatIndex]);
+        value = ((uint8_t*)(mImage->data))[flatIndex];
     }
     return value;
 }

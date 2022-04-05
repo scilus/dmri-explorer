@@ -10,6 +10,6 @@ uniform sampler3D ourTexture;
 void main()
 {
     shaded_color = texture(ourTexture, frag_tex_coord);
-    shaded_color = color;
+    //shaded_color = color;
 
 }

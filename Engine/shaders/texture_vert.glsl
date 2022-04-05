@@ -1,8 +1,8 @@
 #version 460
 
 layout (location = 0) in vec3 position;
-layout (location = 1) in vec2 texCoord;
-layout (location = 2) in uint slice;
+layout (location = 1) in vec3 texCoord;
+layout (location = 2) in vec3 slice;
 
 
 layout(std430, binding=9) buffer cameraBuffer
@@ -35,6 +35,7 @@ void main()
 {
     mat4 localMatrix;
     mat4 otherMatrix;
+    vec3 direction;
 
     otherMatrix[0][0] = 1.0f;
     otherMatrix[1][1] = 1.0f;
@@ -44,67 +45,26 @@ void main()
     otherMatrix[3][2] = float(floor(-gridDims.z/2.0f));
     otherMatrix[3][3] = 1.0f;
 
-    if(slice == 1) //X
+    if(slice.x == 1) //X
     {
-        color = vec4(1.0f,0.0f,0.0f,1.0f);
-        localMatrix[0][0] = 1.0f;
-        localMatrix[1][1] = 1.0f;
-        localMatrix[2][2] = 1.0f;
-        localMatrix[3][0] = float(sliceIndex.x-floor((gridDims.x/2.0f)));
-        localMatrix[3][1] = 0.0f;
-        localMatrix[3][2] = 0.0f;
-        localMatrix[3][3] = 1.0f;
-
-        frag_tex_coord=vec3(sliceIndex.x/gridDims.x, texCoord);
+        frag_tex_coord=vec3(sliceIndex.x/gridDims.x, texCoord.x,texCoord.y);
+        color=vec4(1.0f,0.0f,0.0f,1.0f);
     }
-    else if(slice == 2) //Y
+    if(slice.y == 1) //Y
     {
-        color = vec4(0.0f,1.0f,0.0f,1.0f);
-
-        localMatrix[0][0] = 1.0f;
-        localMatrix[1][1] = 1.0f;
-        localMatrix[2][2] = 1.0f;
-        localMatrix[3][0] = 0.0f;
-        localMatrix[3][1] = float(sliceIndex.y-floor((gridDims.y/2.0f)));
-        localMatrix[3][2] = 0.0f;
-        localMatrix[3][3] = 1.0f;
-
-        frag_tex_coord=vec3(texCoord.x, sliceIndex.y/gridDims.y, texCoord.y);
+        frag_tex_coord=vec3(texCoord.x, sliceIndex.y/gridDims.y,texCoord.y);
+        color=vec4(0.0f,1.0f,0.0f,1.0f);
     }
-    else if(slice == 0) //Z
+    if(slice.z == 1) //Z
     {
-
-        color = vec4(0.0f,0.0f,1.0f,1.0f);
-
-        localMatrix[0][0] = 1.0f;
-        localMatrix[1][1] = 1.0f;
-        localMatrix[2][2] = 1.0f;
-        localMatrix[3][0] = 0.0f;
-        localMatrix[3][1] = 0.0f;
-        localMatrix[3][2] = float(sliceIndex.z-floor((gridDims.z/2.0f)));
-        localMatrix[3][3] = 1.0f;
-
-        frag_tex_coord=vec3(texCoord, sliceIndex.z/gridDims.z);
+        frag_tex_coord=vec3(texCoord.x,texCoord.y, sliceIndex.z/gridDims.z);
+        color=vec4(0.0f,0.0f,1.0f,1.0f);
     }
-    else
-    {
-        localMatrix[0][0] = 1.0f;
-        localMatrix[1][1] = 1.0f;
-        localMatrix[2][2] = 1.0f;
-        localMatrix[3][0] = float(sliceIndex.x-floor((gridDims.x/2.0f)));
-        localMatrix[3][1] = float(sliceIndex.y-floor((gridDims.y/2.0f)));
-        localMatrix[3][2] = 1.0f;
-        localMatrix[3][3] = 1.0f;
 
-        frag_tex_coord=vec3(sliceIndex.x/gridDims.x, texCoord);
-        color = vec4(1.0f,1.0f,1.0f,1.0f);
-
-
-    }
+    direction = vec3(slice.x*(sliceIndex.x-floor((gridDims.x/2.0f))),slice.y*(sliceIndex.y-floor((gridDims.y/2.0f))),slice.z*(sliceIndex.z-floor((gridDims.z/2.0f))));
     gl_Position = projectionMatrix
             * viewMatrix
             * modelMatrix
-            * localMatrix
             * otherMatrix
-            * vec4(position,1.0f);
+            * vec4(position+direction,1.0f);
 }
