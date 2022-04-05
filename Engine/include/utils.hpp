@@ -38,7 +38,7 @@ const double FACTORIALS_LUT[MAX_FACTORIAL] =
 static inline std::string readFile(const std::string &filePath)
 {
     std::ifstream ifs(filePath, std::ifstream::in);
-    if (!ifs.is_open())
+    if(!ifs.is_open())
         throw std::ios_base::failure("cannot open file: " + filePath);
 
     std::stringstream s;

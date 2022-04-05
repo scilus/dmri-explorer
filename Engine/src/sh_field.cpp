@@ -130,7 +130,7 @@ void SHField::initializeMembers()
                           nbSpheres, NB_THREADS_FOR_SPHERES, threads);
 
     // wait for all threads to finish
-    for (auto& t : threads)
+    for(auto& t : threads)
     {
         t.join();
     }
@@ -148,7 +148,7 @@ void SHField::dispatchSubsetCommands(void(SHField::*fn)(size_t, size_t), size_t 
     size_t nbElementsPerThread = nbElements / nbThreads;
     size_t startIndex = 0;
     size_t stopIndex = nbElementsPerThread;
-    for (int i = 0; i < nbThreads - 1; ++i)
+    for(int i = 0; i < nbThreads - 1; ++i)
     {
         threads.push_back(std::thread(fn, this, startIndex, stopIndex));
         startIndex = stopIndex;
