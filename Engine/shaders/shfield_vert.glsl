@@ -170,6 +170,7 @@ void main()
 
     world_normal = modelMatrix
                  * allNormals[gl_VertexID];
+    // TODO: decider de la couleur selon le mode de color map
     color = abs(vec4(normalize(currentVertex.xyz), 1.0f));
     is_visible = getIsVisible(gl_DrawID) && isAboveThreshold ? 1.0f : -1.0f;
     world_eye_pos = vec4(eye.xyz, 1.0f);

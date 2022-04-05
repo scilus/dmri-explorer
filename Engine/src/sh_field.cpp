@@ -284,6 +284,7 @@ void SHField::setNormalized(bool previous, bool isNormalized)
     {
         unsigned int isNormalizedInt = isNormalized ? 1 : 0;
         glm::ivec4 isDirty(1, 1, 1, 0);
+        // FIXME: l'ordre est important et faut donnre le offset de la position de l'attribut en bit
         mSphereInfoData.Update(sizeof(unsigned int)*2, sizeof(unsigned int), &isNormalizedInt);
         mIsSliceDirty = glm::bvec3(true);
         scaleSpheres();

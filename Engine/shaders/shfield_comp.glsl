@@ -40,6 +40,8 @@ layout(std430, binding=7) buffer sphereInfoBuffer
     float sh0Threshold;
     float scaling;
     uint nbCoeffs;
+    // TODO: ajouter uint colorMap (faire attention c'est un chiard a modifié a cause du typage)
+    uint colorMapMode;
 };
 
 layout(std430, binding=8) buffer gridInfoBuffer

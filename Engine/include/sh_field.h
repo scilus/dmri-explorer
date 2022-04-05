@@ -95,6 +95,8 @@ private:
     /// The order of members is critical. The same order must be used
     /// when declaring the struct on the GPU and the order is used for
     /// modifying shader subdata from the CPU.
+    
+    //FIXME: l'ordre des attributs doit etre dans le meme que le vertex shader.
     struct SphereData
     {
         unsigned int NumVertices;
