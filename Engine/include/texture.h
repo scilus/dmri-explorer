@@ -108,12 +108,12 @@ private:
     std::vector<glm::vec3> mVertices;
 
     /// Elements buffer object.
-    std::vector<float> mData;
+    std::vector<glm::uint8_t> mData;
 
     /// Elements buffer object.
-    std::vector<glm::vec2> mTextureCoords;
+    std::vector<glm::vec3> mTextureCoords;
 
     /// Elements buffer object.
-    std::vector<glm::uint> mSlice;
+    std::vector<glm::vec3> mSlice;
 };
 } // namespace Slicer
