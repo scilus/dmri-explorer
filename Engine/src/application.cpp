@@ -103,15 +103,26 @@ void Application::initialize()
 
     // Add SH field once the UI is drawn
     mScene->AddSHField();
+
+    // Reset the secondary camera when magnifying mode is enabled from GUI
+    mState->MagnifyingMode.RegisterCallback(
+        [this](bool prev, bool next)
+        {
+            if (next != prev)
+            {
+                mSecondaryCamera->ResetViewFromOther(*mCamera);
+            }
+        }
+    );
 }
 
 bool Application::insideSecondaryViewport(int& height, int& width, double& xPos, double& yPos)
 {
     Application* app = (Application*)glfwGetWindowUserPointer(mWindow);
-    int scaleFactor = app->mState->Window.SecondaryViewportScale.Get(); 
+    int scaleFactor = app->mState->Window.SecondaryViewportScale.Get();
 
-    if(0 <= xPos && xPos <= (width / scaleFactor) && \
-      (height - (height / scaleFactor)) <= yPos && yPos <= height)
+    if(0 <= xPos && xPos <= (width / scaleFactor) &&
+       (height - (height / scaleFactor)) <= yPos && yPos <= height)
     {
         return true;
     }
@@ -157,7 +168,7 @@ void Application::initApplicationState(const ArgumentParser& parser)
     mState->Window.ZoomSpeed.Update(ZOOM_SPEED);
     mState->Window.SecondaryViewportScale.Update(SECONDARY_VIEWPORT_SCALE);
 
-    mState->mMagnifyingMode.Update(false);
+    mState->MagnifyingMode.Update(false);
 }
 
 void Application::renderFrame()
@@ -168,7 +179,7 @@ void Application::renderFrame()
     Application* app = (Application*)glfwGetWindowUserPointer(mWindow);
     int h, w;
     int scaleFactor = app->mState->Window.SecondaryViewportScale.Get();
-    bool magnifyingModeOn = app->mState->mMagnifyingMode.Get();
+    bool magnifyingModeOn = app->mState->MagnifyingMode.Get();
     glfwGetWindowSize(mWindow, &w, &h);
 
     mCamera->UpdateGPU();
@@ -213,12 +224,12 @@ void Application::Run()
 void Application::onMouseButton(GLFWwindow* window, int button, int action, int mod)
 {
     Application* app = (Application*)glfwGetWindowUserPointer(window);
-    bool magnifyingModeOn = app->mState->mMagnifyingMode.Get();
+    bool magnifyingModeOn = app->mState->MagnifyingMode.Get();
     int h, w;
     double xPos, yPos;
     glfwGetWindowSize(window, &w, &h);
     glfwGetCursorPos(window, &xPos, &yPos);
-    
+
     if(app->mUI->WantCaptureMouse())
         return;
 
@@ -291,15 +302,15 @@ void Application::onMouseScroll(GLFWwindow* window, double xoffset, double yoffs
 {
     Application* app = (Application*)glfwGetWindowUserPointer(window);
     int h, w;
-    int ratio = app->mState->Window.SecondaryViewportScale.Get(); 
+    int ratio = app->mState->Window.SecondaryViewportScale.Get();
     double xPos, yPos;
     glfwGetWindowSize(window, &w, &h);
     glfwGetCursorPos(window, &xPos, &yPos);
-    
+
     if(app->mUI->WantCaptureMouse())
         return;
 
-    if(app->insideSecondaryViewport(h, w, xPos, yPos) && app->mState->mMagnifyingMode.Get())
+    if(app->insideSecondaryViewport(h, w, xPos, yPos) && app->mState->MagnifyingMode.Get())
     {
         app->mSecondaryCamera->Zoom(yoffset);
         app->mSecondaryCamera->UpdateGPU();
@@ -315,18 +326,10 @@ void Application::onWindowResize(GLFWwindow* window, int width, int height)
 {
     const float aspect = static_cast<float>(width) / static_cast<float>(height);
     Application* app = (Application*)glfwGetWindowUserPointer(window);
-    const int scaleFactor = app->mState->Window.SecondaryViewportScale.Get(); 
+    const int scaleFactor = app->mState->Window.SecondaryViewportScale.Get();
 
     app->mCamera->Resize(aspect);
-    glViewport(0, 0, width, height);
-
-    // Scale secondary viewport to keep proportions.
-    if(app->mState->mMagnifyingMode.Get())
-    {
-        app->mSecondaryCamera->Resize(aspect);
-        glViewport(0, 0, width / scaleFactor, height / scaleFactor);
-
-    }
+    app->mSecondaryCamera->Resize(aspect);
     app->mState->Window.Width.Update(width);
     app->mState->Window.Height.Update(height);
 }
@@ -335,13 +338,13 @@ void Application::onPressSpace(GLFWwindow* window, int key, int scancode, int ac
 {
     if(action == GLFW_RELEASE && key == GLFW_KEY_SPACE)
     {
-        Application* app = (Application*)glfwGetWindowUserPointer(window);        
-        app->mState->mMagnifyingMode.Update(!app->mState->mMagnifyingMode.Get());
+        Application* app = (Application*)glfwGetWindowUserPointer(window);
+        app->mState->MagnifyingMode.Update(!app->mState->MagnifyingMode.Get());
         app->mSecondaryCamera->ResetViewFromOther(*app->mCamera);
 
-        if(app->mState->mMagnifyingMode.Get())
+        if(app->mState->MagnifyingMode.Get())
         {
-            app->mSecondaryCamera->Zoom(MAGNIFYING_MODE_ZOOM);    
+            app->mSecondaryCamera->Zoom(MAGNIFYING_MODE_ZOOM);
         }
         app->renderFrame();
     }

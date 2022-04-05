@@ -100,6 +100,9 @@ void Camera::ResetViewFromOther(const Camera& camera)
     mNear = camera.mNear;
     mFar = camera.mFar;
     mAspect = camera.mAspect;
+    mProjectionMatrix = camera.mProjectionMatrix;
+    mViewMatrix = camera.mViewMatrix;
+    mBlockRotation = camera.mBlockRotation;
 }
 
 void Camera::UpdateGPU()

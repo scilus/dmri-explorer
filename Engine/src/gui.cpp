@@ -94,32 +94,32 @@ void UIManager::drawMagnifyingModeWindow()
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
     bool updateSliceIndex = false;
     int scaleFactor = mState->Window.SecondaryViewportScale.Get();
-    bool show = mState->mMagnifyingMode.Get();
-    static int scaling = 2;
+    bool show = mState->MagnifyingMode.Get();
+    static int scaling = scaleFactor;
     ImGui::Begin("Magnifying mode", &mShowMagnifyingMode);
     ImGui::SameLine();
     if(ImGui::Checkbox("Enable magnifying mode (press space)", &show))
     {
-        mState->mMagnifyingMode.Update(show);
+        mState->MagnifyingMode.Update(show);
     }
     ImGui::Text("Window Scaling");
 
-    if(ImGui::RadioButton("1/2", &scaling, 0))
+    if(ImGui::RadioButton("1/2", &scaling, 2))
     {
         mState->Window.SecondaryViewportScale.Update(2);
     }
     ImGui::SameLine();
-    if(ImGui::RadioButton("1/3", &scaling, 1))
+    if(ImGui::RadioButton("1/3", &scaling, 3))
     {
         mState->Window.SecondaryViewportScale.Update(3);
     }
     ImGui::SameLine();
-    if(ImGui::RadioButton("1/4", &scaling, 2))
+    if(ImGui::RadioButton("1/4", &scaling, 4))
     {
         mState->Window.SecondaryViewportScale.Update(4);
     }
     ImGui::SameLine();
-    if(ImGui::RadioButton("1/5", &scaling, 3))
+    if(ImGui::RadioButton("1/5", &scaling, 5))
     {
         mState->Window.SecondaryViewportScale.Update(5);
     }
