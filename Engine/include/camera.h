@@ -31,9 +31,25 @@ public:
            const float& near, const float& far,
            const std::shared_ptr<ApplicationState>& state);
 
+    /// Constructor.
+    /// \param[in] camera The camera object used for instantiation.
+    Camera(const Camera& camera);
+
+    /// Resets camera view parameters with those of another camera.
+    /// \param[in] camera The camera object used for copy.
+    void ResetViewFromOther(const Camera& camera);
+
     /// Resize camera.
     /// \param[in] aspect New aspect ratio (width / height).
     void Resize(const float& aspect);
+
+    /// Rotate camera.
+    /// \param[in] v Mouse move vector.
+    void RotateCS(const glm::vec2& vec);
+
+    /// Translate the scene's coordinate system based on mouse move.
+    /// \param[in] v Mouse move vector.
+    void TranslateCS(const glm::vec2& v);
 
     /// Translate camera along its view axis (zoom).
     /// \param[in] delta Mouse wheel offset.
@@ -43,14 +59,21 @@ public:
     void UpdateGPU();
 
 private:
+    /// Set the state for the camera mode
+    /// \param[in] previous Previous value.
+    /// \param[in] mode New value for fading behaviour.
+    void setMode(State::CameraMode previous, State::CameraMode mode);
+
+    /// \see Model::registerStateCallbacks()
+    void registerStateCallbacks();
+
     /// Struct containing camera attributes to push on the GPU.
     struct CameraData
     {
         glm::vec4 eye;
         glm::mat4 viewMatrix;
         glm::mat4 projectionMatrix;
-    };
-
+    };    
     /// Camera position.
     glm::vec3 mPosition;
 
@@ -83,5 +106,8 @@ private:
 
     /// Shader data for camera attributes.
     GPU::ShaderData mCamParamsData;
+
+    //Boolean to block the rotation of the scene
+    bool mBlockRotation;
 };
 } // namespace Slicer

@@ -12,6 +12,7 @@ UIManager::UIManager()
 ,mIO(nullptr)
 ,mState(nullptr)
 ,mShowDemoWindow(false)
+,mShowMagnifyingMode(false)
 ,mShowSlicers(false)
 {
 }
@@ -21,6 +22,7 @@ UIManager::UIManager(GLFWwindow* window, const std::string& glslVersion,
 :mWindow(window)
 ,mIO(nullptr)
 ,mShowDemoWindow(false)
+,mShowMagnifyingMode(false)
 ,mShowSlicers(false)
 ,mState(state)
 {
@@ -47,6 +49,7 @@ void UIManager::DrawInterface()
     drawDemoWindow();
     drawSlicersWindow();
     drawPreferencesWindow();
+    drawMagnifyingModeWindow();
 
     // Rendering
     ImGui::Render();
@@ -72,12 +75,55 @@ void UIManager::drawMainMenuBar()
     if(ImGui::BeginMenu("Options"))
     {
         ImGui::MenuItem("Show slicers window", NULL, &mShowSlicers);
+        ImGui::MenuItem("Magnifying Mode", NULL, &mShowMagnifyingMode);
         ImGui::MenuItem("Preferences", NULL, &mShowPreferences);
         ImGui::Separator();
         ImGui::MenuItem("Show demo window", NULL, &mShowDemoWindow);
         ImGui::EndMenu();
     }
     ImGui::EndMainMenuBar();
+}
+
+void UIManager::drawMagnifyingModeWindow()
+{
+    if(!mShowMagnifyingMode)
+        return;
+    
+    ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(406.f, 108.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
+    bool updateSliceIndex = false;
+    int scaleFactor = mState->Window.SecondaryViewportScale.Get();
+    bool show = mState->MagnifyingMode.Get();
+    static int scaling = scaleFactor;
+    ImGui::Begin("Magnifying mode", &mShowMagnifyingMode);
+    ImGui::SameLine();
+    if(ImGui::Checkbox("Enable magnifying mode (press space)", &show))
+    {
+        mState->MagnifyingMode.Update(show);
+    }
+    ImGui::Text("Window Scaling");
+
+    if(ImGui::RadioButton("1/2", &scaling, 2))
+    {
+        mState->Window.SecondaryViewportScale.Update(2);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("1/3", &scaling, 3))
+    {
+        mState->Window.SecondaryViewportScale.Update(3);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("1/4", &scaling, 4))
+    {
+        mState->Window.SecondaryViewportScale.Update(4);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("1/5", &scaling, 5))
+    {
+        mState->Window.SecondaryViewportScale.Update(5);
+    }
+    ImGui::End();
 }
 
 void UIManager::drawPreferencesWindow()
@@ -207,7 +253,7 @@ void UIManager::drawSlicersWindow()
     auto& thresholdParam = mState->Sphere.SH0Threshold;
     auto& normalizedParam = mState->Sphere.IsNormalized;
     auto& fadeHiddenParam = mState->Sphere.FadeIfHidden;
-    if (!scalingParam.IsInit() || !thresholdParam.IsInit() ||
+    if(!scalingParam.IsInit() || !thresholdParam.IsInit() ||
         !normalizedParam.IsInit() || !fadeHiddenParam.IsInit())
     {
         ImGui::Spacing();

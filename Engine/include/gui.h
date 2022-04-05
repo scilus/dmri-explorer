@@ -37,6 +37,9 @@ private:
     /// Draw the main menu bar (top bar).
     void drawMainMenuBar();
 
+    /// Draw the magnifying mode parameter window.
+    void drawMagnifyingModeWindow();
+
     /// Draw the slicer parameter window.
     void drawSlicersWindow();
 
@@ -56,7 +59,10 @@ private:
     std::shared_ptr<ApplicationState> mState;
 
     /// True to show demo window.
-    bool mShowDemoWindow;
+    bool mShowDemoWindow;    
+    
+    /// True to show magnifiying mode.
+    bool mShowMagnifyingMode;
 
     /// True to show slicers window.
     bool mShowSlicers;

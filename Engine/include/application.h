@@ -34,6 +34,14 @@ private:
     /// Initialize GLFW, OpenGL backend, Scene, UI, Camera, etc.
     void initialize();
 
+    /// Verify if the cursor is in the secondary viewport.
+    /// \param[in] height Window height.
+    /// \param[in] width Window width.
+    /// \param[in] xPos The position of the cursor in x.
+    /// \param[in] yPos The position of the cursor in y.
+    /// \return If cursor is in viewport.
+    bool insideSecondaryViewport(int& height, int& width, double& xPos, double& yPos);
+
     /// Render a frame one time.
     void renderFrame();
 
@@ -69,6 +77,14 @@ private:
     /// \param[in] height The window height after resize.
     static void onWindowResize(GLFWwindow* window, int width, int height);
 
+    /// GLFW callback for handling pressing of space.
+    /// \param[in] window The current GLFW window.
+    /// \param[in] key The key id.
+    /// \param[in] scancode The key unique scancode.
+    /// \param[in] action The action id.
+    /// \param[in] mods The modifier bits.
+    static void onPressSpace(GLFWwindow* window, int key, int scancode, int action, int mods);
+
     /// Pointer to application main window.
     GLFWwindow* mWindow;
 
@@ -90,6 +106,9 @@ private:
     /// Pointer to the Camera.
     std::shared_ptr<Camera> mCamera;
 
+    /// Pointer to the secondary Camera.
+    std::shared_ptr<Camera> mSecondaryCamera;
+
     /// Pointer to the UI manager.
     std::shared_ptr<UIManager> mUI;
 
@@ -98,5 +117,9 @@ private:
 
     /// Title of the window.
     std::string mTitle;
+
+    /// Parameters for control transfer between the viewports.
+    /// For mouse clic detection.
+    bool mClicSecondaryViewport;
 };
 } // namespace Slicer
