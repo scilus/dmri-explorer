@@ -1,4 +1,9 @@
 #version 460
+#extension GL_ARB_shading_language_include : require
+
+#include "/include/shfield_util.glsl"
+#include "/include/orthogrid_util.glsl"
+
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 
 layout(std430, binding=0) buffer allRadiisBuffer
@@ -9,50 +14,6 @@ layout(std430, binding=0) buffer allRadiisBuffer
 layout(std430, binding=1) buffer allSpheresNormalsBuffer
 {
     vec4 allNormals[];
-};
-
-layout(std430, binding=3) buffer shCoeffsBuffer
-{
-    float shCoeffs[];
-};
-
-layout(std430, binding=4) buffer shFunctionsBuffer
-{
-    float shFuncs[];
-};
-
-layout(std430, binding=5) buffer sphereVerticesBuffer
-{
-    vec4 vertices[];
-};
-
-layout(std430, binding=6) buffer sphereIndicesBuffer
-{
-    uint indices[];
-};
-
-layout(std430, binding=7) buffer sphereInfoBuffer
-{
-    uint nbVertices;
-    uint nbIndices;
-    uint isNormalized; // bool
-    uint maxOrder;
-    float sh0Threshold;
-    float scaling;
-    uint nbCoeffs;
-};
-
-layout(std430, binding=8) buffer gridInfoBuffer
-{
-    ivec4 gridDims;
-    ivec4 sliceIndex;
-    ivec4 isSliceVisible;
-    uint currentSlice;
-};
-
-layout(std430, binding=11) buffer ordersBuffer
-{
-    float L[];
 };
 
 const float FLOAT_EPS = 1e-4;
@@ -129,11 +90,6 @@ void updateNormals(uint firstNormalID)
     }
 }
 
-uint convertIndex3DToVoxID(uint i, uint j, uint k)
-{
-    return k * gridDims.x * gridDims.y + j * gridDims.x + i;
-}
-
 void main()
 {
     uint i, j, k, outSphereID;
@@ -159,7 +115,7 @@ void main()
         i = gl_GlobalInvocationID.x - j * gridDims.x;
     }
 
-    const uint voxID = convertIndex3DToVoxID(i, j, k);
+    const uint voxID = convertSHCoeffsIndex3DToFlatVoxID(i, j, k);
     const uint firstVertID = outSphereID * nbVertices;
     if(scaleSphere(voxID, firstVertID))
     {

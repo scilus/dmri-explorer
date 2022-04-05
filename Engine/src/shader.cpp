@@ -1,28 +1,63 @@
 #include "shader.h"
 #include "utils.hpp"
+#include <algorithm>
+#include <cstring>
+
+
+namespace
+{
+const int NUM_SHADER_INCLUDES = 3;
+const char* SHADER_INCLUDE_PATHS[NUM_SHADER_INCLUDES] = {
+    "/include/camera_util.glsl",
+    "/include/orthogrid_util.glsl",
+    "/include/shfield_util.glsl"
+};
+}
 
 namespace Slicer
 {
 namespace GPU
 {
-ShaderProgram::ShaderProgram(const std::string& filePath, const GLenum shaderType)
+ShaderProgram::ShaderProgram(const std::string& filePath,
+                             const GLenum shaderType)
+:mShaderType(shaderType)
 {
-    std::string strShader = readFile(filePath);
+    const std::string strShader = readFile(filePath);
     GLint lenShader[1] = { static_cast<GLint>(strShader.length()) };
     const GLchar* strShaderC_str = strShader.c_str();
 
     GLuint shaderID = glCreateShader(shaderType);
-
     glShaderSource(shaderID, 1, &strShaderC_str, lenShader);
-    glCompileShader(shaderID);
-
+    glCompileShaderIncludeARB(shaderID,
+                              mShaderIncludePaths.size(),
+                              mShaderIncludePaths.data(),
+                              mShaderIncludeLengths.data());
     assertShaderCompilationSuccess(shaderID, filePath);
+
     this->mProgramID = glCreateProgram();
     glProgramParameteri(this->mProgramID, GL_PROGRAM_SEPARABLE, GL_TRUE);
     glAttachShader(this->mProgramID, shaderID);
     glLinkProgram(this->mProgramID);
     assertProgramLinkingSuccess(this->mProgramID);
-    this->mShaderType = shaderType;
+}
+
+void ShaderProgram::CreateFilesystemForInclude()
+{
+    for(int i = 0; i < NUM_SHADER_INCLUDES; ++i)
+    {
+        const auto pathName = SHADER_INCLUDE_PATHS[i];
+        const auto pathNameLen = std::strlen(pathName);
+
+        const std::string strInclude = readFile(
+            DMRI_EXPLORER_BINARY_DIR + std::string("/shaders") +
+            pathName);
+
+        // Add to virtual filesystem.
+        glNamedStringARB(GL_SHADER_INCLUDE_ARB, pathNameLen,
+                         pathName, strInclude.length(), strInclude.c_str());
+        mShaderIncludePaths.push_back(pathName);
+        mShaderIncludeLengths.push_back(static_cast<int>(pathNameLen));
+    }
 }
 
 ProgramPipeline::ProgramPipeline(const std::vector<ShaderProgram>& shaderPrograms)

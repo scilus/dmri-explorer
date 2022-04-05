@@ -1,4 +1,9 @@
 #version 460
+#extension GL_ARB_shading_language_include : require
+
+#include "/include/camera_util.glsl"
+#include "/include/shfield_util.glsl"
+#include "/include/orthogrid_util.glsl"
 
 layout(std430, binding=0) buffer allRadiisBuffer
 {
@@ -8,43 +13,6 @@ layout(std430, binding=0) buffer allRadiisBuffer
 layout(std430, binding=1) buffer allNormalsBuffer
 {
     vec4 allNormals[];
-};
-
-layout(std430, binding=3) buffer shCoeffsBuffer
-{
-    float shCoeffs[];
-};
-
-layout(std430, binding=5) buffer sphereVerticesBuffer
-{
-    vec4 vertices[];
-};
-
-layout(std430, binding=7) buffer sphereInfoBuffer
-{
-    uint nbVertices;
-    uint nbIndices;
-    uint isNormalized; // bool
-    uint maxOrder;
-    float sh0Threshold;
-    float scaling;
-    uint nbCoeffs;
-    uint fadeIfHidden; // bool
-};
-
-layout(std430, binding=8) buffer gridInfoBuffer
-{
-    ivec4 gridDims;
-    ivec4 sliceIndex;
-    ivec4 isSliceVisible;
-    uint currentSlice;
-};
-
-layout(std430, binding=9) buffer cameraBuffer
-{
-    vec4 eye;
-    mat4 viewMatrix;
-    mat4 projectionMatrix;
 };
 
 layout(std430, binding=10) buffer modelTransformsBuffer
@@ -73,45 +41,7 @@ out float is_visible;
 // Fade is disabled when in 2D!
 out float fade_enabled;
 
-bool belongsToXSlice(uint invocationID)
-{
-    return invocationID >= gridDims.x * gridDims.y &&
-           invocationID < gridDims.x * gridDims.y + gridDims.y * gridDims.z;
-}
-
-bool belongsToZSlice(uint invocationID)
-{
-    return invocationID < gridDims.x * gridDims.y;
-}
-
-ivec3 convertInvocationIDToIndex3D(uint invocationID)
-{
-    if(belongsToZSlice(invocationID))
-    {
-        // XY-slice
-        const uint j = invocationID / gridDims.x;
-        const uint i = invocationID - j * gridDims.x;
-        return ivec3(i, j, sliceIndex.z);
-    }
-    if(belongsToXSlice(invocationID))
-    {
-        // YZ-slice
-        const uint j = (invocationID - gridDims.x * gridDims.y) /gridDims.z;
-        const uint k = invocationID - gridDims.x * gridDims.y - j * gridDims.z;
-        return ivec3(sliceIndex.x, j, k);
-    }
-    // XZ-slice
-    const uint k = (invocationID - gridDims.x * gridDims.y - gridDims.y * gridDims.z) / gridDims.x;
-    const uint i = invocationID - gridDims.x * gridDims.y - gridDims.y * gridDims.z - k * gridDims.x;
-    return ivec3(i, sliceIndex.y, k);
-}
-
-uint convertIndex3DToVoxID(uint i, uint j, uint k)
-{
-    return k * gridDims.x * gridDims.y + j * gridDims.x + i;
-}
-
-vec4 GetVertexSlice(ivec3 index3d)
+vec4 getVertexSlice(ivec3 index3d)
 {
     const float i = index3d.x == sliceIndex.x ? 1.0f : -1.0f;
     const float j = index3d.y == sliceIndex.y ? 1.0f : -1.0f;
@@ -120,31 +50,10 @@ vec4 GetVertexSlice(ivec3 index3d)
     return vec4(i, j, k, 0.0f);
 }
 
-
-bool getIsVisible(const uint invocationID)
-{
-    if(belongsToXSlice(invocationID))
-    {
-        return isSliceVisible.x != 0;
-    }
-    if(belongsToZSlice(invocationID))
-    {
-        return isSliceVisible.z != 0;
-    }
-    return isSliceVisible.y != 0;
-}
-
-
-bool is3DMode()
-{
-    return isSliceVisible.x !=0 && isSliceVisible.y != 0 && isSliceVisible.z != 0;
-}
-
-
 void main()
 {
-    const ivec3 index3d = convertInvocationIDToIndex3D(gl_DrawID);
-    const uint voxID = convertIndex3DToVoxID(index3d.x, index3d.y, index3d.z);
+    const ivec3 index3d = convertFlatOrthoSlicesIDTo3DVoxID(gl_DrawID);
+    const uint voxID = convertSHCoeffsIndex3DToFlatVoxID(index3d.x, index3d.y, index3d.z);
     bool isAboveThreshold = shCoeffs[voxID * nbCoeffs] > sh0Threshold;
 
     mat4 localMatrix;
@@ -171,8 +80,8 @@ void main()
     world_normal = modelMatrix
                  * allNormals[gl_VertexID];
     color = abs(vec4(normalize(currentVertex.xyz), 1.0f));
-    is_visible = getIsVisible(gl_DrawID) && isAboveThreshold ? 1.0f : -1.0f;
+    is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID) && isAboveThreshold ? 1.0f : -1.0f;
     world_eye_pos = vec4(eye.xyz, 1.0f);
-    vertex_slice = GetVertexSlice(index3d);
+    vertex_slice = getVertexSlice(index3d);
     fade_enabled = fadeIfHidden > 0 && is3DMode() ? 1.0 : -1.0;
 }
