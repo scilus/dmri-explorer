@@ -2,6 +2,7 @@
 #include <iostream>
 #include <application_state.h>
 #include <image.h>
+#include <shader.h>
 
 namespace
 {
@@ -88,6 +89,10 @@ void Application::initialize()
                              glm::radians(60.0f), aspectRatio,
                              0.1f, 500.0f,
                              mState));
+
+    // Create the virtual filesystem for shader include directives.
+    // Must be done before any ShaderProgram is instantiated.
+    GPU::ShaderProgram::CreateFilesystemForInclude();
 
     mScene.reset(new Scene(mState));
 
