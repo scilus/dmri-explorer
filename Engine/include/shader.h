@@ -30,10 +30,10 @@ public:
     /// \return Shader type.
     inline const GLenum Type() const { return mShaderType; };
 
-private:
     /// Create the virtual filesystem for include directives.
-    static void createFilesystemForInclude();
+    static void CreateFilesystemForInclude();
 
+private:
     /// Static array of shader include paths (shared across all instances).
     inline static std::vector<const char*> mShaderIncludePaths = {};
 

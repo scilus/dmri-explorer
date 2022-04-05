@@ -22,8 +22,6 @@ ShaderProgram::ShaderProgram(const std::string& filePath,
                              const GLenum shaderType)
 :mShaderType(shaderType)
 {
-    createFilesystemForInclude();
-
     const std::string strShader = readFile(filePath);
     GLint lenShader[1] = { static_cast<GLint>(strShader.length()) };
     const GLchar* strShaderC_str = strShader.c_str();
@@ -43,14 +41,8 @@ ShaderProgram::ShaderProgram(const std::string& filePath,
     assertProgramLinkingSuccess(this->mProgramID);
 }
 
-void ShaderProgram::createFilesystemForInclude()
+void ShaderProgram::CreateFilesystemForInclude()
 {
-    if(!mShaderIncludePaths.empty())
-    {
-        // Static arrays must be filled only once.
-        return;
-    }
-
     for(int i = 0; i < NUM_SHADER_INCLUDES; ++i)
     {
         const auto pathName = SHADER_INCLUDE_PATHS[i];
