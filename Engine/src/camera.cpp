@@ -91,7 +91,7 @@ void Camera::setMode(State::CameraMode previous, State::CameraMode mode)
     }
 }
 
-void Camera::ResetViewForOther(const Camera& camera)
+void Camera::ResetViewFromOther(const Camera& camera)
 {
     mPosition = camera.mPosition;
     mLookAt = camera.mLookAt;
@@ -100,10 +100,6 @@ void Camera::ResetViewForOther(const Camera& camera)
     mNear = camera.mNear;
     mFar = camera.mFar;
     mAspect = camera.mAspect;
-    mProjectionMatrix = camera.mProjectionMatrix;
-    mViewMatrix = camera.mViewMatrix;
-    mBlockRotation = camera.mBlockRotation;
-    mCamParamsData = camera.mCamParamsData;
 }
 
 void Camera::UpdateGPU()

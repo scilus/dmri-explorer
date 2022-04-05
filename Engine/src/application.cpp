@@ -7,10 +7,11 @@ namespace
 {
 const unsigned int WIN_WIDTH = 800;
 const unsigned int WIN_HEIGHT = 600;
+const int SECONDARY_VIEWPORT_BORDER_WIDTH = 2;
+const int SECONDARY_VIEWPORT_SCALE = 3;
 const float TRANSLATION_SPEED = 0.02f;
 const float ROTATION_SPEED = 0.005f;
 const float ZOOM_SPEED = 1.0f;
-const int SECONDARY_VIEWPORT_SCALE = 4;
 const float MAGNIFYING_MODE_ZOOM = 7.5f;
 const std::string WIN_TITLE = "dmri-explorer";
 const std::string GLSL_VERSION_STR = "#version 460";
@@ -25,7 +26,8 @@ namespace Slicer
 Application::Application(const ArgumentParser& parser)
 :mTitle(WIN_TITLE)
 ,mState(new ApplicationState())
-,mUI(nullptr), mScene(nullptr)
+,mUI(nullptr)
+,mScene(nullptr)
 ,mCursorPos(-1, -1)
 {
     initApplicationState(parser);
@@ -180,6 +182,17 @@ void Application::renderFrame()
         mSecondaryCamera->UpdateGPU();
         glViewport(0, 0, w / scaleFactor, h / scaleFactor);
         glScissor(0, 0, w / scaleFactor, h / scaleFactor);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+        glViewport(SECONDARY_VIEWPORT_BORDER_WIDTH,
+                   SECONDARY_VIEWPORT_BORDER_WIDTH,
+                   w / scaleFactor - 2 * SECONDARY_VIEWPORT_BORDER_WIDTH,
+                   h / scaleFactor - 2 * SECONDARY_VIEWPORT_BORDER_WIDTH);
+        glScissor(SECONDARY_VIEWPORT_BORDER_WIDTH,
+                  SECONDARY_VIEWPORT_BORDER_WIDTH,
+                  w / scaleFactor - 2 * SECONDARY_VIEWPORT_BORDER_WIDTH,
+                  h / scaleFactor - 2 * SECONDARY_VIEWPORT_BORDER_WIDTH);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         mScene->Render();
     }
 
@@ -246,8 +259,6 @@ void Application::onMouseMove(GLFWwindow* window, double xPos, double yPos)
         const double dy = app->mCursorPos.y - yPos;
         if(app->mLastButton == GLFW_MOUSE_BUTTON_LEFT)
         {
-            if(app->mCamera)
-            // Controls each viewport's camera update accordingly.
             if(app->mClicSecondaryViewport)
             {
                 app->mSecondaryCamera->RotateCS(glm::vec2(dx, dy));
@@ -324,11 +335,9 @@ void Application::onPressSpace(GLFWwindow* window, int key, int scancode, int ac
 {
     if(action == GLFW_RELEASE && key == GLFW_KEY_SPACE)
     {
-        Application* app = (Application*)glfwGetWindowUserPointer(window);
-        Camera temp = Camera(*app->mCamera);
-        
+        Application* app = (Application*)glfwGetWindowUserPointer(window);        
         app->mState->mMagnifyingMode.Update(!app->mState->mMagnifyingMode.Get());
-        app->mSecondaryCamera->ResetViewForOther(*app->mCamera);
+        app->mSecondaryCamera->ResetViewFromOther(*app->mCamera);
 
         if(app->mState->mMagnifyingMode.Get())
         {

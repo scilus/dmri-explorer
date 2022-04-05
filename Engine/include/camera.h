@@ -37,7 +37,7 @@ public:
 
     /// Resets camera view parameters with those of another camera.
     /// \param[in] camera The camera object used for copy.
-    void ResetViewForOther(const Camera& camera);
+    void ResetViewFromOther(const Camera& camera);
 
     /// Resize camera.
     /// \param[in] aspect New aspect ratio (width / height).
