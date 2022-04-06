@@ -5,19 +5,22 @@ A real-time diffusion MRI slicing application for Linux using `OpenGL 4.6`. It c
 
 ## Installation
 
-`Cmake` minimum version 3.11 is required for installing the application. The generator used by default is `GNU Make`. Make sure you have `git` installed; it is used for fetching the [`nifticlib` library](https://github.com/NIFTI-Imaging/nifti_clib).
+To start using `dmri-explorer`, clone this repository.
+
+### Requirements
+
+Before installing the software, please make sure you meet the requirements below.
+
+* `Cmake` minimum version 3.11 is required for installing the application.
+* The generator used by default is `GNU Make`.
+* A compiler supporting `C++17` features is required (for GCC, `C++17` is available for [versions 5 and above](https://gcc.gnu.org/projects/cxx-status.html#cxx17)).
+* Make sure you have `git` installed; it is used for fetching the [`nifticlib` library](https://github.com/NIFTI-Imaging/nifti_clib).
+* You have an OpenGL implementation available on your system. On Ubuntu, it can be installed with `sudo apt install mesa-common-dev`. `mesa-common-dev` is an open-source implementation of OpenGL. See this [link from wikipedia](https://en.wikipedia.org/wiki/OpenGL#Implementations) for more information.
 
 
-### Quick installation
-The program can be installed by running:
-```
-./install.sh
-```
-The above script creates the build directory, runs `Cmake` and `make`. The executable file will be in the folder `${project_root}/build/Engine`.
+### Building the application
 
-
-### Step-by-step installation
-Alternatively, the program can be built by running:
+The build the program, run the following commands from the project root directory:
 ```
 mkdir build
 cd build
@@ -25,7 +28,11 @@ cmake ..
 make
 ```
 
-The executable file will be in the folder `${project_root}/build/Engine`.
+Alternatively, a helper script containing the four commands shown above is made available for building the software. It can be launched using: 
+```
+./install.sh
+```
+The above script creates the build directory, runs `Cmake` and `make`. The executable file will be in the folder `${project_root}/build/Engine`.
 
 
 ### Adding to `path`
@@ -36,10 +43,13 @@ export PATH='${absolute_path_to_project}/build/Engine':$PATH
 ```
 
 ## Running the application
-To run the executable:
+The application can be launched using the command:
 ```
 dmriexplorer path/to/image.nii.gz
 ```
+When working with a big image, you may encounter a "Window not responding" message at application startup. Don't worry, it will go away once the image is copied on the GPU.
+
+To display all available command line arguments, use the flag `--help`.
 
 ## How to cite
 
@@ -54,12 +64,4 @@ The software has been presented as part of the CDMRI'21 workshop. It has however
 Contributions are welcome and encouraged:
 * If you discover bugs (installation problems, in-app bugs, etc.), please [open an issue](https://github.com/scilus/dmri-explorer/issues) describing the error and the steps to reproduce it;
 * If you have a feature request, you are also encouraged to open an issue describing your need;
-* Pull-requests are of course welcome!
-
-## Troubleshooting
-If you encounter errors during the compilation of the project, make sure you have an OpenGL implementation available on your system. 
-On Ubuntu, it can be installed with : 
-```
-sudo apt install mesa-common-dev
-```
-`mesa-common-dev` is an open-source implementation of OpenGL. See this [link from wikipedia](https://en.wikipedia.org/wiki/OpenGL#Implementations) for more information.
+* Pull-requests are of course welcome! Please refer to the [contributing guidelines](https://github.com/scilus/dmri-explorer/blob/main/contributing.md).
