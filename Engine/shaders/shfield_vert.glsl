@@ -82,6 +82,11 @@ void main()
     color = abs(vec4(normalize(currentVertex.xyz), 1.0f));
     is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID) && isAboveThreshold ? 1.0f : -1.0f;
     world_eye_pos = vec4(eye.xyz, 1.0f);
+<<<<<<< HEAD
     vertex_slice = getVertexSlice(index3d);
     fade_enabled = fadeIfHidden > 0 && is3DMode() ? 1.0 : -1.0;
 }
+=======
+    vertex_slice = GetVertexSlice(index3d);
+}
+>>>>>>> c5832e00a3f44677155969e5813d885fa60f6598
