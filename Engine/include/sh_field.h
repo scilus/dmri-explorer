@@ -107,6 +107,7 @@ private:
         float Scaling;
         unsigned int NbCoeffs;
         unsigned int FadeIfHidden;
+        unsigned int ColorMapMode;
     };
 
     /// Struct containing the voxel grid attributes for the GPU.
@@ -170,6 +171,11 @@ private:
     /// \param[in] previous Previous 0th SH threshold.
     /// \param[in] threshold New SH0 threshold.
     void setSH0Threshold(float previous, float threshold);
+
+    /// Set the color map mode.
+    /// \param[in] previous Previous color map mode.
+    /// \param[in] mode The new mode.
+    void setColorMapMode(int previous, int mode);
 
     /// Toggle fading of hidden objects.
     /// \param[in] previous Previous value.

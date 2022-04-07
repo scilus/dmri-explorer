@@ -292,6 +292,14 @@ void SHField::setNormalized(bool previous, bool isNormalized)
     }
 }
 
+void SHField::setColorMapMode(int previous, int mode)
+{
+    if(previous != mode)
+    {
+        mSphereInfoData.Update(6*sizeof(unsigned int) + 2*sizeof(float), sizeof(unsigned int), &mode);       
+    }
+}
+
 
 void SHField::setSH0Threshold(float previous, float threshold)
 {
