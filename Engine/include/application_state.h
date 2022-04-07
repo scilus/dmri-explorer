@@ -207,12 +207,9 @@ public:
     /// Parameter containing the fODF image object.
     ApplicationParameter<NiftiImageWrapper> FODFImage;
 
-<<<<<<< HEAD
     /// Parameter for MagnifyingMode mode control.
     ApplicationParameter<bool> MagnifyingMode;
     
-=======
->>>>>>> c5832e00a3f44677155969e5813d885fa60f6598
     /// Parameter containing the fODF image object.
     ApplicationParameter<NiftiImageWrapper> BackgroundImage;
 };

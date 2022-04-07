@@ -114,7 +114,6 @@ void Application::initialize()
         // Add texture once the UI is drawn
         mScene->AddTexture();
     }
-<<<<<<< HEAD
 
     // Reset the secondary camera when magnifying mode is enabled from GUI
     mState->MagnifyingMode.RegisterCallback(
@@ -139,8 +138,6 @@ bool Application::insideSecondaryViewport(int& height, int& width, double& xPos,
         return true;
     }
     return false;
-=======
->>>>>>> c5832e00a3f44677155969e5813d885fa60f6598
 }
 
 void Application::setWindowIcon()
@@ -193,15 +190,12 @@ void Application::renderFrame()
 {
     // Handle events
     glfwPollEvents();
-<<<<<<< HEAD
 
     Application* app = (Application*)glfwGetWindowUserPointer(mWindow);
     int h, w;
     int scaleFactor = app->mState->Window.SecondaryViewportScale.Get();
     bool magnifyingModeOn = app->mState->MagnifyingMode.Get();
     glfwGetWindowSize(mWindow, &w, &h);
-=======
->>>>>>> c5832e00a3f44677155969e5813d885fa60f6598
     // Update camera parameters
     mCamera->UpdateGPU();
     glViewport(0, 0, w, h);
