@@ -45,21 +45,7 @@ void main()
     otherMatrix[3][2] = float(floor(-gridDims.z/2.0f));
     otherMatrix[3][3] = 1.0f;
 
-    if(slice.x == 1) //X
-    {
-        frag_tex_coord=vec3(sliceIndex.x/gridDims.x, texCoord.x,texCoord.y);
-        color=vec4(1.0f,0.0f,0.0f,1.0f);
-    }
-    if(slice.y == 1) //Y
-    {
-        frag_tex_coord=vec3(texCoord.x, sliceIndex.y/gridDims.y,texCoord.y);
-        color=vec4(0.0f,1.0f,0.0f,1.0f);
-    }
-    if(slice.z == 1) //Z
-    {
-        frag_tex_coord=vec3(texCoord.x,texCoord.y, sliceIndex.z/gridDims.z);
-        color=vec4(0.0f,0.0f,1.0f,1.0f);
-    }
+    frag_tex_coord=texCoord;
 
     direction = vec3(slice.x*(sliceIndex.x-floor((gridDims.x/2.0f))),slice.y*(sliceIndex.y-floor((gridDims.y/2.0f))),slice.z*(sliceIndex.z-floor((gridDims.z/2.0f))));
     gl_Position = projectionMatrix

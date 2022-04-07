@@ -87,13 +87,10 @@ double NiftiImageWrapper::at(uint i, uint j, uint k, uint l) const
     return value;
 }
 
-//Changer la fonction 
 uint8_t NiftiImageWrapper::uintAt(uint i, uint j, uint k, uint l) const
 {
     const size_t flatIndex = flattenIndex(i, j, k, l);
-    double value = 0.0;
-   
-    return value;
+    return ((uint8_t*)(mImage->data))[flatIndex];
 }
 
 DataType NiftiImageWrapper::dtype() const

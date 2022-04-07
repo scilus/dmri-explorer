@@ -115,5 +115,8 @@ private:
 
     /// Elements buffer object.
     std::vector<glm::vec3> mSlice;
+
+        /// Elements buffer object.
+    glm::vec4 mSliceIndices;
 };
 } // namespace Slicer

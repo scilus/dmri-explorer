@@ -15,6 +15,7 @@ Texture::Texture(const std::shared_ptr<ApplicationState>& state,
 ,mTextureCoords()
 ,mSliceBO(0)
 ,mSlice()
+,mSliceIndices()
 ,mData()
 ,mIsSliceDirty(true)
 {
@@ -33,7 +34,24 @@ void Texture::updateApplicationStateAtInit()
 
 void Texture::registerStateCallbacks()
 {
-    //C'est ici que quand on change la slice on change le plan
+    mState->VoxelGrid.SliceIndices.RegisterCallback(
+        [this](glm::vec3 p, glm::vec3 n)
+        {
+            this->setSliceIndex(p, n);
+        }
+    );
+}
+
+void Texture::setSliceIndex(glm::vec3 prevIndices, glm::vec3 newIndices)
+{
+    mIsSliceDirty.x = prevIndices.x != newIndices.x;
+    mIsSliceDirty.y = prevIndices.y != newIndices.y;
+    mIsSliceDirty.z = prevIndices.z != newIndices.z;
+
+    if(mIsSliceDirty.x || mIsSliceDirty.y || mIsSliceDirty.z)
+    {
+        mSliceIndices = glm::ivec4(newIndices, 0);
+    }
 }
 
 void Texture::initProgramPipeline()
@@ -61,22 +79,21 @@ void Texture::initializeMembers()
     const int nCoeffs = image.dims().w;
 
 
-    for(int i = 0; i < dimX; ++i)
+    for(int k = 0; k < dimZ; ++k)
     {
         for(int j = 0; j < dimY; ++j)
         {
-            for(int k = 0; k < dimZ; ++k)
+            for(int i = 0; i < dimX; ++i)
             {
                 for(int l = 0; l < nCoeffs; ++l)
                 {
-                    if(image.at(i,j,k,l)!=0){
-                     std::cout<<image.at(i,j,k,l)<<std::endl;
-                    }
-                    mData.push_back(image.at(i,j,k,l));
+                    const auto val = image.uintAt(i,j,k,l);
+                    mData.push_back(val);
                 }
             }
         }
     }
+
 
     //Plan XY
     mVertices.push_back(glm::vec3(0.0f,0.0f,ceil(dimZ/2.0f)));
@@ -107,29 +124,29 @@ void Texture::initializeMembers()
 
 
     //Plan XY
-    mTextureCoords.push_back(glm::vec3(0.0f,0.0f,1.0f));
-    mTextureCoords.push_back(glm::vec3(0.0f,1.0f,1.0f));
-    mTextureCoords.push_back(glm::vec3(1.0f,0.0f,1.0f));
+    mTextureCoords.push_back(glm::vec3(0.0f,0.0f,mSliceIndices.z/dimZ));
+    mTextureCoords.push_back(glm::vec3(0.0f,1.0f,mSliceIndices.z/dimZ));
+    mTextureCoords.push_back(glm::vec3(1.0f,0.0f,mSliceIndices.z/dimZ));
 
-    mTextureCoords.push_back(glm::vec3(0.0f,1.0f,1.0f));
-    mTextureCoords.push_back(glm::vec3(1.0f,1.0f,1.0f));
-    mTextureCoords.push_back(glm::vec3(1.0f,0.0f,1.0f));
+    mTextureCoords.push_back(glm::vec3(0.0f,1.0f,mSliceIndices.z/dimZ));
+    mTextureCoords.push_back(glm::vec3(1.0f,1.0f,mSliceIndices.z/dimZ));
+    mTextureCoords.push_back(glm::vec3(1.0f,0.0f,mSliceIndices.z/dimZ));
 
-    mTextureCoords.push_back(glm::vec3(0.0f,0.0f,1.0f));
-    mTextureCoords.push_back(glm::vec3(0.0f,1.0f,1.0f));
-    mTextureCoords.push_back(glm::vec3(1.0f,0.0f,1.0f));
+    mTextureCoords.push_back(glm::vec3(mSliceIndices.x/dimX,0.0f,0.0f));
+    mTextureCoords.push_back(glm::vec3(mSliceIndices.x/dimX,0.0f,1.0f));
+    mTextureCoords.push_back(glm::vec3(mSliceIndices.x/dimX,1.0f,0.0f));
 
-    mTextureCoords.push_back(glm::vec3(0.0f,1.0f,1.0f));
-    mTextureCoords.push_back(glm::vec3(1.0f,1.0f,1.0f));
-    mTextureCoords.push_back(glm::vec3(1.0f,0.0f,1.0f));
+    mTextureCoords.push_back(glm::vec3(mSliceIndices.x/dimX,0.0f,1.0f));
+    mTextureCoords.push_back(glm::vec3(mSliceIndices.x/dimX,1.0f,1.0f));
+    mTextureCoords.push_back(glm::vec3(mSliceIndices.x/dimX,1.0f,0.0f));
 
-    mTextureCoords.push_back(glm::vec3(0.0f,0.0f,1.0f));
-    mTextureCoords.push_back(glm::vec3(0.0f,1.0f,1.0f));
-    mTextureCoords.push_back(glm::vec3(1.0f,0.0f,1.0f));
+    mTextureCoords.push_back(glm::vec3(0.0f,mSliceIndices.y/dimY,0.0f));
+    mTextureCoords.push_back(glm::vec3(0.0f,mSliceIndices.y/dimY,1.0f));
+    mTextureCoords.push_back(glm::vec3(1.0f,mSliceIndices.y/dimY,0.0f));
 
-    mTextureCoords.push_back(glm::vec3(0.0f,1.0f,1.0f));
-    mTextureCoords.push_back(glm::vec3(1.0f,1.0f,1.0f));
-    mTextureCoords.push_back(glm::vec3(1.0f,0.0f,1.0f));
+    mTextureCoords.push_back(glm::vec3(0.0f,mSliceIndices.y/dimY,1.0f));
+    mTextureCoords.push_back(glm::vec3(1.0f,mSliceIndices.y/dimY,1.0f));
+    mTextureCoords.push_back(glm::vec3(1.0f,mSliceIndices.y/dimY,0.0f));
 
         //Plan XY
     mSlice.push_back(glm::vec3(0.0f,0.0f,1.0f));
@@ -170,18 +187,12 @@ void Texture::initializeMembers()
     glVertexArrayBindingDivisor(mVAO, VAOIndex, 0);
     glVertexArrayAttribBinding(mVAO, VAOIndex, 0);
 
-    //Create texture
-    void * data = image.getData();
-    // void * data = &mData;
-
     unsigned int texture;
-
     glCreateTextures(GL_TEXTURE_3D, 1, &texture);
-    glTextureStorage3D(texture, 1, GL_RGB32F, dimX, dimY, dimZ);
     glBindTexture(GL_TEXTURE_3D, texture);
 
-    glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, dimX, dimY, dimZ, GL_RGB, GL_UNSIGNED_BYTE_3_3_2_EXT, data);
-    // glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, dimX, dimY, dimZ, 0, GL_RGB, GL_UNSIGNED_BYTE_3_3_2_EXT, data);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, dimX, dimY, dimZ, 0, GL_RGB, GL_UNSIGNED_BYTE, &mData[0]);
     glGenerateMipmap(GL_TEXTURE_3D);
 
     const GLuint TexIndex = 1;
