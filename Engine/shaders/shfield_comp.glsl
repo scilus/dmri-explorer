@@ -16,6 +16,11 @@ layout(std430, binding=1) buffer allSpheresNormalsBuffer
     vec4 allNormals[];
 };
 
+layout(std430, binding=2) buffer allSphereMaxAmplitude
+{
+    vec4 allMaxAmplitude[];
+};
+
 const float FLOAT_EPS = 1e-4;
 const float PI = 3.14159265358979323;
 
@@ -89,6 +94,8 @@ void updateNormals(uint firstNormalID)
         }
     }
 }
+
+void computeMaxAmplitude()
 
 void main()
 {
