@@ -61,6 +61,12 @@ void SHField::registerStateCallbacks()
             this->setNormalized(p, n);
         }
     );
+    mState->Sphere.ColorMapMode.RegisterCallback(
+        [this](int p, int n)
+        {
+            this->setColorMapMode(p, n);
+        }
+    );
     mState->Sphere.SH0Threshold.RegisterCallback(
         [this](float p, float n)
         {
@@ -218,6 +224,7 @@ void SHField::initializeGPUData()
     sphereData.Scaling = mState->Sphere.Scaling.Get();
     sphereData.NbCoeffs = mState->FODFImage.Get().dims().w;
     sphereData.FadeIfHidden = mState->Sphere.FadeIfHidden.Get();
+    sphereData.ColorMapMode = mState->Sphere.ColorMapMode.Get();
 
     GridData gridData;
     gridData.SliceIndices = glm::ivec4(mState->VoxelGrid.SliceIndices.Get(), 0);
@@ -285,7 +292,6 @@ void SHField::setNormalized(bool previous, bool isNormalized)
     {
         unsigned int isNormalizedInt = isNormalized ? 1 : 0;
         glm::ivec4 isDirty(1, 1, 1, 0);
-        // FIXME: l'ordre est important et faut donnre le offset de la position de l'attribut en bit
         mSphereInfoData.Update(sizeof(unsigned int)*2, sizeof(unsigned int), &isNormalizedInt);
         mIsSliceDirty = glm::bvec3(true);
         scaleSpheres();

@@ -50,6 +50,28 @@ vec4 getVertexSlice(ivec3 index3d)
     return vec4(i, j, k, 0.0f);
 }
 
+vec4 grayScaleColorMap(vec4 cur)
+{
+    const float max = allRadiis[gl_VertexID];
+    const float avg = (abs(cur.x) + abs(cur.y) + abs(cur.z)) * scaling / max;
+    const vec4 grayScale = vec4(avg, avg, avg, 1.0f);
+    return grayScale;
+}
+
+vec4 setColorMapMode(vec4 currentVertex)
+{
+    // Default
+    if (colorMapMode == 0)
+    {
+        return abs(vec4(normalize(currentVertex.xyz), 1.0f));
+;
+    }
+    else if (colorMapMode == 1)
+    {
+        return grayScaleColorMap(currentVertex);
+    }
+}
+
 void main()
 {
     const ivec3 index3d = convertFlatOrthoSlicesIDTo3DVoxID(gl_DrawID);
@@ -79,8 +101,8 @@ void main()
 
     world_normal = modelMatrix
                  * allNormals[gl_VertexID];
-    // TODO: decider de la couleur selon le mode de color map
-    color = abs(vec4(normalize(currentVertex.xyz), 1.0f));
+    // color = abs(vec4(normalize(currentVertex.xyz), 1.0f));
+    color = setColorMapMode(currentVertex);
     is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID) && isAboveThreshold ? 1.0f : -1.0f;
     world_eye_pos = vec4(eye.xyz, 1.0f);
     vertex_slice = getVertexSlice(index3d);
