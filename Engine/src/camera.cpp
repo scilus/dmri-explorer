@@ -128,17 +128,18 @@ void Camera::RotateCS(const glm::vec2& vec)
     {
         return;
     }
+
     const float& rotationSpeed = mState->Window.RotationSpeed.Get();
     const float dx = vec.x * rotationSpeed;
     const float dy = -vec.y * rotationSpeed;
-    glm::vec3 lookAt = mLookAt - mPosition;
 
     // Compute the rotation axis.
-    const glm::vec3 leftAxis = glm::normalize(glm::cross(mUpVector, lookAt));
+    const glm::vec3 leftAxis = glm::normalize(glm::cross(mUpVector, -mPosition));
 
     // Compute transform and new position.
     glm::mat4 transform = glm::rotate(dy, leftAxis) * glm::rotate(dx, mUpVector);
-    mPosition = mLookAt - glm::vec3(transform * glm::vec4(lookAt, 0.0f));
+    mPosition = glm::vec3(transform * glm::vec4(mPosition, 0.0f));
+    mLookAt = glm::vec3(transform * glm::vec4(mLookAt, 0.0f));
 
     // Rotation and view matrix update.
     mUpVector = transform * glm::vec4(mUpVector, 0.0f);
@@ -169,6 +170,7 @@ void Camera::Zoom(double delta)
     const float& speed = mState->Window.ZoomSpeed.Get();
     const glm::vec3 direction = speed * glm::normalize(mLookAt - mPosition);
     mPosition = mPosition + direction * (float)delta;
+    mLookAt = mLookAt + direction * (float)delta;
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
 } // namespace Slicer
