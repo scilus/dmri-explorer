@@ -50,11 +50,29 @@ vec4 getVertexSlice(ivec3 index3d)
     return vec4(i, j, k, 0.0f);
 }
 
-vec4 grayScaleColorMap(vec4 cur)
+float maxAmplitude()
 {
-    const float max = allRadiis[gl_VertexID];
-    const float avg = (abs(cur.x) + abs(cur.y) + abs(cur.z)) * scaling / max;
-    const vec4 grayScale = vec4(avg, avg, avg, 1.0f);
+
+    // FIXME: take to much time, new buffer in vertex comp
+    uint currentVerticeID = gl_DrawID * nbVertices;
+    float max = 0.0;
+    for (int i=0; i < nbVertices; ++i)
+    {
+        const float amplitude = allRadiis[currentVerticeID + i];
+        if (amplitude > max)
+        {
+            max = amplitude;
+        }
+    }
+    return max;
+
+}
+
+vec4 grayScaleColorMap()
+{   
+    const float maxAmplitude = maxAmplitude();
+    const float currentRadius = allRadiis[gl_VertexID];
+    const vec4 grayScale = vec4(currentRadius/maxAmplitude, currentRadius/maxAmplitude, currentRadius/maxAmplitude, 1.0f);
     return grayScale;
 }
 
@@ -68,7 +86,7 @@ vec4 setColorMapMode(vec4 currentVertex)
     }
     else if (colorMapMode == 1)
     {
-        return grayScaleColorMap(currentVertex);
+        return grayScaleColorMap();
     }
 }
 
