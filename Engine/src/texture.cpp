@@ -16,7 +16,6 @@ Texture::Texture(const std::shared_ptr<ApplicationState>& state,
 ,mSliceBO(0)
 ,mSlice()
 ,mData()
-,mIsSliceDirty(true)
 {
     resetCS(std::shared_ptr<CoordinateSystem>(new CoordinateSystem(glm::mat4(1.0f), parent)));
     initializeModel();
@@ -58,7 +57,8 @@ void Texture::initializeMembers()
     const int nCoeffs = image.dims().w;
 
     const double max = image.getMax();
-
+    
+    //Get image data
     for(int k = 0; k < dimZ; ++k)
     {
         for(int j = 0; j < dimY; ++j)
@@ -73,7 +73,7 @@ void Texture::initializeMembers()
         }
     }
 
-
+    //Create 2 triangles to create a plan for texture
     //Plan XY
     mVertices.push_back(glm::vec3(0.0f,0.0f,ceil(dimZ/2.0f)));
     mVertices.push_back(glm::vec3(0.0f,dimY,ceil(dimZ/2.0f)));
@@ -149,6 +149,7 @@ void Texture::initializeMembers()
     mSlice.push_back(glm::vec3(0.0f,1.0f,0.0f));
     mSlice.push_back(glm::vec3(0.0f,1.0f,0.0f));
 
+    //Create texture
     unsigned int texture;
     glCreateTextures(GL_TEXTURE_3D, 1, &texture);
     glBindTexture(GL_TEXTURE_3D, texture);
@@ -173,6 +174,7 @@ void Texture::initializeMembers()
 
     glCreateVertexArrays(1, &mVAO);
 
+    //Bind vertices
     const GLuint verticesIndex = 0;
     mVerticesBO = genVBO<glm::vec3>(mVertices);
 
@@ -182,6 +184,7 @@ void Texture::initializeMembers()
     glVertexArrayBindingDivisor(mVAO, verticesIndex, 0);
     glVertexArrayAttribBinding(mVAO, verticesIndex, verticesIndex);
 
+    //Bind texture coordinates
     const GLuint texIndex = 1;
     mTextureCoordsBO = genVBO<glm::vec3>(mTextureCoords);
 
@@ -191,6 +194,7 @@ void Texture::initializeMembers()
     glVertexArrayBindingDivisor(mVAO, texIndex, 0);
     glVertexArrayAttribBinding(mVAO, texIndex, texIndex);
 
+    //Bind Slices
     const GLuint sliceIndex = 2;
     mSliceBO = genVBO<glm::vec3>(mSlice);
 
