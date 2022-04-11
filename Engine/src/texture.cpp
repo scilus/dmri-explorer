@@ -61,6 +61,7 @@ void Texture::initializeMembers()
     const int dimZ = image.dims().z;
     const int nCoeffs = image.dims().w;
 
+    const double max = image.getMax();
 
     for(int k = 0; k < dimZ; ++k)
     {
@@ -70,11 +71,12 @@ void Texture::initializeMembers()
             {
                 for(int l = 0; l < nCoeffs; ++l)
                 {
-                    mData.push_back(image.uintAt(i,j,k,l));
+                    mData.push_back(float(image.at(i,j,k,l))/max);
                 }
             }
         }
     }
+
 
     //Plan XY
     mVertices.push_back(glm::vec3(0.0f,0.0f,ceil(dimZ/2.0f)));
@@ -109,14 +111,14 @@ void Texture::initializeMembers()
     mVertices.push_back(glm::vec3(ceil(dimX/2.0f),0.0f,dimZ));
     mVertices.push_back(glm::vec3(ceil(dimX/2.0f),dimY,dimZ));
     mVertices.push_back(glm::vec3(ceil(dimX/2.0f),dimY,0.0f));
-    
+
     mTextureCoords.push_back(glm::vec3(0.0f,0.0f,0.0f));
     mTextureCoords.push_back(glm::vec3(0.0f,1.0f,0.0f));
     mTextureCoords.push_back(glm::vec3(1.0f,0.0f,0.0f));
 
     mTextureCoords.push_back(glm::vec3(0.0f,1.0f,0.0f));
     mTextureCoords.push_back(glm::vec3(1.0f,1.0f,0.0f));
-    mTextureCoords.push_back(glm::vec3(1.0f,0.0f,0.0f));   
+    mTextureCoords.push_back(glm::vec3(1.0f,0.0f,0.0f));
 
     mSlice.push_back(glm::vec3(1.0f,0.0f,0.0f));
     mSlice.push_back(glm::vec3(1.0f,0.0f,0.0f));
@@ -131,10 +133,10 @@ void Texture::initializeMembers()
     mVertices.push_back(glm::vec3(0.0f,ceil(dimY/2.0f),dimZ));
     mVertices.push_back(glm::vec3(dimX,ceil(dimY/2.0f),0.0f));
 
-    mVertices.push_back(glm::vec3(0.0f,ceil(dimY/2),dimZ));
-    mVertices.push_back(glm::vec3(dimX,ceil(dimY/2),dimZ));
-    mVertices.push_back(glm::vec3(dimX,ceil(dimY/2),0.0f));
-    
+    mVertices.push_back(glm::vec3(0.0f,ceil(dimY/2.0f),dimZ));
+    mVertices.push_back(glm::vec3(dimX,ceil(dimY/2.0f),dimZ));
+    mVertices.push_back(glm::vec3(dimX,ceil(dimY/2.0f),0.0f));
+
     mTextureCoords.push_back(glm::vec3(0.0f,0.0f,0.0f));
     mTextureCoords.push_back(glm::vec3(0.0f,1.0f,0.0f));
     mTextureCoords.push_back(glm::vec3(1.0f,0.0f,0.0f));
@@ -151,40 +153,56 @@ void Texture::initializeMembers()
     mSlice.push_back(glm::vec3(0.0f,1.0f,0.0f));
     mSlice.push_back(glm::vec3(0.0f,1.0f,0.0f));
 
-
-    // Bind primitives to GPU
-    glCreateVertexArrays(1, &mVAO);
-
-    const GLuint VAOIndex = 0;
-    mVerticesBO = genVBO<glm::vec3>(mVertices);
-
-    glEnableVertexArrayAttrib(mVAO, VAOIndex);
-    glVertexArrayAttribFormat(mVAO, VAOIndex, 3, GL_FLOAT, GL_FALSE, 0);
-    glVertexArrayVertexBuffer(mVAO, VAOIndex, mVerticesBO, 0, sizeof(float)*3);
-    glVertexArrayBindingDivisor(mVAO, VAOIndex, 0);
-    glVertexArrayAttribBinding(mVAO, VAOIndex, 0);
-
     unsigned int texture;
     glCreateTextures(GL_TEXTURE_3D, 1, &texture);
     glBindTexture(GL_TEXTURE_3D, texture);
 
+    auto type = GL_RGB;
+    if (nCoeffs == 1)
+    {
+        type = GL_RED;
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_SWIZZLE_R, GL_RED);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_SWIZZLE_G, GL_RED);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_SWIZZLE_B, GL_RED);
+    }
+
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, dimX, dimY, dimZ, 0, GL_RGB, GL_UNSIGNED_BYTE, &mData[0]);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    
+    glTexImage3D(GL_TEXTURE_3D, 0, type, dimX, dimY, dimZ, 0, type, GL_FLOAT, &mData[0]);
     glGenerateMipmap(GL_TEXTURE_3D);
 
-    const GLuint TexIndex = 1;
+    glCreateVertexArrays(1, &mVAO);
+
+    const GLuint verticesIndex = 0;
+    mVerticesBO = genVBO<glm::vec3>(mVertices);
+
+    glEnableVertexArrayAttrib(mVAO, verticesIndex);
+    glVertexArrayAttribFormat(mVAO, verticesIndex, 3, GL_FLOAT, GL_FALSE, 0);
+    glVertexArrayVertexBuffer(mVAO, verticesIndex, mVerticesBO, 0, sizeof(float)*3);
+    glVertexArrayBindingDivisor(mVAO, verticesIndex, 0);
+    glVertexArrayAttribBinding(mVAO, verticesIndex, verticesIndex);
+
+    const GLuint texIndex = 1;
     mTextureCoordsBO = genVBO<glm::vec3>(mTextureCoords);
 
-    glEnableVertexArrayAttrib(mVAO, TexIndex);
-    glVertexArrayAttribFormat(mVAO, TexIndex, 3, GL_FLOAT, GL_FALSE, 0);
-    glVertexArrayVertexBuffer(mVAO, TexIndex, mTextureCoordsBO, 0, sizeof(float)*3);
+    glEnableVertexArrayAttrib(mVAO, texIndex);
+    glVertexArrayAttribFormat(mVAO, texIndex, 3, GL_FLOAT, GL_FALSE, 0);
+    glVertexArrayVertexBuffer(mVAO, texIndex, mTextureCoordsBO, 0, sizeof(float)*3);
+    glVertexArrayBindingDivisor(mVAO, texIndex, 0);
+    glVertexArrayAttribBinding(mVAO, texIndex, texIndex);
 
-    const GLuint SliceIndex = 2;
+    const GLuint sliceIndex = 2;
     mSliceBO = genVBO<glm::vec3>(mSlice);
 
-    glEnableVertexArrayAttrib(mVAO, SliceIndex);
-    glVertexArrayAttribFormat(mVAO, SliceIndex, 3, GL_FLOAT, GL_FALSE, 0);
-    glVertexArrayVertexBuffer(mVAO, SliceIndex, mSliceBO, 0, sizeof(float)*3);
+    glEnableVertexArrayAttrib(mVAO, sliceIndex);
+    glVertexArrayAttribFormat(mVAO, sliceIndex, 3, GL_FLOAT, GL_FALSE, 0);
+    glVertexArrayVertexBuffer(mVAO, sliceIndex, mSliceBO, 0, sizeof(float)*3);
+    glVertexArrayBindingDivisor(mVAO, sliceIndex, 0);
+    glVertexArrayAttribBinding(mVAO, sliceIndex, sliceIndex);
 
     timer.Stop();
 }

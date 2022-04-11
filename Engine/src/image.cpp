@@ -67,6 +67,28 @@ void * NiftiImageWrapper::getData() const
     return mImage->data;
 }
 
+double NiftiImageWrapper::getMax() const
+{
+    double max = 0.0f;
+    for(int k = 0; k < mDims.z; ++k)
+    {
+        for(int j = 0; j < mDims.y; ++j)
+        {
+            for(int i = 0; i < mDims.x; ++i)
+            {
+                for(int l = 0; l < mDims.w; ++l)
+                {
+                    if(max < at(i,j,k,l))
+                    {
+                        max = at(i,j,k,l);
+                    }
+                }
+            }
+        }
+    }
+    return max;
+}
+
 //Changer la fonction 
 double NiftiImageWrapper::at(uint i, uint j, uint k, uint l) const
 {
@@ -80,17 +102,10 @@ double NiftiImageWrapper::at(uint i, uint j, uint k, uint l) const
     {
         value = static_cast<double>(((float*)(mImage->data))[flatIndex]);
     }
-     if(dtype() == DataType::uint8)
-    {
-        value = ((uint8_t*)(mImage->data))[flatIndex];
+    else if (dtype() == DataType::uint8){
+        value = static_cast<double>(((uint8_t*)(mImage->data))[flatIndex]);
     }
     return value;
-}
-
-uint8_t NiftiImageWrapper::uintAt(uint i, uint j, uint k, uint l) const
-{
-    const size_t flatIndex = flattenIndex(i, j, k, l);
-    return ((uint8_t*)(mImage->data))[flatIndex];
 }
 
 DataType NiftiImageWrapper::dtype() const

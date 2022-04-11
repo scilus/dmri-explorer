@@ -108,7 +108,7 @@ private:
     std::vector<glm::vec3> mVertices;
 
     /// Elements buffer object.
-    std::vector<glm::uint8_t> mData;
+    std::vector<float> mData;
 
     /// Elements buffer object.
     std::vector<glm::vec3> mTextureCoords;
