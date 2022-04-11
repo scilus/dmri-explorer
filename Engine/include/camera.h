@@ -73,7 +73,7 @@ private:
         glm::vec4 eye;
         glm::mat4 viewMatrix;
         glm::mat4 projectionMatrix;
-    };    
+    };
     /// Camera position.
     glm::vec3 mPosition;
 

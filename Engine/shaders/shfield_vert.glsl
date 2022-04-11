@@ -55,23 +55,6 @@ vec4 getVertexSlice(ivec3 index3d)
     return vec4(i, j, k, 0.0f);
 }
 
-float maxAmplitude()
-{
-
-    // FIXME: take to much time, new buffer in vertex comp
-    uint currentVerticeID = gl_DrawID * nbVertices;
-    float max = 0.0;
-    for (int i=0; i < nbVertices; ++i)
-    {
-        const float amplitude = allRadiis[currentVerticeID + i];
-        if (amplitude > max)
-        {
-            max = amplitude;
-        }
-    }
-    return max;
-}
-
 vec4 grayScaleColorMap()
 {   
     const float maxAmplitude = allMaxAmplitude[gl_DrawID];
@@ -92,6 +75,7 @@ vec4 setColorMapMode(vec4 currentVertex)
     {
         return grayScaleColorMap();
     }
+    // TODO: add new mode
 }
 
 void main()

@@ -53,10 +53,10 @@ bool scaleSphere(uint voxID, uint firstVertID)
                 rmax *= sqrt(0.5f * float(maxOrder) + 1.0f);
                 sfEval /= rmax;
             }
+
             upperBound = sqrt(upperBound);
             upperBound *= sqrt(0.5f * float(maxOrder) + 1.0f);
             allMaxAmplitude[firstVertID / nbVertices] = upperBound;
-
             allRadiis[firstVertID + sphVertID] = sfEval;
         }
         else
