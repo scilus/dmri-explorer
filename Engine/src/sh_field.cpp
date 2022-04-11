@@ -214,6 +214,7 @@ void SHField::initializeGPUData()
     std::vector<glm::vec4> allVertices(nbSpheres * mSphere->GetPoints().size());
     std::vector<float> allRadiis(nbSpheres * mSphere->GetPoints().size());
     std::vector<float> allOrders = mSphere->GetOrdersList();
+    std::vector<float> allMaxAmplitude(nbSpheres);
 
     SphereData sphereData;
     sphereData.NumVertices = mSphere->GetPoints().size();
@@ -250,6 +251,8 @@ void SHField::initializeGPUData()
                                       sizeof(SphereData));
     mGridInfoData = GPU::ShaderData(&gridData, GPU::Binding::gridInfo,
                                     sizeof(GridData));
+    mAllMaxAmplitudeData = GPU::ShaderData(allMaxAmplitude.data(), GPU::Binding::allMaxAmplitude,
+                                     sizeof(float) * allMaxAmplitude.size());
 
     // push all data to GPU
     mSphHarmCoeffsData.ToGPU();
@@ -261,6 +264,7 @@ void SHField::initializeGPUData()
     mAllSpheresNormalsData.ToGPU();
     mGridInfoData.ToGPU();
     mAllRadiisData.ToGPU();
+    mAllMaxAmplitudeData.ToGPU();
 }
 
 template <typename T>

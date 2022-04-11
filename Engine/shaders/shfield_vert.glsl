@@ -20,6 +20,11 @@ layout(std430, binding=10) buffer modelTransformsBuffer
     mat4 modelMatrix;
 };
 
+layout(std430, binding=12) buffer allMaxAmplitudeBuffer
+{
+    float allMaxAmplitude[];
+};
+
 // Outputs
 out gl_PerVertex{
     vec4 gl_Position;
@@ -65,12 +70,11 @@ float maxAmplitude()
         }
     }
     return max;
-
 }
 
 vec4 grayScaleColorMap()
 {   
-    const float maxAmplitude = maxAmplitude();
+    const float maxAmplitude = allMaxAmplitude[gl_DrawID];
     const float currentRadius = allRadiis[gl_VertexID];
     const vec4 grayScale = vec4(currentRadius/maxAmplitude, currentRadius/maxAmplitude, currentRadius/maxAmplitude, 1.0f);
     return grayScale;

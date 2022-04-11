@@ -16,9 +16,9 @@ layout(std430, binding=1) buffer allSpheresNormalsBuffer
     vec4 allNormals[];
 };
 
-layout(std430, binding=2) buffer allSphereMaxAmplitude
+layout(std430, binding=12) buffer allMaxAmplitudeBuffer
 {
-    vec4 allMaxAmplitude[];
+    float allMaxAmplitude[];
 };
 
 const float FLOAT_EPS = 1e-4;
@@ -29,6 +29,7 @@ bool scaleSphere(uint voxID, uint firstVertID)
     float sfEval;
     vec3 normal;
     float rmax;
+    float upperBound;
     const float sh0 = shCoeffs[voxID * nbCoeffs];
     bool nonZero = sh0 > FLOAT_EPS;
     for(uint sphVertID = 0; sphVertID < nbVertices; ++sphVertID)
@@ -43,6 +44,7 @@ bool scaleSphere(uint voxID, uint firstVertID)
                         * shFuncs[sphVertID * nbCoeffs + i];
 
                 rmax += (2.0f * L[i] + 1.0f) / 4.0f / PI * pow(shCoeffs[voxID * nbCoeffs + i], 2.0f);
+                upperBound = rmax;
             }
 
             if(isNormalized > 0)
@@ -51,6 +53,9 @@ bool scaleSphere(uint voxID, uint firstVertID)
                 rmax *= sqrt(0.5f * float(maxOrder) + 1.0f);
                 sfEval /= rmax;
             }
+            upperBound = sqrt(upperBound);
+            upperBound *= sqrt(0.5f * float(maxOrder) + 1.0f);
+            allMaxAmplitude[firstVertID / nbVertices] = upperBound;
 
             allRadiis[firstVertID + sphVertID] = sfEval;
         }
@@ -94,8 +99,6 @@ void updateNormals(uint firstNormalID)
         }
     }
 }
-
-void computeMaxAmplitude()
 
 void main()
 {
