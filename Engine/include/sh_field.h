@@ -240,7 +240,7 @@ private:
     /// SH functions GPU data.
     GPU::ShaderData mSphHarmFuncsData;
 
-    /// Voxel grid GPU data. Changer de place mettre dans le model
+    /// Voxel grid GPU data.
     GPU::ShaderData mGridInfoData;
 
     /// Sphere vertices GPU data.

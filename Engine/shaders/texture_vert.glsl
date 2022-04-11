@@ -8,7 +8,11 @@ layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 texCoord;
 layout (location = 2) in vec3 slice;
 
-// Outputs
+layout(std430, binding=10) buffer modelTransformsBuffer
+{
+    mat4 modelMatrix;
+};
+
 out gl_PerVertex{
     vec4 gl_Position;
 };
@@ -27,18 +31,18 @@ void main()
     localMatrix[3][2] = floor(-gridDims.z/2.0f) - 0.5f;
     localMatrix[3][3] = 1.0f;
 
-    if(slice.x == 1.0f)
+    if(slice.x > 0.9f && slice.x < 1.1f)
     {
         frag_tex_coord = vec3(sliceIndex.x/float(gridDims.x-1.0f), texCoord.x, texCoord.y);
         direction = vec3(sliceIndex.x-floor(gridDims.x/2.0f) + 0.5f, 0.0f, 1.0f);
     }
-    if(slice.y == 1.0f)
+    if(slice.y > 0.9f && slice.y < 1.1f)
     {
         frag_tex_coord = vec3(texCoord.x, sliceIndex.y/float(gridDims.y-1.0f), texCoord.y);
         direction = vec3(0.0f,sliceIndex.y-floor(gridDims.y/2.0f) + 0.5f ,1.0f);
 
     }
-    if(slice.z == 1.0f)
+    if(slice.z > 0.9f && slice.z < 1.1f)
     {
         frag_tex_coord = vec3(texCoord.x, texCoord.y, sliceIndex.z/float(gridDims.z-1.0f));
         direction = vec3(0.0f, 0.0f, sliceIndex.z-floor(gridDims.z/2.0f) + 0.5f);

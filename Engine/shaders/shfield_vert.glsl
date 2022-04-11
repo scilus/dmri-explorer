@@ -15,6 +15,11 @@ layout(std430, binding=1) buffer allNormalsBuffer
     vec4 allNormals[];
 };
 
+layout(std430, binding=10) buffer modelTransformsBuffer
+{
+    mat4 modelMatrix;
+};
+
 // Outputs
 out gl_PerVertex{
     vec4 gl_Position;

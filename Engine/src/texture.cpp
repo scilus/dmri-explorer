@@ -15,7 +15,6 @@ Texture::Texture(const std::shared_ptr<ApplicationState>& state,
 ,mTextureCoords()
 ,mSliceBO(0)
 ,mSlice()
-,mSliceIndices()
 ,mData()
 ,mIsSliceDirty(true)
 {
@@ -51,9 +50,6 @@ void Texture::initProgramPipeline()
 
 void Texture::initializeMembers()
 {
-    Utilities::Timer timer("Initialize members texture");
-    timer.Start();
-
     const auto& image = mState->BackgroundImage.Get();
 
     const int dimX = image.dims().x;
@@ -203,8 +199,6 @@ void Texture::initializeMembers()
     glVertexArrayVertexBuffer(mVAO, sliceIndex, mSliceBO, 0, sizeof(float)*3);
     glVertexArrayBindingDivisor(mVAO, sliceIndex, 0);
     glVertexArrayAttribBinding(mVAO, sliceIndex, sliceIndex);
-
-    timer.Stop();
 }
 
 template <typename T>

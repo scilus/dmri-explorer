@@ -95,28 +95,25 @@ private:
     /// Vertex array object.
     GLuint mVAO;
 
-    /// Elements buffer object.
+    /// Vertices buffer object.
     GLuint mVerticesBO;
 
-    /// Elements buffer object.
+    /// Texture coordinates buffer object.
     GLuint mTextureCoordsBO;
 
-    /// Elements buffer object.
+    /// Slices buffer object.
     GLuint mSliceBO;
 
-    /// Elements buffer object.
+    /// Vertices vector.
     std::vector<glm::vec3> mVertices;
 
-    /// Elements buffer object.
+    /// Texture data vector.
     std::vector<float> mData;
 
-    /// Elements buffer object.
+    /// Texture coordinates vector.
     std::vector<glm::vec3> mTextureCoords;
 
-    /// Elements buffer object.
+    /// Slice vector
     std::vector<glm::vec3> mSlice;
-
-        /// Elements buffer object.
-    glm::vec4 mSliceIndices;
 };
 } // namespace Slicer

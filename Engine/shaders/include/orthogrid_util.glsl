@@ -22,13 +22,6 @@ layout(std430, binding=8) buffer gridInfoBuffer
     uint currentSlice;
 };
 
-//Model batrix buffer
-layout(std430, binding=10) buffer modelTransformsBuffer
-{
-    //Contains the Model matrix
-    mat4 modelMatrix;
-};
-
 /// Convert 3D grid index to flat index for accessing SH coeffs array.
 uint convertSHCoeffsIndex3DToFlatVoxID(uint i, uint j, uint k)
 {

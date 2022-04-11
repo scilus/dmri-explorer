@@ -3,6 +3,11 @@
 
 #include "/include/orthogrid_util.glsl"
 
+layout(std430, binding=10) buffer modelTransformsBuffer
+{
+    mat4 modelMatrix;
+};
+
 in vec4 world_frag_pos;
 in vec4 color;
 in vec4 world_normal;
