@@ -65,29 +65,29 @@ void Camera::setMode(State::CameraMode previous, State::CameraMode mode)
             mBlockRotation=false;
             return;
         }
-        mBlockRotation=true;
-        const float dst = distance(mLookAt, mPosition);
+
+        mBlockRotation = true;
+        const float distToOrigin = length(mPosition);
+        const float distToLookAt = distance(mLookAt, mPosition);
 
         if(mode == State::CameraMode::projectiveX)
         {
-            mPosition = glm::vec3(dst, 0.0f, 0.0f);
-            mLookAt = glm::vec3(0.0f, 0.0f, 0.0f);
-            mUpVector = glm::vec3(0.0f, 0.0f, 1);
+            mPosition = glm::vec3(distToOrigin, 0.0f, 0.0f);
+            mUpVector = glm::vec3(0.0f, 0.0f, 1.0f);
         }
         else if(mode == State::CameraMode::projectiveY)
         {
-            mPosition = glm::vec3(0.0f, dst, 0.0f);
-            mLookAt = glm::vec3(0.0f, 0.0f, 0.0f);
-            mUpVector = glm::vec3(0.0f, 0.0f, 1);
+            mPosition = glm::vec3(0.0f, distToOrigin, 0.0f);
+            mUpVector = glm::vec3(0.0f, 0.0f, 1.0f);
         }
         else if(mode == State::CameraMode::projectiveZ)
         {
-            mPosition = glm::vec3(0.0f, 0.0f, dst);
-            mLookAt = glm::vec3(0.0f, 0.0f, 0.0f);
-            mUpVector = glm::vec3(0.0f, 1, 0.0f);
+            mPosition = glm::vec3(0.0f, 0.0f, distToOrigin);
+            mUpVector = glm::vec3(0.0f, 1.0f, 0.0f);
         }
+        const glm::vec3 posToOrigin = glm::normalize(- mPosition);
+        mLookAt = mPosition + distToLookAt * posToOrigin;
         mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
-
     }
 }
 
@@ -128,17 +128,18 @@ void Camera::RotateCS(const glm::vec2& vec)
     {
         return;
     }
+
     const float& rotationSpeed = mState->Window.RotationSpeed.Get();
     const float dx = vec.x * rotationSpeed;
     const float dy = -vec.y * rotationSpeed;
-    glm::vec3 lookAt = mLookAt - mPosition;
 
     // Compute the rotation axis.
-    const glm::vec3 leftAxis = glm::normalize(glm::cross(mUpVector, lookAt));
+    const glm::vec3 leftAxis = glm::normalize(glm::cross(mUpVector, -mPosition));
 
     // Compute transform and new position.
     glm::mat4 transform = glm::rotate(dy, leftAxis) * glm::rotate(dx, mUpVector);
-    mPosition = mLookAt - glm::vec3(transform * glm::vec4(lookAt, 0.0f));
+    mPosition = glm::vec3(transform * glm::vec4(mPosition, 0.0f));
+    mLookAt = glm::vec3(transform * glm::vec4(mLookAt, 0.0f));
 
     // Rotation and view matrix update.
     mUpVector = transform * glm::vec4(mUpVector, 0.0f);
