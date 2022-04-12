@@ -67,7 +67,7 @@ void Texture::initializeMembers()
             {
                 for(int l = 0; l < nCoeffs; ++l)
                 {
-                    mData.push_back(float(image.at(i,j,k,l))/max);
+                    mData.push_back(float(image.at(i,j,k,l)/max));
                 }
             }
         }

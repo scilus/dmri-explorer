@@ -1,22 +1,13 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <vector>
-#include <memory>
-#include <thread>
-#include <binding.h>
-#include <shader_data.h>
-#include <image.h>
-#include <sphere.h>
-#include <shader.h>
-#include <mutex>
 #include <model.h>
 
 namespace Slicer
 {
-/// \brief Spherical harmonics field.
+/// \brief Background texture field
 ///
-/// SH field Model for rendering SH glyphs.
+/// Model for rendering texture
 class Texture : public Model
 {
 public:
@@ -46,7 +37,7 @@ protected:
     void initProgramPipeline() override;
 
 private:
-     /// \brief Initialize class members.
+    /// \brief Initialize class members.
     ///
     /// Create plan for texture.
     /// Create texture.
