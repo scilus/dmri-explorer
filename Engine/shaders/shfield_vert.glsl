@@ -80,20 +80,18 @@ vec4 setColorMapMode(vec4 currentVertex)
     // Default
     if (colorMapMode == 0)
     {
-        color = abs(vec4(normalize(currentVertex.xyz), 1.0f));
+        return abs(vec4(normalize(currentVertex.xyz), 1.0f));
     }
     else if (colorMapMode == 1)
     {
-        color = grayScaleColorMap();
+        return grayScaleColorMap();
     }
     else if (colorMapMode == 2)
     {
-        color = rgb2hsv(currentVertex);
+        return rgb2hsv(currentVertex);
     }
     // TODO: add new mode
 
-    color = isNormalized > 0 ? (1.0f / allMaxAmplitude[gl_DrawID]) * color : color;
-    return color;
 }
 
 void main()
@@ -112,6 +110,12 @@ void main()
     localMatrix[3][3] = 1.0f;
 
     vec4 currentVertex = vec4(vertices[gl_VertexID%nbVertices].xyz * allRadiis[gl_VertexID], 1.0f);
+
+    // FIXME: lag dans la scene. 
+    if (isNormalized > 0)
+    {
+        currentVertex.xyz /= allMaxAmplitude[gl_DrawID];
+    }
 
     gl_Position = projectionMatrix
                 * viewMatrix
