@@ -73,6 +73,10 @@ public:
     /// \return 1D flat index.
     size_t flattenIndex(uint i, uint j, uint k, uint l) const;
 
+    /// Get the maximum values in the image.
+    /// \return max value.
+    double getMax() const;
+
     /// Get pixel value at voxel coordinate (i, j, k, l).
     /// \return Value at voxel coordinate as double.
     double at(uint i, uint j, uint k, uint l) const;
