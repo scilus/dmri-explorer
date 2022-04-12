@@ -39,28 +39,21 @@ void main()
     {
         frag_tex_coord = vec3(sliceIndex.x/float(gridDims.x-1.0f), texCoord.x, texCoord.y);
         direction = vec3(sliceIndex.x-ceil(gridDims.x/2.0f) + 0.5f, 0.0f, 0.0f);
-        if(isSliceVisible.x == 0.0f)
-        {
-            is_visible = 0.0f;
-        }
+        is_visible = isSliceVisible.x;
     }
     if(slice.y > 0.9f && slice.y < 1.1f)
     {
         frag_tex_coord = vec3(texCoord.x, sliceIndex.y/float(gridDims.y-1.0f), texCoord.y);
         direction = vec3(0.0f,sliceIndex.y-ceil(gridDims.y/2.0f) + 0.5f ,0.0f);
-        if(isSliceVisible.y == 0.0f)
-        {
-            is_visible = 0.0f;
-        }
+        is_visible = isSliceVisible.y;
+
     }
     if(slice.z > 0.9f && slice.z < 1.1f)
     {
         frag_tex_coord = vec3(texCoord.x, texCoord.y, sliceIndex.z/float(gridDims.z-1.0f));
         direction = vec3(0.0f, 0.0f, sliceIndex.z-ceil(gridDims.z/2.0f) + 0.5f);
-        if(isSliceVisible.z == 0.0f)
-        {
-            is_visible = 0.0f;
-        }
+        is_visible = isSliceVisible.z;
+
     }
 
     gl_Position = projectionMatrix
