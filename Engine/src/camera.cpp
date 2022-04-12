@@ -169,6 +169,7 @@ void Camera::Zoom(double delta)
     const float& speed = mState->Window.ZoomSpeed.Get();
     const glm::vec3 direction = speed * glm::normalize(mLookAt - mPosition);
     mPosition = mPosition + direction * (float)delta;
+    mLookAt = mLookAt + direction * (float)delta;
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
 } // namespace Slicer
