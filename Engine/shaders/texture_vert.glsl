@@ -26,26 +26,26 @@ void main()
     localMatrix[0][0] = 1.0f;
     localMatrix[1][1] = 1.0f;
     localMatrix[2][2] = 1.0f;
-    localMatrix[3][0] = floor(-gridDims.x/2.0f) - 0.5f;
-    localMatrix[3][1] = floor(-gridDims.y/2.0f) - 0.5f;
-    localMatrix[3][2] = floor(-gridDims.z/2.0f) - 0.5f;
+    localMatrix[3][0] = ceil(-gridDims.x/2.0f) - 0.5f;
+    localMatrix[3][1] = ceil(-gridDims.y/2.0f) - 0.5f;
+    localMatrix[3][2] = ceil(-gridDims.z/2.0f) - 0.5f;
     localMatrix[3][3] = 1.0f;
 
     if(slice.x > 0.9f && slice.x < 1.1f)
     {
         frag_tex_coord = vec3(sliceIndex.x/float(gridDims.x-1.0f), texCoord.x, texCoord.y);
-        direction = vec3(sliceIndex.x-floor(gridDims.x/2.0f) + 0.5f, 0.0f, 1.0f);
+        direction = vec3(sliceIndex.x-ceil(gridDims.x/2.0f) + 0.5f, 0.0f, 0.0f);
     }
     if(slice.y > 0.9f && slice.y < 1.1f)
     {
         frag_tex_coord = vec3(texCoord.x, sliceIndex.y/float(gridDims.y-1.0f), texCoord.y);
-        direction = vec3(0.0f,sliceIndex.y-floor(gridDims.y/2.0f) + 0.5f ,1.0f);
+        direction = vec3(0.0f,sliceIndex.y-ceil(gridDims.y/2.0f) + 0.5f ,0.0f);
 
     }
     if(slice.z > 0.9f && slice.z < 1.1f)
     {
         frag_tex_coord = vec3(texCoord.x, texCoord.y, sliceIndex.z/float(gridDims.z-1.0f));
-        direction = vec3(0.0f, 0.0f, sliceIndex.z-floor(gridDims.z/2.0f) + 0.5f);
+        direction = vec3(0.0f, 0.0f, sliceIndex.z-ceil(gridDims.z/2.0f) + 0.5f);
     }
 
     gl_Position = projectionMatrix
