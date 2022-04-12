@@ -63,6 +63,17 @@ vec4 grayScaleColorMap()
     return grayScale;
 }
 
+vec4 rgb2hsv(vec4 c)
+{
+    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+    vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+    vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+
+    float d = q.x - min(q.w, q.y);
+    float e = 1.0e-10;
+    return vec4(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x, 1.0f);
+}
+
 vec4 setColorMapMode(vec4 currentVertex)
 {
     vec4 color;
@@ -74,6 +85,10 @@ vec4 setColorMapMode(vec4 currentVertex)
     else if (colorMapMode == 1)
     {
         color = grayScaleColorMap();
+    }
+    else if (colorMapMode == 2)
+    {
+        color = rgb2hsv(currentVertex);
     }
     // TODO: add new mode
 
