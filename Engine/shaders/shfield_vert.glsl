@@ -65,17 +65,20 @@ vec4 grayScaleColorMap()
 
 vec4 setColorMapMode(vec4 currentVertex)
 {
+    vec4 color;
     // Default
     if (colorMapMode == 0)
     {
-        return abs(vec4(normalize(currentVertex.xyz), 1.0f));
-;
+        color = abs(vec4(normalize(currentVertex.xyz), 1.0f));
     }
     else if (colorMapMode == 1)
     {
-        return grayScaleColorMap();
+        color = grayScaleColorMap();
     }
     // TODO: add new mode
+
+    color = isNormalized > 0 ? (1.0f / allMaxAmplitude[gl_DrawID]) * color : color;
+    return color;
 }
 
 void main()
