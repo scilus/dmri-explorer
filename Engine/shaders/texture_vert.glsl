@@ -53,7 +53,6 @@ void main()
         frag_tex_coord = vec3(texCoord.x, texCoord.y, sliceIndex.z/float(gridDims.z-1.0f));
         direction = vec3(0.0f, 0.0f, sliceIndex.z-ceil(gridDims.z/2.0f) + 0.5f);
         is_visible = isSliceVisible.z;
-
     }
 
     gl_Position = projectionMatrix
