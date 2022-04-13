@@ -109,13 +109,10 @@ void main()
     localMatrix[3][2] = float(index3d.z - gridDims.z / 2);
     localMatrix[3][3] = 1.0f;
 
-    vec4 currentVertex = vec4(vertices[gl_VertexID%nbVertices].xyz * allRadiis[gl_VertexID], 1.0f);
-
-    // FIXME: lag dans la scene. 
-    if (isNormalized > 0)
-    {
-        currentVertex.xyz /= allMaxAmplitude[gl_DrawID];
-    }
+    const vec4 scaledVertice = vec4(vertices[gl_VertexID%nbVertices].xyz * allRadiis[gl_VertexID], 1.0f);
+    const float isNormalizedf= isNormalized > 0 ? 1.0f : 0.0f;
+    const float normalizationFactor = pow(1.0f/allMaxAmplitude[gl_DrawID], isNormalizedf);
+    const vec4 currentVertex = vec4(scaledVertice.xyz * normalizationFactor, 1.0f);
 
     gl_Position = projectionMatrix
                 * viewMatrix
@@ -130,7 +127,7 @@ void main()
     world_normal = modelMatrix
                  * allNormals[gl_VertexID];
 
-    color = setColorMapMode(currentVertex);
+    color = setColorMapMode(scaledVertice);
     is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID) && isAboveThreshold ? 1.0f : -1.0f;
     world_eye_pos = vec4(eye.xyz, 1.0f);
     vertex_slice = getVertexSlice(index3d);
