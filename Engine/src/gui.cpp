@@ -305,14 +305,9 @@ void UIManager::drawSlicersWindow()
         colorMapModeParam.Update(1);
     }
     ImGui::SameLine();
-    if(ImGui::RadioButton("HSV", &colorMapMode, 2))
+    if(ImGui::RadioButton("Rainbow", &colorMapMode, 2))
     {
         colorMapModeParam.Update(2);
-    }
-    ImGui::SameLine();
-    if(ImGui::RadioButton("Rainbow", &colorMapMode, 3))
-    {
-        colorMapModeParam.Update(3);
     }
 
     ImGui::Spacing();
