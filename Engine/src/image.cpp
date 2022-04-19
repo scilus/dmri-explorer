@@ -62,6 +62,29 @@ size_t NiftiImageWrapper::flattenIndex(uint i, uint j, uint k, uint l) const
     return l * mDims.x * mDims.y * mDims.z + k * mDims.x * mDims.y + j * mDims.x + i;
 }
 
+double NiftiImageWrapper::getMax() const
+{
+    double max = 0.0f;
+    for(int k = 0; k < mDims.z; ++k)
+    {
+        for(int j = 0; j < mDims.y; ++j)
+        {
+            for(int i = 0; i < mDims.x; ++i)
+            {
+                for(int l = 0; l < mDims.w; ++l)
+                {
+                    const double value = at(i,j,k,l);
+                    if(max < value)
+                    {
+                        max = value;
+                    }
+                }
+            }
+        }
+    }
+    return max;
+}
+
 double NiftiImageWrapper::at(uint i, uint j, uint k, uint l) const
 {
     const size_t flatIndex = flattenIndex(i, j, k, l);
@@ -73,6 +96,13 @@ double NiftiImageWrapper::at(uint i, uint j, uint k, uint l) const
     else if(dtype() == DataType::float32)
     {
         value = static_cast<double>(((float*)(mImage->data))[flatIndex]);
+    }
+    else if (dtype() == DataType::uint8){
+        value = static_cast<double>(((uint8_t*)(mImage->data))[flatIndex]);
+    }
+    else
+    {
+        throw std::runtime_error("Unsupported data type");
     }
     return value;
 }

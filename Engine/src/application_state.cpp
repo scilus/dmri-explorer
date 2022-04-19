@@ -8,6 +8,7 @@ ApplicationState::ApplicationState()
 ,Window()
 ,ViewMode()
 ,FODFImage()
+,BackgroundImage()
 {
 }
 } // namespace Slicer

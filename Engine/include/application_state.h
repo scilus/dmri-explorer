@@ -213,5 +213,8 @@ public:
 
     /// Parameter for MagnifyingMode mode control.
     ApplicationParameter<bool> MagnifyingMode;
+    
+    /// Parameter containing the fODF image object.
+    ApplicationParameter<NiftiImageWrapper> BackgroundImage;
 };
 } // namespace Slicer

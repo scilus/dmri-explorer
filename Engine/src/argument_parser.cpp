@@ -12,6 +12,7 @@ const int DEFAULT_SPHERE_RESOLUTION = 3;
 
 ArgumentParser::ArgumentParser(int argc, char** argv)
 :mImagePath()
+,mBackgroundImagePath()
 ,mSphereResolution(DEFAULT_SPHERE_RESOLUTION)
 {
     args::ArgumentParser parser("Those are the arguments available for dmriexplorer",
@@ -25,6 +26,10 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
     args::Positional<std::string> imagePath(parser, 
                                             "image path", 
                                             "First argument (mandatory): Path to the SH image in nifti file format.");
+    args::ValueFlag<std::string> backgroundImagePath(parser, 
+                                          "background image", 
+                                          "Specify the path to the background image", 
+                                          {'b', "background"});
 
     args::ValueFlag<int> sphereResolution(parser, 
                                           "sphere resolution", 
@@ -54,12 +59,17 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
         // Mandatory argument, image path
         mImagePath = args::get(imagePath);
     }
+    if(backgroundImagePath)
+    {
+        // Optional argument, background image path
+        mBackgroundImagePath = args::get(backgroundImagePath);
+    }
     if(sphereResolution)
     {
         // Optional argument, sphere resolution
         mSphereResolution = args::get(sphereResolution);
     }
-    mIsValid=true;
+    mIsValid = true;
 }
 
 bool ArgumentParser::OK() const
