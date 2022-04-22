@@ -143,6 +143,7 @@ struct Sphere
     /// Whether hidden glyphs should fade to black.
     ApplicationParameter<bool> FadeIfHidden;
 
+    //TODO: enum instead of int
     /// The color map mode for the glyphs.
     ApplicationParameter<int> ColorMapMode;
 };
