@@ -20,6 +20,11 @@ layout(std430, binding=10) buffer modelTransformsBuffer
     mat4 modelMatrix;
 };
 
+layout(std430, binding=12) buffer allMaxAmplitudeBuffer
+{
+    float allMaxAmplitude[];
+};
+
 // Outputs
 out gl_PerVertex{
     vec4 gl_Position;
@@ -50,6 +55,23 @@ vec4 getVertexSlice(ivec3 index3d)
     return vec4(i, j, k, 0.0f);
 }
 
+vec4 grayScaleColorMap()
+{   
+    const float maxAmplitude = allMaxAmplitude[gl_DrawID];
+    const float currentRadius = allRadiis[gl_VertexID];
+    const vec4 grayScale = vec4(currentRadius/maxAmplitude, currentRadius/maxAmplitude, currentRadius/maxAmplitude, 1.0f);
+    return grayScale;
+}
+
+vec4 setColorMapMode(vec4 currentVertex)
+{
+    if (colorMapMode == 1)
+    {
+        return grayScaleColorMap();
+    }
+    return abs(vec4(normalize(currentVertex.xyz), 1.0f));
+}
+
 void main()
 {
     const ivec3 index3d = convertFlatOrthoSlicesIDTo3DVoxID(gl_DrawID);
@@ -65,7 +87,10 @@ void main()
     localMatrix[3][2] = float(index3d.z - gridDims.z / 2);
     localMatrix[3][3] = 1.0f;
 
-    vec4 currentVertex = vec4(vertices[gl_VertexID%nbVertices].xyz * allRadiis[gl_VertexID], 1.0f);
+    const vec4 scaledVertice = vec4(vertices[gl_VertexID%nbVertices].xyz * allRadiis[gl_VertexID], 1.0f);
+    const float isNormalizedf= isNormalized > 0 ? 1.0f : 0.0f;
+    const float normalizationFactor = pow(1.0f/allMaxAmplitude[gl_DrawID], isNormalizedf);
+    const vec4 currentVertex = vec4(scaledVertice.xyz * normalizationFactor, 1.0f);
 
     gl_Position = projectionMatrix
                 * viewMatrix
@@ -79,7 +104,8 @@ void main()
 
     world_normal = modelMatrix
                  * allNormals[gl_VertexID];
-    color = abs(vec4(normalize(currentVertex.xyz), 1.0f));
+
+    color = setColorMapMode(scaledVertice);
     is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID) && isAboveThreshold ? 1.0f : -1.0f;
     world_eye_pos = vec4(eye.xyz, 1.0f);
     vertex_slice = getVertexSlice(index3d);

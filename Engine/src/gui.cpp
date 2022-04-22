@@ -253,6 +253,7 @@ void UIManager::drawSlicersWindow()
     auto& thresholdParam = mState->Sphere.SH0Threshold;
     auto& normalizedParam = mState->Sphere.IsNormalized;
     auto& fadeHiddenParam = mState->Sphere.FadeIfHidden;
+    auto& colorMapModeParam = mState->Sphere.ColorMapMode;
     if(!scalingParam.IsInit() || !thresholdParam.IsInit() ||
         !normalizedParam.IsInit() || !fadeHiddenParam.IsInit())
     {
@@ -265,6 +266,7 @@ void UIManager::drawSlicersWindow()
     float threshold = thresholdParam.Get();
     bool normalized = normalizedParam.Get();
     bool fadeIfHidden = fadeHiddenParam.Get();
+    int colorMapMode = colorMapModeParam.Get();
 
     ImGui::Text("Sphere scaling");
     ImGui::SameLine();
@@ -290,6 +292,19 @@ void UIManager::drawSlicersWindow()
     {
         fadeHiddenParam.Update(fadeIfHidden);
     }
+
+    ImGui::Text("Color map mode");
+
+    if(ImGui::RadioButton("Default", &colorMapMode, 0))
+    {
+        colorMapModeParam.Update(0);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("Grayscale", &colorMapMode, 1))
+    {
+        colorMapModeParam.Update(1);
+    }
+    ImGui::SameLine();
 
     ImGui::Spacing();
     ImGui::End();

@@ -124,7 +124,8 @@ struct Sphere
     ,SH0Threshold()
     ,IsNormalized()
     ,Resolution()
-    ,FadeIfHidden(){};
+    ,FadeIfHidden()
+    ,ColorMapMode(){};
 
     /// The scaling factor for the sphere glyphs.
     ApplicationParameter<float> Scaling;
@@ -141,6 +142,10 @@ struct Sphere
 
     /// Whether hidden glyphs should fade to black.
     ApplicationParameter<bool> FadeIfHidden;
+
+    //TODO: enum instead of int
+    /// The color map mode for the glyphs.
+    ApplicationParameter<int> ColorMapMode;
 };
 
 /// Struct containing global parameters for window and inputs.

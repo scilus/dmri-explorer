@@ -172,6 +172,7 @@ void Application::initApplicationState(const ArgumentParser& parser)
     mState->Sphere.Scaling.Update(0.5f);
     mState->Sphere.SH0Threshold.Update(0.0f);
     mState->Sphere.FadeIfHidden.Update(true);
+    mState->Sphere.ColorMapMode.Update(0);
 
     mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().dims());
     mState->VoxelGrid.SliceIndices.Update(mState->VoxelGrid.VolumeShape.Get() / 2);
