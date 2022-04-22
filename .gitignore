@@ -3,6 +3,3 @@
 third/vcpkg
 *.jpg
 *.ini
-docs/
-data/fodf_descoteaux07.nii.gz
-data/S1__fodf.nii.gz

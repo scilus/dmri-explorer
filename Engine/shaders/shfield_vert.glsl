@@ -65,16 +65,11 @@ vec4 grayScaleColorMap()
 
 vec4 setColorMapMode(vec4 currentVertex)
 {
-    vec4 color;
-    // Default
-    if (colorMapMode == 0)
-    {
-        return abs(vec4(normalize(currentVertex.xyz), 1.0f));
-    }
-    else if (colorMapMode == 1)
+    if (colorMapMode == 1)
     {
         return grayScaleColorMap();
     }
+    return abs(vec4(normalize(currentVertex.xyz), 1.0f));
 }
 
 void main()

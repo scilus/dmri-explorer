@@ -263,7 +263,7 @@ private:
     /// Glyphs radiis GPU data.
     GPU::ShaderData mAllRadiisData;
 
-    /// Glyphs radiis GPU data.
+    /// Glyphs maximum radius GPU data.
     GPU::ShaderData mAllMaxAmplitudeData;
 
     /// Glyphs normals GPU data.
