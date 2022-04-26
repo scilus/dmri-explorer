@@ -16,6 +16,11 @@ layout(std430, binding=1) buffer allSpheresNormalsBuffer
     vec4 allNormals[];
 };
 
+layout(std430, binding=12) buffer allMaxAmplitudeBuffer
+{
+    float allMaxAmplitude[];
+};
+
 const float FLOAT_EPS = 1e-4;
 const float PI = 3.14159265358979323;
 
@@ -24,6 +29,7 @@ bool scaleSphere(uint voxID, uint firstVertID)
     float sfEval;
     vec3 normal;
     float rmax;
+    float maxAmplitude = 0.0f;
     const float sh0 = shCoeffs[voxID * nbCoeffs];
     bool nonZero = sh0 > FLOAT_EPS;
     for(uint sphVertID = 0; sphVertID < nbVertices; ++sphVertID)
@@ -31,22 +37,15 @@ bool scaleSphere(uint voxID, uint firstVertID)
         if(nonZero)
         {
             sfEval = 0.0f;
-            rmax = 0.0f;
             for(int i = 0; i < nbCoeffs; ++i)
             {
                 sfEval += shCoeffs[voxID * nbCoeffs + i]
                         * shFuncs[sphVertID * nbCoeffs + i];
-
-                rmax += (2.0f * L[i] + 1.0f) / 4.0f / PI * pow(shCoeffs[voxID * nbCoeffs + i], 2.0f);
             }
 
-            if(isNormalized > 0)
-            {
-                rmax = sqrt(rmax);
-                rmax *= sqrt(0.5f * float(maxOrder) + 1.0f);
-                sfEval /= rmax;
-            }
-
+            // Evaluate the max amplitude for all vertices.
+            maxAmplitude = max(maxAmplitude, sfEval);
+            
             allRadiis[firstVertID + sphVertID] = sfEval;
         }
         else
@@ -54,6 +53,10 @@ bool scaleSphere(uint voxID, uint firstVertID)
             allRadiis[firstVertID + sphVertID] = 0.0f;
         }
     }
+
+    maxAmplitude = maxAmplitude > 0.0f ? maxAmplitude : 1.0f;
+    allMaxAmplitude[firstVertID / nbVertices] = maxAmplitude;
+
     return nonZero;
 }
 

@@ -60,6 +60,12 @@ void SHField::registerStateCallbacks()
             this->setNormalized(p, n);
         }
     );
+    mState->Sphere.ColorMapMode.RegisterCallback(
+        [this](int p, int n)
+        {
+            this->setColorMapMode(p, n);
+        }
+    );
     mState->Sphere.SH0Threshold.RegisterCallback(
         [this](float p, float n)
         {
@@ -186,6 +192,7 @@ void SHField::initializeGPUData()
     std::vector<glm::vec4> allVertices(nbSpheres * mSphere->GetPoints().size());
     std::vector<float> allRadiis(nbSpheres * mSphere->GetPoints().size());
     std::vector<float> allOrders = mSphere->GetOrdersList();
+    std::vector<float> allMaxAmplitude(nbSpheres);
 
     SphereData sphereData;
     sphereData.NumVertices = mSphere->GetPoints().size();
@@ -196,6 +203,7 @@ void SHField::initializeGPUData()
     sphereData.Scaling = mState->Sphere.Scaling.Get();
     sphereData.NbCoeffs = mState->FODFImage.Get().GetDims().w;
     sphereData.FadeIfHidden = mState->Sphere.FadeIfHidden.Get();
+    sphereData.ColorMapMode = mState->Sphere.ColorMapMode.Get();
 
     GridData gridData;
     gridData.SliceIndices = glm::ivec4(mState->VoxelGrid.SliceIndices.Get(), 0);
@@ -224,6 +232,8 @@ void SHField::initializeGPUData()
                                       sizeof(SphereData));
     mGridInfoData = GPU::ShaderData(&gridData, GPU::Binding::gridInfo,
                                     sizeof(GridData));
+    mAllMaxAmplitudeData = GPU::ShaderData(allMaxAmplitude.data(), GPU::Binding::allMaxAmplitude,
+                                     sizeof(float) * allMaxAmplitude.size());
 
     // push all data to GPU
     mSphHarmCoeffsData.ToGPU();
@@ -235,6 +245,7 @@ void SHField::initializeGPUData()
     mAllSpheresNormalsData.ToGPU();
     mGridInfoData.ToGPU();
     mAllRadiisData.ToGPU();
+    mAllMaxAmplitudeData.ToGPU();
 }
 
 template <typename T>
@@ -266,6 +277,14 @@ void SHField::setNormalized(bool previous, bool isNormalized)
     {
         unsigned int isNormalizedInt = isNormalized ? 1 : 0;
         mSphereInfoData.Update(sizeof(unsigned int)*2, sizeof(unsigned int), &isNormalizedInt);
+    }
+}
+
+void SHField::setColorMapMode(int previous, int mode)
+{
+    if(previous != mode)
+    {
+        mSphereInfoData.Update(6*sizeof(unsigned int) + 2*sizeof(float), sizeof(unsigned int), &mode);       
     }
 }
 

@@ -94,6 +94,7 @@ private:
     /// The order of members is critical. The same order must be used
     /// when declaring the struct on the GPU and the order is used for
     /// modifying shader subdata from the CPU.
+    
     struct SphereData
     {
         unsigned int NumVertices;
@@ -104,6 +105,7 @@ private:
         float Scaling;
         unsigned int NbCoeffs;
         unsigned int FadeIfHidden;
+        unsigned int ColorMapMode;
     };
 
     /// Struct containing the voxel grid attributes for the GPU.
@@ -161,6 +163,11 @@ private:
     /// \param[in] previous Previous 0th SH threshold.
     /// \param[in] threshold New SH0 threshold.
     void setSH0Threshold(float previous, float threshold);
+
+    /// Set the color map mode.
+    /// \param[in] previous Previous color map mode.
+    /// \param[in] mode The new mode.
+    void setColorMapMode(int previous, int mode);
 
     /// Toggle fading of hidden objects.
     /// \param[in] previous Previous value.
@@ -245,6 +252,9 @@ private:
 
     /// Glyphs radiis GPU data.
     GPU::ShaderData mAllRadiisData;
+
+    /// Glyphs maximum radius GPU data.
+    GPU::ShaderData mAllMaxAmplitudeData;
 
     /// Glyphs normals GPU data.
     GPU::ShaderData mAllSpheresNormalsData;
