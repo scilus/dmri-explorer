@@ -2,6 +2,7 @@
 #include <iostream>
 #include <application_state.h>
 #include <image.h>
+#include <nii_volume.h>
 #include <shader.h>
 
 namespace
@@ -83,6 +84,8 @@ void Application::initialize()
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glfwSwapInterval(0);
 
     mUI.reset(new UIManager(mWindow, GLSL_VERSION_STR, mState));
@@ -161,20 +164,20 @@ void Application::setWindowIcon()
 
 void Application::initApplicationState(const ArgumentParser& parser)
 {
-    mState->FODFImage.Update(NiftiImageWrapper(parser.GetImagePath()));
+    mState->FODFImage.Update(NiftiImageWrapper<float>(parser.GetImagePath()));
     if(!parser.GetBackgroundImagePath().empty())
     {
-        mState->BackgroundImage.Update(NiftiImageWrapper(parser.GetBackgroundImagePath()));
+        mState->BackgroundImage.Update(NiftiImageWrapper<float>(parser.GetBackgroundImagePath()));
     }
 
     mState->Sphere.Resolution.Update(parser.GetSphereResolution());
     mState->Sphere.IsNormalized.Update(false);
     mState->Sphere.Scaling.Update(0.5f);
     mState->Sphere.SH0Threshold.Update(0.0f);
-    mState->Sphere.FadeIfHidden.Update(true);
+    mState->Sphere.FadeIfHidden.Update(false);
     mState->Sphere.ColorMapMode.Update(0);
 
-    mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().dims());
+    mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().GetDims());
     mState->VoxelGrid.SliceIndices.Update(mState->VoxelGrid.VolumeShape.Get() / 2);
 
     mState->Window.Height.Update(WIN_HEIGHT);

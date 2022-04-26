@@ -4,7 +4,6 @@
 
 namespace
 {
-const int NB_THREADS_FOR_SH = 4;
 const int NB_THREADS_FOR_SPHERES = 2;
 }
 
@@ -14,7 +13,6 @@ SHField::SHField(const std::shared_ptr<ApplicationState>& state,
                  std::shared_ptr<CoordinateSystem> parent)
 :Model(state)
 ,mIndices()
-,mSphHarmCoeffs()
 ,mNbSpheresX(0)
 ,mNbSpheresY(0)
 ,mNbSpheresZ(0)
@@ -106,32 +104,26 @@ void SHField::initProgramPipeline()
 
 void SHField::initializeMembers()
 {
-    Utilities::Timer timer("Initialize members");
-    timer.Start();
     // Initialize compute shader
     const std::string csPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_comp.glsl");
     mComputeShader = GPU::ShaderProgram(csPath, GL_COMPUTE_SHADER);
 
     // Initialize a sphere for SH to SF projection
     const auto& image = mState->FODFImage.Get();
-    mNbSpheresX = image.dims().y * image.dims().z;
-    mNbSpheresY = image.dims().x * image.dims().z;
-    mNbSpheresZ = image.dims().x * image.dims().y;
-    mSphere.reset(new Primitive::Sphere(mState->Sphere.Resolution.Get(),
-                                        image.dims().w));
-    const auto numIndices = mSphere->GetIndices().size();
+    const auto& dims = image.GetDims();
+    mNbSpheresX = dims.y * dims.z;
+    mNbSpheresY = dims.x * dims.z;
+    mNbSpheresZ = dims.x * dims.y;
+    mSphere.reset(new Primitive::Sphere(mState->Sphere.Resolution.Get(), dims.w));
 
+    // Preallocate buffers for draw call
+    const auto numIndices = mSphere->GetIndices().size();
     const int nbSpheres = getMaxNbSpheres();
-    mSphHarmCoeffs.resize(image.length());
     mIndices.resize(nbSpheres * numIndices);
     mIndirectCmd.resize(nbSpheres);
 
-    // Copy SH coefficients to contiguous typed buffer.
-    std::vector<std::thread> threads;
-    dispatchSubsetCommands(&SHField::copySubsetSHCoefficientsFromImage,
-                          image.nbVox(), NB_THREADS_FOR_SH, threads);
-
     // Copy sphere indices and instantiate draw commands.
+    std::vector<std::thread> threads;
     dispatchSubsetCommands(&SHField::initializeSubsetDrawCommand,
                           nbSpheres, NB_THREADS_FOR_SPHERES, threads);
 
@@ -145,7 +137,6 @@ void SHField::initializeMembers()
     glCreateVertexArrays(1, &mVAO);
     mIndicesBO = genVBO<GLuint>(mIndices);
     mIndirectBO = genVBO<DrawElementsIndirectCommand>(mIndirectCmd);
-    timer.Stop();
 }
 
 void SHField::dispatchSubsetCommands(void(SHField::*fn)(size_t, size_t), size_t nbElements,
@@ -161,23 +152,6 @@ void SHField::dispatchSubsetCommands(void(SHField::*fn)(size_t, size_t), size_t 
         stopIndex += nbElementsPerThread;
     }
     threads.push_back(std::thread(fn, this, startIndex, nbElements));
-}
-
-void SHField::copySubsetSHCoefficientsFromImage(size_t firstIndex, size_t lastIndex)
-{
-    const auto& image = mState->FODFImage.Get();
-    const unsigned int nCoeffs = image.dims().w;
-    for(uint flatIndex = firstIndex; flatIndex < lastIndex; ++flatIndex)
-    {
-        glm::vec<3, uint> id3D = image.unravelIndex3d(flatIndex);
-
-        // Fill SH coefficients table
-        for(int k = 0; k < nCoeffs; ++k)
-        {
-            mSphHarmCoeffs[flatIndex*nCoeffs + k] =
-                static_cast<float>(image.at(id3D.x, id3D.y, id3D.z, k));
-        }
-    }
 }
 
 void SHField::initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex)
@@ -216,6 +190,7 @@ void SHField::initializeGPUData()
     std::vector<float> allOrders = mSphere->GetOrdersList();
     std::vector<float> allMaxAmplitude(nbSpheres);
 
+    // Sphere data GPU buffer
     SphereData sphereData;
     sphereData.NumVertices = mSphere->GetPoints().size();
     sphereData.NumIndices = mSphere->GetIndices().size();
@@ -223,22 +198,27 @@ void SHField::initializeGPUData()
     sphereData.MaxOrder = mSphere->GetMaxSHOrder();
     sphereData.SH0threshold = mState->Sphere.SH0Threshold.Get();
     sphereData.Scaling = mState->Sphere.Scaling.Get();
-    sphereData.NbCoeffs = mState->FODFImage.Get().dims().w;
+    sphereData.NbCoeffs = mState->FODFImage.Get().GetDims().w;
     sphereData.FadeIfHidden = mState->Sphere.FadeIfHidden.Get();
     sphereData.ColorMapMode = mState->Sphere.ColorMapMode.Get();
 
+    // Grid data GPU buffer
+    // TODO: Move out of SHField. Should be in a standalone class.
     GridData gridData;
     gridData.SliceIndices = glm::ivec4(mState->VoxelGrid.SliceIndices.Get(), 0);
     gridData.VolumeShape = glm::ivec4(mState->VoxelGrid.VolumeShape.Get(), 0);
     gridData.IsVisible = glm::ivec4(1, 1, 1, 0);
     gridData.CurrentSlice = 0;
 
+    // The SH coefficients image to copy on the GPU.
+    const auto& image = mState->FODFImage.Get();
+
     mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(), GPU::Binding::allSpheresNormals,
                                              sizeof(glm::vec4) * allVertices.size());
     mAllRadiisData = GPU::ShaderData(allRadiis.data(), GPU::Binding::allRadiis,
                                      sizeof(float) * allRadiis.size());
-    mSphHarmCoeffsData = GPU::ShaderData(mSphHarmCoeffs.data(), GPU::Binding::shCoeffs,
-                                         sizeof(float) * mSphHarmCoeffs.size());
+    mSphHarmCoeffsData = GPU::ShaderData(image.GetVoxelData().data(), GPU::Binding::shCoeffs,
+                                         sizeof(float) * image.GetVoxelData().size());
     mSphHarmFuncsData = GPU::ShaderData(mSphere->GetSHFuncs().data(), GPU::Binding::shFunctions,
                                         sizeof(float) * mSphere->GetSHFuncs().size());
     mAllOrdersData = GPU::ShaderData(allOrders.data(), GPU::Binding::allOrders,
@@ -295,10 +275,7 @@ void SHField::setNormalized(bool previous, bool isNormalized)
     if(previous != isNormalized)
     {
         unsigned int isNormalizedInt = isNormalized ? 1 : 0;
-        glm::ivec4 isDirty(1, 1, 1, 0);
         mSphereInfoData.Update(sizeof(unsigned int)*2, sizeof(unsigned int), &isNormalizedInt);
-        mIsSliceDirty = glm::bvec3(true);
-        scaleSpheres();
     }
 }
 

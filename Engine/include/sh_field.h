@@ -6,7 +6,6 @@
 #include <thread>
 #include <binding.h>
 #include <shader_data.h>
-#include <image.h>
 #include <sphere.h>
 #include <shader.h>
 #include <mutex>
@@ -131,12 +130,6 @@ private:
     /// Initialize data to be copied on the GPU.
     void initializeGPUData();
 
-    /// Copy a subset of the SH coefficients from the image
-    /// to contiguous array for GPU.
-    /// \param[in] firstIndex Index (flat) of the first coefficient to copy.
-    /// \param[in] lastIndex Index (exclusive) of the last coefficient to copy.
-    void copySubsetSHCoefficientsFromImage(size_t firstIndex, size_t lastIndex);
-
     /// Initialize a subset of the Draw commands, used for instancing.
     /// \param[in] firstIndex Index (flat) of the first sphere to initialize.
     /// \param[in] lastIndex Index (exclusive) of the last sphere to initialize.
@@ -237,9 +230,6 @@ private:
 
     /// Compute shader for sphere deformation.
     GPU::ShaderProgram mComputeShader;
-
-    /// Spherical harmonics coefficients array.
-    std::vector<float> mSphHarmCoeffs;
 
     /// SH coefficients GPU data.
     GPU::ShaderData mSphHarmCoeffsData;
