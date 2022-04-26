@@ -51,37 +51,24 @@ void Texture::initializeMembers()
 {
     const auto& image = mState->BackgroundImage.Get();
 
-    const int dimX = image.dims().x;
-    const int dimY = image.dims().y;
-    const int dimZ = image.dims().z;
-    const int nCoeffs = image.dims().w;
-
-    const double max = image.getMax();
-    
-    //Get image data
-    for(int k = 0; k < dimZ; ++k)
+    // copy image data because we need to normalize
+    mData = image.GetVoxelData();
+    const auto max = image.GetMax();
+    for(size_t i = 0; i < mData.size(); ++i)
     {
-        for(int j = 0; j < dimY; ++j)
-        {
-            for(int i = 0; i < dimX; ++i)
-            {
-                for(int l = 0; l < nCoeffs; ++l)
-                {
-                    mData.push_back(float(image.at(i,j,k,l)/max));
-                }
-            }
-        }
+        mData[i] = mData[i] / max;
     }
+    const auto dims = image.GetDims();
 
     //Create 2 triangles to create a plan for texture
     //Plan XY
-    mVertices.push_back(glm::vec3(0.0f,0.0f,ceil(dimZ/2.0f)));
-    mVertices.push_back(glm::vec3(0.0f,dimY,ceil(dimZ/2.0f)));
-    mVertices.push_back(glm::vec3(dimX,0.0f,ceil(dimZ/2.0f)));
+    mVertices.push_back(glm::vec3(0.0f,0.0f,ceil(dims.z/2.0f)));
+    mVertices.push_back(glm::vec3(0.0f,dims.y,ceil(dims.z/2.0f)));
+    mVertices.push_back(glm::vec3(dims.x,0.0f,ceil(dims.z/2.0f)));
 
-    mVertices.push_back(glm::vec3(0.0f,dimY,ceil(dimZ/2.0f)));
-    mVertices.push_back(glm::vec3(dimX,dimY,ceil(dimZ/2.0f)));
-    mVertices.push_back(glm::vec3(dimX,0.0f,ceil(dimZ/2.0f)));
+    mVertices.push_back(glm::vec3(0.0f,dims.y,ceil(dims.z/2.0f)));
+    mVertices.push_back(glm::vec3(dims.x,dims.y,ceil(dims.z/2.0f)));
+    mVertices.push_back(glm::vec3(dims.x,0.0f,ceil(dims.z/2.0f)));
 
     mTextureCoords.push_back(glm::vec3(0.0f,0.0f,0.0f));
     mTextureCoords.push_back(glm::vec3(0.0f,1.0f,0.0f));
@@ -100,13 +87,13 @@ void Texture::initializeMembers()
     mSlice.push_back(glm::vec3(0.0f,0.0f,1.0f));
 
     //Plan YZ
-    mVertices.push_back(glm::vec3(ceil(dimX/2.0f),0.0f,0.0f));
-    mVertices.push_back(glm::vec3(ceil(dimX/2.0f),0.0f,dimZ));
-    mVertices.push_back(glm::vec3(ceil(dimX/2.0f),dimY,0.0f));
+    mVertices.push_back(glm::vec3(ceil(dims.x/2.0f),0.0f,0.0f));
+    mVertices.push_back(glm::vec3(ceil(dims.x/2.0f),0.0f,dims.z));
+    mVertices.push_back(glm::vec3(ceil(dims.x/2.0f),dims.y,0.0f));
 
-    mVertices.push_back(glm::vec3(ceil(dimX/2.0f),0.0f,dimZ));
-    mVertices.push_back(glm::vec3(ceil(dimX/2.0f),dimY,dimZ));
-    mVertices.push_back(glm::vec3(ceil(dimX/2.0f),dimY,0.0f));
+    mVertices.push_back(glm::vec3(ceil(dims.x/2.0f),0.0f,dims.z));
+    mVertices.push_back(glm::vec3(ceil(dims.x/2.0f),dims.y,dims.z));
+    mVertices.push_back(glm::vec3(ceil(dims.x/2.0f),dims.y,0.0f));
 
     mTextureCoords.push_back(glm::vec3(0.0f,0.0f,0.0f));
     mTextureCoords.push_back(glm::vec3(0.0f,1.0f,0.0f));
@@ -125,13 +112,13 @@ void Texture::initializeMembers()
     mSlice.push_back(glm::vec3(1.0f,0.0f,0.0f));
 
     //Plan XZ
-    mVertices.push_back(glm::vec3(0.0f,ceil(dimY/2.0f),0.0f));
-    mVertices.push_back(glm::vec3(0.0f,ceil(dimY/2.0f),dimZ));
-    mVertices.push_back(glm::vec3(dimX,ceil(dimY/2.0f),0.0f));
+    mVertices.push_back(glm::vec3(0.0f,ceil(dims.y/2.0f),0.0f));
+    mVertices.push_back(glm::vec3(0.0f,ceil(dims.y/2.0f),dims.z));
+    mVertices.push_back(glm::vec3(dims.x,ceil(dims.y/2.0f),0.0f));
 
-    mVertices.push_back(glm::vec3(0.0f,ceil(dimY/2.0f),dimZ));
-    mVertices.push_back(glm::vec3(dimX,ceil(dimY/2.0f),dimZ));
-    mVertices.push_back(glm::vec3(dimX,ceil(dimY/2.0f),0.0f));
+    mVertices.push_back(glm::vec3(0.0f,ceil(dims.y/2.0f),dims.z));
+    mVertices.push_back(glm::vec3(dims.x,ceil(dims.y/2.0f),dims.z));
+    mVertices.push_back(glm::vec3(dims.x,ceil(dims.y/2.0f),0.0f));
 
     mTextureCoords.push_back(glm::vec3(0.0f,0.0f,0.0f));
     mTextureCoords.push_back(glm::vec3(0.0f,1.0f,0.0f));
@@ -155,7 +142,7 @@ void Texture::initializeMembers()
     glBindTexture(GL_TEXTURE_3D, texture);
 
     auto type = GL_RGB;
-    if (nCoeffs == 1)
+    if (dims.w == 1)
     {
         type = GL_RED;
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_SWIZZLE_R, GL_RED);
@@ -169,7 +156,7 @@ void Texture::initializeMembers()
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     
-    glTexImage3D(GL_TEXTURE_3D, 0, type, dimX, dimY, dimZ, 0, type, GL_FLOAT, &mData[0]);
+    glTexImage3D(GL_TEXTURE_3D, 0, type, dims.x, dims.y, dims.z, 0, type, GL_FLOAT, &mData[0]);
     glGenerateMipmap(GL_TEXTURE_3D);
 
     glCreateVertexArrays(1, &mVAO);

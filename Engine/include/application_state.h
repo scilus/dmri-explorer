@@ -2,7 +2,7 @@
 #include <vector>
 #include <functional>
 #include <glm/glm.hpp>
-#include <image.h>
+#include <nii_volume.h>
 #include <iostream>
 
 namespace Slicer
@@ -205,12 +205,12 @@ public:
     State::ViewMode ViewMode;
 
     /// Parameter containing the fODF image object.
-    ApplicationParameter<NiftiImageWrapper> FODFImage;
+    ApplicationParameter<NiftiImageWrapper<float>> FODFImage;
 
     /// Parameter for MagnifyingMode mode control.
     ApplicationParameter<bool> MagnifyingMode;
     
     /// Parameter containing the fODF image object.
-    ApplicationParameter<NiftiImageWrapper> BackgroundImage;
+    ApplicationParameter<NiftiImageWrapper<float>> BackgroundImage;
 };
 } // namespace Slicer

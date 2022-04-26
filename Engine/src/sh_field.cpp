@@ -14,7 +14,6 @@ SHField::SHField(const std::shared_ptr<ApplicationState>& state,
                  std::shared_ptr<CoordinateSystem> parent)
 :Model(state)
 ,mIndices()
-,mSphHarmCoeffs()
 ,mNbSpheresX(0)
 ,mNbSpheresY(0)
 ,mNbSpheresZ(0)
@@ -108,23 +107,19 @@ void SHField::initializeMembers()
 
     // Initialize a sphere for SH to SF projection
     const auto& image = mState->FODFImage.Get();
-    mNbSpheresX = image.dims().y * image.dims().z;
-    mNbSpheresY = image.dims().x * image.dims().z;
-    mNbSpheresZ = image.dims().x * image.dims().y;
-    mSphere.reset(new Primitive::Sphere(mState->Sphere.Resolution.Get(),
-                                        image.dims().w));
+    const auto& dims = image.GetDims();
+    mNbSpheresX = dims.y * dims.z;
+    mNbSpheresY = dims.x * dims.z;
+    mNbSpheresZ = dims.x * dims.y;
+    mSphere.reset(new Primitive::Sphere(mState->Sphere.Resolution.Get(), dims.w));
     const auto numIndices = mSphere->GetIndices().size();
 
     const int nbSpheres = getMaxNbSpheres();
-    mSphHarmCoeffs.resize(image.length());
     mIndices.resize(nbSpheres * numIndices);
     mIndirectCmd.resize(nbSpheres);
 
     // Copy SH coefficients to contiguous typed buffer.
     std::vector<std::thread> threads;
-    dispatchSubsetCommands(&SHField::copySubsetSHCoefficientsFromImage,
-                          image.nbVox(), NB_THREADS_FOR_SH, threads);
-
     // Copy sphere indices and instantiate draw commands.
     dispatchSubsetCommands(&SHField::initializeSubsetDrawCommand,
                           nbSpheres, NB_THREADS_FOR_SPHERES, threads);
@@ -155,23 +150,6 @@ void SHField::dispatchSubsetCommands(void(SHField::*fn)(size_t, size_t), size_t 
         stopIndex += nbElementsPerThread;
     }
     threads.push_back(std::thread(fn, this, startIndex, nbElements));
-}
-
-void SHField::copySubsetSHCoefficientsFromImage(size_t firstIndex, size_t lastIndex)
-{
-    const auto& image = mState->FODFImage.Get();
-    const unsigned int nCoeffs = image.dims().w;
-    for(uint flatIndex = firstIndex; flatIndex < lastIndex; ++flatIndex)
-    {
-        glm::vec<3, uint> id3D = image.unravelIndex3d(flatIndex);
-
-        // Fill SH coefficients table
-        for(int k = 0; k < nCoeffs; ++k)
-        {
-            mSphHarmCoeffs[flatIndex*nCoeffs + k] =
-                static_cast<float>(image.at(id3D.x, id3D.y, id3D.z, k));
-        }
-    }
 }
 
 void SHField::initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex)
@@ -216,7 +194,7 @@ void SHField::initializeGPUData()
     sphereData.MaxOrder = mSphere->GetMaxSHOrder();
     sphereData.SH0threshold = mState->Sphere.SH0Threshold.Get();
     sphereData.Scaling = mState->Sphere.Scaling.Get();
-    sphereData.NbCoeffs = mState->FODFImage.Get().dims().w;
+    sphereData.NbCoeffs = mState->FODFImage.Get().GetDims().w;
     sphereData.FadeIfHidden = mState->Sphere.FadeIfHidden.Get();
 
     GridData gridData;
@@ -225,12 +203,15 @@ void SHField::initializeGPUData()
     gridData.IsVisible = glm::ivec4(1, 1, 1, 0);
     gridData.CurrentSlice = 0;
 
+    const auto& image = mState->FODFImage.Get();
+    const auto nbValues = image.GetVoxelData().size();
+
     mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(), GPU::Binding::allSpheresNormals,
                                              sizeof(glm::vec4) * allVertices.size());
     mAllRadiisData = GPU::ShaderData(allRadiis.data(), GPU::Binding::allRadiis,
                                      sizeof(float) * allRadiis.size());
-    mSphHarmCoeffsData = GPU::ShaderData(mSphHarmCoeffs.data(), GPU::Binding::shCoeffs,
-                                         sizeof(float) * mSphHarmCoeffs.size());
+    mSphHarmCoeffsData = GPU::ShaderData(image.GetVoxelData().data(), GPU::Binding::shCoeffs,
+                                         sizeof(float) * nbValues);
     mSphHarmFuncsData = GPU::ShaderData(mSphere->GetSHFuncs().data(), GPU::Binding::shFunctions,
                                         sizeof(float) * mSphere->GetSHFuncs().size());
     mAllOrdersData = GPU::ShaderData(allOrders.data(), GPU::Binding::allOrders,
@@ -284,10 +265,7 @@ void SHField::setNormalized(bool previous, bool isNormalized)
     if(previous != isNormalized)
     {
         unsigned int isNormalizedInt = isNormalized ? 1 : 0;
-        glm::ivec4 isDirty(1, 1, 1, 0);
         mSphereInfoData.Update(sizeof(unsigned int)*2, sizeof(unsigned int), &isNormalizedInt);
-        mIsSliceDirty = glm::bvec3(true);
-        scaleSpheres();
     }
 }
 

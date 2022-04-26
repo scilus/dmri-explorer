@@ -4,8 +4,6 @@
 #include <memory>
 #include <complex>
 
-#include <image.h>
-
 namespace Slicer
 {
 namespace SH

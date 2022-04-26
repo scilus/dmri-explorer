@@ -2,6 +2,7 @@
 #include <iostream>
 #include <application_state.h>
 #include <image.h>
+#include <nii_volume.h>
 #include <shader.h>
 
 namespace
@@ -161,10 +162,10 @@ void Application::setWindowIcon()
 
 void Application::initApplicationState(const ArgumentParser& parser)
 {
-    mState->FODFImage.Update(NiftiImageWrapper(parser.GetImagePath()));
+    mState->FODFImage.Update(NiftiImageWrapper<float>(parser.GetImagePath()));
     if(!parser.GetBackgroundImagePath().empty())
     {
-        mState->BackgroundImage.Update(NiftiImageWrapper(parser.GetBackgroundImagePath()));
+        mState->BackgroundImage.Update(NiftiImageWrapper<float>(parser.GetBackgroundImagePath()));
     }
 
     mState->Sphere.Resolution.Update(parser.GetSphereResolution());
@@ -173,7 +174,7 @@ void Application::initApplicationState(const ArgumentParser& parser)
     mState->Sphere.SH0Threshold.Update(0.0f);
     mState->Sphere.FadeIfHidden.Update(true);
 
-    mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().dims());
+    mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().GetDims());
     mState->VoxelGrid.SliceIndices.Update(mState->VoxelGrid.VolumeShape.Get() / 2);
 
     mState->Window.Height.Update(WIN_HEIGHT);
