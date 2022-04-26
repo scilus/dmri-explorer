@@ -60,24 +60,6 @@ public:
     /// Destructor.
     ~NiftiImageWrapper() {};
 
-    /// Get pixel value at voxel coordinate (i, j, k, l).
-    /// \return Value at voxel coordinate.
-    T at(size_t i, size_t j, size_t k, size_t l) const
-    {
-        const auto dimx = mImage->nx;
-        const auto dimy = mImage->ny;
-        const auto dimz = mImage->nz;
-        const auto dimw = mImage->nt;
-
-        const auto index = k * dimw * dimx * dimy + j * dimw * dimx + i * dimw + l;
-        return mVoxelData[index];
-    };
-
-    /// Get value from flat index.
-    /// \param[in] flat Flattened index to get.
-    /// \return The voxel value at index (flat).
-    inline T at(size_t flat) const { return mVoxelData[flat]; };
-
     /// Get the data vector.
     /// \return Vector of voxel data.
     inline std::vector<T> GetVoxelData() const {return mVoxelData;};
