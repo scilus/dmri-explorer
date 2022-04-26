@@ -53,7 +53,7 @@ public:
 
         // copy image data
         nifti_image* image = nifti_image_read(path.c_str(), true);
-        readImageVoxels(image);
+        copyImageVoxels(image);
         nifti_image_free(image);
     };
 
@@ -73,8 +73,13 @@ public:
         return mVoxelData[index];
     };
 
-    inline T at(size_t flat) const {return mVoxelData[flat]; };
+    /// Get value from flat index.
+    /// \param[in] flat Flattened index to get.
+    /// \return The voxel value at index (flat).
+    inline T at(size_t flat) const { return mVoxelData[flat]; };
 
+    /// Get the data vector.
+    /// \return Vector of voxel data.
     inline std::vector<T> GetVoxelData() const {return mVoxelData;};
 
     /// Get the maximum values in the image.
@@ -92,6 +97,9 @@ public:
         return max;
     };
 
+    /// Get dimensions of image.
+    /// \return Dimensions of image.
+    /// \note Does not support images with more than 4D.
     inline glm::ivec4 GetDims() const
     {
         return glm::ivec4(mImage->nx, mImage->ny,
@@ -99,7 +107,9 @@ public:
     };
 
 private:
-    void readImageVoxels(nifti_image* image)
+    /// Copy voxel values to mVoxelData.
+    /// \param[in] image Pointer to the nifti_image to read.
+    void copyImageVoxels(nifti_image* image)
     {
         const auto nbValues = image->nvox;
         const auto dimX = image->nx;
@@ -125,6 +135,13 @@ private:
         }
     };
 
+    /// Getter for nifti_image data.
+    /// \param[in] image Image to access.
+    /// \param[in] i Indice along first dimension.
+    /// \param[in] j Indice along second dimension.
+    /// \param[in] k Indice along third dimension.
+    /// \param[in] l Indice along last dimension.
+    /// \return The value at position (i, j, k, l).
     T at(nifti_image* image, size_t i, size_t j, size_t k, size_t l) const
     {
         const auto dimx = mImage->nx;
@@ -202,6 +219,8 @@ private:
         return static_cast<T>(0);
     };
 
+    /// Convert the image datatype to its corresponding enum value.
+    /// \return The image data type as an enum element.
     DataType datatype() const
     {
         switch(mImage->datatype)
@@ -247,11 +266,13 @@ private:
         }
     };
 
+    /// Nifti image header.
     std::shared_ptr<nifti_1_header> mHeader;
 
     /// Reference to the loaded image.
     std::shared_ptr<nifti_image> mImage;
 
+    /// Voxel data.
     std::vector<T> mVoxelData;
 };
 } // namespace Slicer
