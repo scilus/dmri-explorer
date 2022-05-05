@@ -141,5 +141,6 @@ void main()
     vec3 specular = vec3(1.0f) * dot(r, frag_to_eye) * KS;
 
     vec3 outColor = (ambient + diffuse + specular) * (fade_enabled > 0 ? GetFading() : 1.0f);
+    //vec3 outColor = ambient; //erick
     shaded_color = vec4(outColor, 1.0f);
 }

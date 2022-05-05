@@ -8,6 +8,7 @@ ApplicationState::ApplicationState()
 ,Window()
 ,ViewMode()
 ,FODFImage()
+,TImage()
 ,BackgroundImage()
 {
 }

@@ -25,6 +25,11 @@ layout(std430, binding=12) buffer allMaxAmplitudeBuffer
     float allMaxAmplitude[];
 };
 
+layout(std430, binding=13) buffer tensorValuesBuffer
+{
+    mat4 allTensors[];
+};
+
 // Outputs
 out gl_PerVertex{
     vec4 gl_Position;
@@ -87,10 +92,25 @@ void main()
     localMatrix[3][2] = float(index3d.z - gridDims.z / 2);
     localMatrix[3][3] = 1.0f;
 
+    mat4 tensorMatrix = allTensors[voxID];//*/
+
+    /*mat4 tensorMatrix;
+    tensorMatrix[0][0] = 0.000756478;
+    tensorMatrix[1][1] = 0.000765284;
+    tensorMatrix[2][2] = 0.000339484;
+    tensorMatrix[0][1] = tensorMatrix[1][0] = 0.0;
+    tensorMatrix[0][2] = tensorMatrix[2][0] = 0.0;
+    tensorMatrix[1][2] = tensorMatrix[2][1] = -0.000112218;
+    tensorMatrix[0][3] = tensorMatrix[1][3] = tensorMatrix[2][3] = 0.0f;
+    tensorMatrix[3][0] = tensorMatrix[3][1] = tensorMatrix[3][2] = 0.0f;
+    tensorMatrix = (1/0.000756478) * tensorMatrix;
+    tensorMatrix[3][3] = 1.0f;//*/
+
     const vec4 scaledVertice = vec4(vertices[gl_VertexID%nbVertices].xyz * allRadiis[gl_VertexID], 1.0f);
     const float isNormalizedf= isNormalized > 0 ? 1.0f : 0.0f;
     const float normalizationFactor = pow(1.0f/allMaxAmplitude[gl_DrawID], isNormalizedf);
-    const vec4 currentVertex = vec4(scaledVertice.xyz * normalizationFactor, 1.0f);
+    //const vec4 currentVertex = vec4(scaledVertice.xyz * normalizationFactor, 1.0f);
+    const vec4 currentVertex = vec4(vertices[gl_VertexID%nbVertices].xyz, 1.0f) * tensorMatrix;
 
     gl_Position = projectionMatrix
                 * viewMatrix

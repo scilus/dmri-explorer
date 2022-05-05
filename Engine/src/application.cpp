@@ -170,6 +170,8 @@ void Application::initApplicationState(const ArgumentParser& parser)
         mState->BackgroundImage.Update(NiftiImageWrapper<float>(parser.GetBackgroundImagePath()));
     }
 
+    mState->TImage.Update(NiftiImageWrapper<float>( "/home/local/USHERBROOKE/here2602/SCIL/phantom/mrtrix/mrtrix-tensor.nii" ));
+
     mState->Sphere.Resolution.Update(parser.GetSphereResolution());
     mState->Sphere.IsNormalized.Update(false);
     mState->Sphere.Scaling.Update(0.5f);

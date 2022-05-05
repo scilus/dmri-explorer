@@ -57,23 +57,23 @@ struct DrawElementsIndirectCommand
     uint baseInstance;
 };
 
-/// \brief Spherical harmonics field.
+/// \brief Multi-Tensor field.
 ///
-/// SH field Model for rendering SH glyphs.
-class SHField : public Model
+/// MT field Model for rendering MT glyphs.
+class MTField : public Model
 {
 public:
     /// Default constructor.
-    SHField() = default;
+    MTField() = default;
 
     /// Constructor.
     /// \param[in] state Reference to the ApplicationState.
     /// \param[in] parent Reference to the parent CoordinateSystem.
-    SHField(const std::shared_ptr<ApplicationState>& state,
+    MTField(const std::shared_ptr<ApplicationState>& state,
             std::shared_ptr<CoordinateSystem> parent);
 
     /// Destructor.
-    ~SHField();
+    ~MTField();
 
 protected:
     /// \see Model::drawSpecific()
@@ -140,7 +140,7 @@ private:
     /// \param[in] nbElements Number of elements to fill.
     /// \param[in] nbThreads Number of threads to use.
     /// \param[out] threads Vector of threads.
-    void dispatchSubsetCommands(void(SHField::*fn)(size_t, size_t),
+    void dispatchSubsetCommands(void(MTField::*fn)(size_t, size_t),
                                size_t nbElements, size_t nbThreads,
                                std::vector<std::thread>& threads);
 
@@ -233,7 +233,6 @@ private:
 
     /// SH coefficients GPU data.
     GPU::ShaderData mSphHarmCoeffsData;
-    GPU::ShaderData mTensorValuesData;
 
     /// SH functions GPU data.
     GPU::ShaderData mSphHarmFuncsData;
