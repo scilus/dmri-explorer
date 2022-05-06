@@ -123,7 +123,9 @@ void main()
                    * currentVertex;
 
     world_normal = modelMatrix
-                 * allNormals[gl_VertexID];
+                 * allNormals[gl_VertexID];//*/
+
+    //world_normal = normalize(currentVertex);//erick
 
     color = setColorMapMode(scaledVertice);
     is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID) && isAboveThreshold ? 1.0f : -1.0f;
