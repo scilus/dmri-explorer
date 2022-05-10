@@ -1,4 +1,4 @@
-#include <mt_field.h>
+#include <st_field.h>
 #include <glad/glad.h>
 #include <timer.h>
 
@@ -9,7 +9,7 @@ const int NB_THREADS_FOR_SPHERES = 2;
 
 namespace Slicer
 {
-MTField::MTField(const std::shared_ptr<ApplicationState>& state,
+STField::STField(const std::shared_ptr<ApplicationState>& state,
                  std::shared_ptr<CoordinateSystem> parent)
 :Model(state)
 ,mIndices()
@@ -20,7 +20,7 @@ MTField::MTField(const std::shared_ptr<ApplicationState>& state,
 ,mVAO(0)
 ,mIndicesBO(0)
 ,mIndirectBO(0)
-,mSphHarmCoeffsData()
+,mTensorValuesData()
 ,mSphHarmFuncsData()
 ,mSphereVerticesData()
 ,mSphereIndicesData()
@@ -37,15 +37,15 @@ MTField::MTField(const std::shared_ptr<ApplicationState>& state,
     scaleSpheres();
 }
 
-MTField::~MTField()
+STField::~STField()
 {
 }
 
-void MTField::updateApplicationStateAtInit()
+void STField::updateApplicationStateAtInit()
 {
 }
 
-void MTField::registerStateCallbacks()
+void STField::registerStateCallbacks()
 {
     mState->VoxelGrid.SliceIndices.RegisterCallback(
         [this](glm::vec3 p, glm::vec3 n)
@@ -91,10 +91,10 @@ void MTField::registerStateCallbacks()
     );
 }
 
-void MTField::initProgramPipeline()
+void STField::initProgramPipeline()
 {
-    const std::string vsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_vert.glsl");
-    const std::string fsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_frag.glsl");
+    const std::string vsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/stfield_vert.glsl");
+    const std::string fsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/stfield_frag.glsl");
 
     std::vector<GPU::ShaderProgram> shaders;
     shaders.push_back(GPU::ShaderProgram(vsPath, GL_VERTEX_SHADER));
@@ -102,13 +102,14 @@ void MTField::initProgramPipeline()
     mProgramPipeline = GPU::ProgramPipeline(shaders);
 }
 
-void MTField::initializeMembers()
+void STField::initializeMembers()
 {
     // Initialize compute shader
-    const std::string csPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_comp.glsl");
-    mComputeShader = GPU::ShaderProgram(csPath, GL_COMPUTE_SHADER);
+    //const std::string csPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_comp.glsl");
+    //mComputeShader = GPU::ShaderProgram(csPath, GL_COMPUTE_SHADER);
 
     // Initialize a sphere for SH to SF projection
+    //TODO: Ask Charles about this
     const auto& image = mState->FODFImage.Get();
     const auto& dims = image.GetDims();
     mNbSpheresX = dims.y * dims.z;
@@ -117,6 +118,7 @@ void MTField::initializeMembers()
     mSphere.reset(new Primitive::Sphere(mState->Sphere.Resolution.Get(), dims.w));
 
     // Preallocate buffers for draw call
+    //TODO: Try to decrease the sphere resolution
     const auto numIndices = mSphere->GetIndices().size();
     const int nbSpheres = getMaxNbSpheres();
     mIndices.resize(nbSpheres * numIndices);
@@ -124,7 +126,7 @@ void MTField::initializeMembers()
 
     // Copy sphere indices and instantiate draw commands.
     std::vector<std::thread> threads;
-    dispatchSubsetCommands(&MTField::initializeSubsetDrawCommand,
+    dispatchSubsetCommands(&STField::initializeSubsetDrawCommand,
                           nbSpheres, NB_THREADS_FOR_SPHERES, threads);
 
     // wait for all threads to finish
@@ -139,7 +141,7 @@ void MTField::initializeMembers()
     mIndirectBO = genVBO<DrawElementsIndirectCommand>(mIndirectCmd);
 }
 
-void MTField::dispatchSubsetCommands(void(MTField::*fn)(size_t, size_t), size_t nbElements,
+void STField::dispatchSubsetCommands(void(STField::*fn)(size_t, size_t), size_t nbElements,
                                      size_t nbThreads, std::vector<std::thread>& threads)
 {
     size_t nbElementsPerThread = nbElements / nbThreads;
@@ -154,7 +156,7 @@ void MTField::dispatchSubsetCommands(void(MTField::*fn)(size_t, size_t), size_t 
     threads.push_back(std::thread(fn, this, startIndex, nbElements));
 }
 
-void MTField::initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex)
+void STField::initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex)
 {
     const auto& indices = mSphere->GetIndices();
     const auto numIndices = indices.size();
@@ -180,7 +182,7 @@ void MTField::initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex)
     }
 }
 
-void MTField::initializeGPUData()
+void STField::initializeGPUData()
 {
     const int nbSpheres = getMaxNbSpheres();
 
@@ -203,39 +205,44 @@ void MTField::initializeGPUData()
     sphereData.ColorMapMode = mState->Sphere.ColorMapMode.Get();
 
     // Grid data GPU buffer
-    // TODO: Move out of MTField. Should be in a standalone class.
+    // TODO: Move out of STField. Should be in a standalone class.
     GridData gridData;
     gridData.SliceIndices = glm::ivec4(mState->VoxelGrid.SliceIndices.Get(), 0);
     gridData.VolumeShape = glm::ivec4(mState->VoxelGrid.VolumeShape.Get(), 0);
     gridData.IsVisible = glm::ivec4(1, 1, 1, 0);
     gridData.CurrentSlice = 0;
 
-    // The SH coefficients image to copy on the GPU.
-    const auto& image = mState->FODFImage.Get();
+    //erick
+    // Build tensor matrices from tensor values
+    const std::vector<float>& tensor_image = mState->TImage.Get().GetVoxelData();
+    std::vector<glm::mat4> tensors;
+    for(size_t offset=0; offset < tensor_image.size(); offset+=6){
+        glm::mat4 tensor = glm::mat4(1.0f);
 
-    mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(), GPU::Binding::allSpheresNormals,
-                                             sizeof(glm::vec4) * allVertices.size());
-    mAllRadiisData = GPU::ShaderData(allRadiis.data(), GPU::Binding::allRadiis,
-                                     sizeof(float) * allRadiis.size());
-    mSphHarmCoeffsData = GPU::ShaderData(image.GetVoxelData().data(), GPU::Binding::shCoeffs,
-                                         sizeof(float) * image.GetVoxelData().size());
-    mSphHarmFuncsData = GPU::ShaderData(mSphere->GetSHFuncs().data(), GPU::Binding::shFunctions,
-                                        sizeof(float) * mSphere->GetSHFuncs().size());
-    mAllOrdersData = GPU::ShaderData(allOrders.data(), GPU::Binding::allOrders,
-                                     sizeof(float) * allOrders.size());
-    mSphereVerticesData = GPU::ShaderData(mSphere->GetPoints().data(), GPU::Binding::sphereVertices,
-                                          sizeof(glm::vec4) * mSphere->GetPoints().size());
-    mSphereIndicesData = GPU::ShaderData(mSphere->GetIndices().data(), GPU::Binding::sphereIndices,
-                                         sizeof(uint) * mSphere->GetIndices().size());
-    mSphereInfoData = GPU::ShaderData(&sphereData, GPU::Binding::sphereInfo,
-                                      sizeof(SphereData));
-    mGridInfoData = GPU::ShaderData(&gridData, GPU::Binding::gridInfo,
-                                    sizeof(GridData));
-    mAllMaxAmplitudeData = GPU::ShaderData(allMaxAmplitude.data(), GPU::Binding::allMaxAmplitude,
-                                     sizeof(float) * allMaxAmplitude.size());
+        float cmax = 0.001f;
+        //std::cout << "max val = " << cmax << std::endl;
+        //for (uint k=0; k<6; k++) if (cmax < tensor_image[offset + k]) cmax = tensor_image[offset + k];
+        tensor[0][0] = tensor_image[offset]   / cmax;
+        tensor[1][1] = tensor_image[offset+1] / cmax;
+        tensor[2][2] = tensor_image[offset+2] / cmax;
+        tensor[0][1] = tensor[1][0] = tensor_image[offset+3] / cmax;
+        tensor[0][2] = tensor[2][0] = tensor_image[offset+4] / cmax;
+        tensor[1][2] = tensor[2][1] = tensor_image[offset+5] / cmax;
+        tensors.push_back( tensor );
+    }
+    mTensorValuesData      = GPU::ShaderData(tensors.data(), GPU::Binding::tensorValues, sizeof(glm::mat4) * tensors.size());
+    mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(), GPU::Binding::allSpheresNormals, sizeof(glm::vec4) * allVertices.size());
+    mAllRadiisData         = GPU::ShaderData(allRadiis.data(), GPU::Binding::allRadiis, sizeof(float) * allRadiis.size());
+    mSphHarmFuncsData      = GPU::ShaderData(mSphere->GetSHFuncs().data(), GPU::Binding::shFunctions, sizeof(float) * mSphere->GetSHFuncs().size());
+    mAllOrdersData         = GPU::ShaderData(allOrders.data(), GPU::Binding::allOrders, sizeof(float) * allOrders.size());
+    mSphereVerticesData    = GPU::ShaderData(mSphere->GetPoints().data(), GPU::Binding::sphereVertices, sizeof(glm::vec4) * mSphere->GetPoints().size());
+    mSphereIndicesData     = GPU::ShaderData(mSphere->GetIndices().data(), GPU::Binding::sphereIndices, sizeof(uint) * mSphere->GetIndices().size());
+    mSphereInfoData        = GPU::ShaderData(&sphereData, GPU::Binding::sphereInfo, sizeof(SphereData));
+    mGridInfoData          = GPU::ShaderData(&gridData, GPU::Binding::gridInfo, sizeof(GridData));
+    mAllMaxAmplitudeData   = GPU::ShaderData(allMaxAmplitude.data(), GPU::Binding::allMaxAmplitude, sizeof(float) * allMaxAmplitude.size());
 
     // push all data to GPU
-    mSphHarmCoeffsData.ToGPU();
+    mTensorValuesData.ToGPU(); //erick
     mSphHarmFuncsData.ToGPU();
     mAllOrdersData.ToGPU();
     mSphereVerticesData.ToGPU();
@@ -248,7 +255,7 @@ void MTField::initializeGPUData()
 }
 
 template <typename T>
-GLuint MTField::genVBO(const std::vector<T>& data) const
+GLuint STField::genVBO(const std::vector<T>& data) const
 {
     GLuint vbo;
     glCreateBuffers(1, &vbo);
@@ -256,7 +263,7 @@ GLuint MTField::genVBO(const std::vector<T>& data) const
     return vbo;
 }
 
-void MTField::setSliceIndex(glm::vec3 prevIndices, glm::vec3 newIndices)
+void STField::setSliceIndex(glm::vec3 prevIndices, glm::vec3 newIndices)
 {
     mIsSliceDirty.x = prevIndices.x != newIndices.x;
     mIsSliceDirty.y = prevIndices.y != newIndices.y;
@@ -270,7 +277,7 @@ void MTField::setSliceIndex(glm::vec3 prevIndices, glm::vec3 newIndices)
     }
 }
 
-void MTField::setNormalized(bool previous, bool isNormalized)
+void STField::setNormalized(bool previous, bool isNormalized)
 {
     if(previous != isNormalized)
     {
@@ -279,7 +286,7 @@ void MTField::setNormalized(bool previous, bool isNormalized)
     }
 }
 
-void MTField::setColorMapMode(int previous, int mode)
+void STField::setColorMapMode(int previous, int mode)
 {
     if(previous != mode)
     {
@@ -288,7 +295,7 @@ void MTField::setColorMapMode(int previous, int mode)
 }
 
 
-void MTField::setSH0Threshold(float previous, float threshold)
+void STField::setSH0Threshold(float previous, float threshold)
 {
     if(previous != threshold)
     {
@@ -297,7 +304,7 @@ void MTField::setSH0Threshold(float previous, float threshold)
 }
 
 
-void MTField::setSphereScaling(float previous, float scaling)
+void STField::setSphereScaling(float previous, float scaling)
 {
     if(previous != scaling)
     {
@@ -307,7 +314,7 @@ void MTField::setSphereScaling(float previous, float scaling)
     }
 }
 
-void MTField::setFadeIfHidden(bool previous, bool fadeEnabled)
+void STField::setFadeIfHidden(bool previous, bool fadeEnabled)
 {
     if(previous != fadeEnabled)
     {
@@ -318,7 +325,7 @@ void MTField::setFadeIfHidden(bool previous, bool fadeEnabled)
     }
 }
 
-void MTField::setVisibleSlices(State::CameraMode previous, State::CameraMode next)
+void STField::setVisibleSlices(State::CameraMode previous, State::CameraMode next)
 {
     if(previous != next)
     {
@@ -343,7 +350,7 @@ void MTField::setVisibleSlices(State::CameraMode previous, State::CameraMode nex
     }
 }
 
-void MTField::drawSpecific()
+void STField::drawSpecific()
 {
     glBindVertexArray(mVAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndicesBO);
@@ -352,7 +359,7 @@ void MTField::drawSpecific()
                                 (GLvoid*)0, mIndirectCmd.size(), 0);
 }
 
-void MTField::scaleSpheres()
+void STField::scaleSpheres()
 {
     glUseProgram(mComputeShader.ID());
     if(mIsSliceDirty.x)
@@ -374,7 +381,7 @@ void MTField::scaleSpheres()
     glUseProgram(0);
 }
 
-void MTField::scaleSpheres(unsigned int sliceId, unsigned int nbSpheres)
+void STField::scaleSpheres(unsigned int sliceId, unsigned int nbSpheres)
 {
     mGridInfoData.Update(3*sizeof(glm::ivec4), sizeof(unsigned int), &sliceId);
     glDispatchCompute(nbSpheres, 1, 1);

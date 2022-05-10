@@ -1,5 +1,6 @@
 #include <scene.h>
 #include <sh_field.h>
+#include <st_field.h>
 #include <texture.h>
 #include <glm/gtx/transform.hpp>
 #include <utils.hpp>
@@ -19,6 +20,12 @@ void Scene::AddSHField()
 {
     // create a SH Field model
     mModels.push_back(std::shared_ptr<SHField>(new SHField(mState, mCoordinateSystem)));
+}
+
+void Scene::AddSTField()
+{
+    // create a Single Tensor Field model
+    mModels.push_back(std::shared_ptr<STField>(new STField(mState, mCoordinateSystem)));
 }
 
 void Scene::AddTexture()

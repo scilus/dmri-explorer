@@ -211,6 +211,8 @@ public:
 
     /// Parameter containing the fODF image object.
     ApplicationParameter<NiftiImageWrapper<float>> FODFImage;
+
+    /// Parameter containing the tensor image object.
     ApplicationParameter<NiftiImageWrapper<float>> TImage;
 
     /// Parameter for MagnifyingMode mode control.

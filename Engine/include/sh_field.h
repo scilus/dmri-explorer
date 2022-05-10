@@ -233,7 +233,6 @@ private:
 
     /// SH coefficients GPU data.
     GPU::ShaderData mSphHarmCoeffsData;
-    GPU::ShaderData mTensorValuesData;
 
     /// SH functions GPU data.
     GPU::ShaderData mSphHarmFuncsData;

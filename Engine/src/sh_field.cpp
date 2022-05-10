@@ -21,7 +21,6 @@ SHField::SHField(const std::shared_ptr<ApplicationState>& state,
 ,mIndicesBO(0)
 ,mIndirectBO(0)
 ,mSphHarmCoeffsData()
-,mTensorValuesData() //erick
 ,mSphHarmFuncsData()
 ,mSphereVerticesData()
 ,mSphereIndicesData()
@@ -222,30 +221,6 @@ void SHField::initializeGPUData()
     mSphHarmCoeffsData = GPU::ShaderData(image.GetVoxelData().data(), GPU::Binding::shCoeffs,
                                          sizeof(float) * image.GetVoxelData().size());
 
-    //erick
-    const std::vector<float> tensor_image = mState->TImage.Get().GetVoxelData();
-    std::vector<glm::mat4> tensors;
-    std::cout << "nvalues = " << tensor_image.size() << std::endl;
-    for(size_t offset=0; offset < tensor_image.size(); offset+=6){
-        glm::mat4 tensor = glm::mat4(1.0f);
-
-        float cmax = 0.001f;
-        //std::cout << "max val = " << cmax << std::endl;
-        //for (uint k=0; k<6; k++) if (cmax < tensor_image[offset + k]) cmax = tensor_image[offset + k];
-
-        tensor[0][0] = tensor_image[offset]   / cmax;
-        tensor[1][1] = tensor_image[offset+1] / cmax;
-        tensor[2][2] = tensor_image[offset+2] / cmax;
-        tensor[0][1] = tensor[1][0] = tensor_image[offset+3] / cmax;
-        tensor[0][2] = tensor[2][0] = tensor_image[offset+4] / cmax;
-        tensor[1][2] = tensor[2][1] = tensor_image[offset+5] / cmax;
-        tensors.push_back( tensor );
-        //std::cout << tensor << std::endl;
-    }
-    mTensorValuesData = GPU::ShaderData(tensors.data(),
-                                        GPU::Binding::tensorValues,
-                                        sizeof(glm::mat4)*tensors.size());
-
     mSphHarmFuncsData = GPU::ShaderData(mSphere->GetSHFuncs().data(), GPU::Binding::shFunctions,
                                         sizeof(float) * mSphere->GetSHFuncs().size());
     mAllOrdersData = GPU::ShaderData(allOrders.data(), GPU::Binding::allOrders,
@@ -272,9 +247,6 @@ void SHField::initializeGPUData()
     mGridInfoData.ToGPU();
     mAllRadiisData.ToGPU();
     mAllMaxAmplitudeData.ToGPU();
-
-    //erick
-    mTensorValuesData.ToGPU();
 }
 
 template <typename T>

@@ -10,70 +10,27 @@
 #include <shader.h>
 #include <mutex>
 #include <model.h>
+#include <sh_field.h>
 
 namespace Slicer
 {
-/// Struct for glMultiDrawElementsIndirect command.
-struct DrawElementsIndirectCommand
-{
-    /// Default constructor.
-    DrawElementsIndirectCommand()
-    :count(0)
-    ,instanceCount(0)
-    ,firstIndex(0)
-    ,baseVertex(0)
-    ,baseInstance(0)
-    {};
-
-    /// Constructor.
-    /// \param[in] count Number of elements to be rendered.
-    /// \param[in] instanceCount Number of instances of the indexed geometry to draw.
-    /// \param[in] firstIndex Offset to the beginning of elements.
-    /// \param[in] baseVertex Constant that should be added to each indice.
-    /// \param[in] baseInstance Base instance for use in fetching instanced vertex attributes.
-    DrawElementsIndirectCommand(uint count, uint instanceCount,
-                                uint firstIndex, uint baseVertex,
-                                uint baseInstance)
-    :count(count)
-    ,instanceCount(instanceCount)
-    ,firstIndex(firstIndex)
-    ,baseVertex(baseVertex)
-    ,baseInstance(baseInstance)
-    {};
-
-    /// Number of elements to be rendered.
-    uint count;
-
-    /// Number of instances of the indexed geometry to draw.
-    uint instanceCount;
-
-    /// Offset to the beginning of elements.
-    uint firstIndex;
-
-    /// Constant that should be added to each element of indices.
-    uint baseVertex;
-
-    /// Base instance for use in fetching instanced vertex attributes.
-    uint baseInstance;
-};
-
 /// \brief Multi-Tensor field.
 ///
 /// MT field Model for rendering MT glyphs.
-class MTField : public Model
+class STField : public Model
 {
 public:
     /// Default constructor.
-    MTField() = default;
+    STField() = default;
 
     /// Constructor.
     /// \param[in] state Reference to the ApplicationState.
     /// \param[in] parent Reference to the parent CoordinateSystem.
-    MTField(const std::shared_ptr<ApplicationState>& state,
+    STField(const std::shared_ptr<ApplicationState>& state,
             std::shared_ptr<CoordinateSystem> parent);
 
     /// Destructor.
-    ~MTField();
+    ~STField();
 
 protected:
     /// \see Model::drawSpecific()
@@ -140,7 +97,7 @@ private:
     /// \param[in] nbElements Number of elements to fill.
     /// \param[in] nbThreads Number of threads to use.
     /// \param[out] threads Vector of threads.
-    void dispatchSubsetCommands(void(MTField::*fn)(size_t, size_t),
+    void dispatchSubsetCommands(void(STField::*fn)(size_t, size_t),
                                size_t nbElements, size_t nbThreads,
                                std::vector<std::thread>& threads);
 
@@ -231,8 +188,8 @@ private:
     /// Compute shader for sphere deformation.
     GPU::ShaderProgram mComputeShader;
 
-    /// SH coefficients GPU data.
-    GPU::ShaderData mSphHarmCoeffsData;
+    /// Tensor values GPU data.
+    GPU::ShaderData mTensorValuesData;
 
     /// SH functions GPU data.
     GPU::ShaderData mSphHarmFuncsData;

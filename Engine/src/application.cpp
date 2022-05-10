@@ -110,6 +110,7 @@ void Application::initialize()
     renderFrame();
 
     // Add SH field once the UI is drawn
+    mScene->AddSTField();
     mScene->AddSHField();
 
     if(mState->BackgroundImage.IsInit())
@@ -168,9 +169,10 @@ void Application::initApplicationState(const ArgumentParser& parser)
     if(!parser.GetBackgroundImagePath().empty())
     {
         mState->BackgroundImage.Update(NiftiImageWrapper<float>(parser.GetBackgroundImagePath()));
-    }
+    }//*/
 
-    mState->TImage.Update(NiftiImageWrapper<float>( "/home/local/USHERBROOKE/here2602/SCIL/phantom/mrtrix/mrtrix-tensor.nii" ));
+    mState->TImage.Update(NiftiImageWrapper<float>( "/home/local/USHERBROOKE/here2602/SCIL/phantom/mrtrix/tensor.nii" ));
+    //mState->TImage.Update(NiftiImageWrapper<float>( "/home/local/USHERBROOKE/here2602/SCIL/phantom/mrds/results_MRDS_Diff_BIC_TENSOR_T0.nii" ));
 
     mState->Sphere.Resolution.Update(parser.GetSphereResolution());
     mState->Sphere.IsNormalized.Update(false);
