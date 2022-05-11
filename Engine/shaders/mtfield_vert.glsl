@@ -92,7 +92,7 @@ void main()
     localMatrix[3][2] = float(index3d.z - gridDims.z / 2);
     localMatrix[3][3] = 1.0f;
 
-    mat4 tensorMatrix = allTensors[voxID + 1280*(gl_DrawID/416)];//*/
+    mat4 tensorMatrix = allTensors[voxID + gridDims.x*gridDims.y*gridDims.z*(gl_DrawID/416)];//*/
 
     /*mat4 tensorMatrix;
     tensorMatrix[0][0] = 0.000756478;

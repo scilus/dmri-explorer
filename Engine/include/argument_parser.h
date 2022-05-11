@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 namespace Slicer
 {
@@ -27,6 +28,10 @@ public:
     /// \return Background Image path.
     inline std::string GetBackgroundImagePath() const { return mBackgroundImagePath; };
 
+    /// Tensor Images paths getter.
+    /// \return Tensor Images paths.
+    inline std::vector<std::string> GetTensorsPath() const { return mTensorsPath; };
+
     /// Sphere resolution getter.
     /// \return Sphere resolution.
     inline int GetSphereResolution() const {return mSphereResolution; };
@@ -37,6 +42,9 @@ private:
 
     /// Path to the background.
     std::string mBackgroundImagePath;
+
+    /// Path to the tensor images
+    std::vector<std::string> mTensorsPath;
 
     /// Sphere resolution for glyphs.
     int mSphereResolution;

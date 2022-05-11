@@ -172,10 +172,14 @@ void Application::initApplicationState(const ArgumentParser& parser)
         mState->BackgroundImage.Update(NiftiImageWrapper<float>(parser.GetBackgroundImagePath()));
     }//*/
 
+    const std::vector<std::string>& tensorsPaths = parser.GetTensorsPath();
+    for (int i=0; i < tensorsPaths.size(); i++)
+        mState->TImages[i].Update(NiftiImageWrapper<float>( tensorsPaths[i] ));
+
     //mState->TImages[0].Update(NiftiImageWrapper<float>( "/home/local/USHERBROOKE/here2602/SCIL/phantom/mrtrix/tensor.nii" ));
-    mState->TImages[0].Update(NiftiImageWrapper<float>( "/home/local/USHERBROOKE/here2602/SCIL/phantom/mrds/results_MRDS_Diff_BIC_TENSOR_T0.nii" ));
+    /*mState->TImages[0].Update(NiftiImageWrapper<float>( "/home/local/USHERBROOKE/here2602/SCIL/phantom/mrds/results_MRDS_Diff_BIC_TENSOR_T0.nii" ));
     mState->TImages[1].Update(NiftiImageWrapper<float>( "/home/local/USHERBROOKE/here2602/SCIL/phantom/mrds/results_MRDS_Diff_BIC_TENSOR_T1.nii" ));
-    mState->TImages[2].Update(NiftiImageWrapper<float>( "/home/local/USHERBROOKE/here2602/SCIL/phantom/mrds/results_MRDS_Diff_BIC_TENSOR_T2.nii" ));
+    mState->TImages[2].Update(NiftiImageWrapper<float>( "/home/local/USHERBROOKE/here2602/SCIL/phantom/mrds/results_MRDS_Diff_BIC_TENSOR_T2.nii" ));*/
 
     mState->Sphere.Resolution.Update(parser.GetSphereResolution());
     mState->Sphere.IsNormalized.Update(false);

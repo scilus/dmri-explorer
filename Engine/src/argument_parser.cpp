@@ -36,6 +36,13 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
                                           "Specify the sphere resolution used for SH projection. Default: 3.", 
                                           {'s', "sphere_resolution"});
 
+    args::ValueFlagList<std::string> tensorsPath(
+        parser,
+        "tensor path",
+        "Path to a tensor image in nifti file format. Use the option several times for multi-tensor.",
+        {'t', "tensor"}
+    );
+
     try
     {
         parser.ParseCLI(argc, argv);
@@ -69,6 +76,13 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
         // Optional argument, sphere resolution
         mSphereResolution = args::get(sphereResolution);
     }
+
+    if(tensorsPath){
+        for (const auto path : args::get(tensorsPath))
+            //std::cout << tensorPath << std::endl;
+            mTensorsPath.push_back( path );
+    }
+
     mIsValid = true;
 }
 
