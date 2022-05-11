@@ -92,7 +92,9 @@ void main()
     localMatrix[3][2] = float(index3d.z - gridDims.z / 2);
     localMatrix[3][3] = 1.0f;
 
-    mat4 tensorMatrix = allTensors[voxID + gridDims.x*gridDims.y*gridDims.z*(gl_DrawID/416)];//*/
+    const uint nbSpheres = gridDims.x*gridDims.y + gridDims.x*gridDims.z + gridDims.y*gridDims.z;
+    const uint nbVoxels  = gridDims.x*gridDims.y*gridDims.z;
+    mat4 tensorMatrix = allTensors[voxID + nbVoxels*(gl_DrawID/nbSpheres)];//*/
 
     /*mat4 tensorMatrix;
     tensorMatrix[0][0] = 0.000756478;
@@ -122,7 +124,7 @@ void main()
                  * allNormals[gl_VertexID];
 
     color = setColorMapMode(currentVertex);
-    is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID) && isAboveThreshold ? 1.0f : -1.0f;
+    is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID%nbSpheres) && isAboveThreshold ? 1.0f : -1.0f;
     world_eye_pos = vec4(eye.xyz, 1.0f);
     vertex_slice = getVertexSlice(index3d);
     fade_enabled = fadeIfHidden > 0 && is3DMode() ? 1.0 : -1.0;
