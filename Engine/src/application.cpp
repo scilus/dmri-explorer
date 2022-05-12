@@ -109,10 +109,17 @@ void Application::initialize()
     // Render frame without the model
     renderFrame();
 
-    // Add SH field once the UI is drawn
+    // Add fields once the UI is drawn
     //mScene->AddSTField();
-    mScene->AddMTField();
-    mScene->AddSHField();
+    if (mState->TImages[0].IsInit())
+    {
+        mScene->AddMTField();
+    }
+
+    if (mState->FODFImage.IsInit())
+    {
+        mScene->AddSHField();
+    }
 
     if(mState->BackgroundImage.IsInit())
     {
@@ -166,15 +173,21 @@ void Application::setWindowIcon()
 
 void Application::initApplicationState(const ArgumentParser& parser)
 {
-    mState->FODFImage.Update(NiftiImageWrapper<float>(parser.GetImagePath()));
+    if (!parser.GetImagePath().empty())
+    {
+        mState->FODFImage.Update(NiftiImageWrapper<float>(parser.GetImagePath()));
+    }
+
     if(!parser.GetBackgroundImagePath().empty())
     {
         mState->BackgroundImage.Update(NiftiImageWrapper<float>(parser.GetBackgroundImagePath()));
-    }//*/
+    }
 
     const std::vector<std::string>& tensorsPaths = parser.GetTensorsPath();
     for (int i=0; i < tensorsPaths.size(); i++)
+    {
         mState->TImages[i].Update(NiftiImageWrapper<float>( tensorsPaths[i] ));
+    }
 
     mState->Sphere.Resolution.Update(parser.GetSphereResolution());
     mState->Sphere.IsNormalized.Update(false);

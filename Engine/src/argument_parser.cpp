@@ -23,12 +23,13 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
                         "Display this help menu", 
                         {'h', "help"});
 
-    args::Positional<std::string> imagePath(parser, 
-                                            "image path", 
-                                            "First argument (mandatory): Path to the SH image in nifti file format.");
+    args::ValueFlag<std::string> imagePath(parser, 
+                                            "SH image path",
+                                            "Path to a SH image in nifti file format.",
+                                            {'f',"fodf"});
     args::ValueFlag<std::string> backgroundImagePath(parser, 
                                           "background image", 
-                                          "Specify the path to the background image", 
+                                          "Specify the path to the background image.", 
                                           {'b', "background"});
 
     args::ValueFlag<int> sphereResolution(parser, 
@@ -38,7 +39,7 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
 
     args::ValueFlagList<std::string> tensorsPath(
         parser,
-        "tensor path",
+        "Tensor image path",
         "Path to a tensor image in nifti file format. Use the option several times for multi-tensor.",
         {'t', "tensor"}
     );
