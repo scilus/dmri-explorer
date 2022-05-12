@@ -2,13 +2,9 @@
 #extension GL_ARB_shading_language_include : require
 
 #include "/include/camera_util.glsl"
-#include "/include/shfield_util.glsl"
 #include "/include/orthogrid_util.glsl"
-
-layout(std430, binding=0) buffer allRadiisBuffer
-{
-    float allRadiis[];
-};
+#include "/include/shfield_util.glsl"
+#include "/include/sphere_util.glsl"
 
 layout(std430, binding=1) buffer allNormalsBuffer
 {
@@ -18,11 +14,6 @@ layout(std430, binding=1) buffer allNormalsBuffer
 layout(std430, binding=10) buffer modelTransformsBuffer
 {
     mat4 modelMatrix;
-};
-
-layout(std430, binding=12) buffer allMaxAmplitudeBuffer
-{
-    float allMaxAmplitude[];
 };
 
 layout(std430, binding=13) buffer tensorValuesBuffer
@@ -60,28 +51,31 @@ vec4 getVertexSlice(ivec3 index3d)
     return vec4(i, j, k, 0.0f);
 }
 
-vec4 grayScaleColorMap()
+//TODO: Divide by the greatest eigenvalue of the 3 tensors
+/*vec4 grayScaleColorMap()
 {   
     const float maxAmplitude = allMaxAmplitude[gl_DrawID];
     const float currentRadius = allRadiis[gl_VertexID];
     const vec4 grayScale = vec4(currentRadius/maxAmplitude, currentRadius/maxAmplitude, currentRadius/maxAmplitude, 1.0f);
     return grayScale;
-}
+}*/
 
 vec4 setColorMapMode(vec4 currentVertex)
 {
-    if (colorMapMode == 1)
+    /*if (colorMapMode == 1)
     {
         return grayScaleColorMap();
-    }
+    }*/
     return abs(vec4(normalize(currentVertex.xyz), 1.0f));
 }
 
 void main()
 {
-    const ivec3 index3d = convertFlatOrthoSlicesIDTo3DVoxID(gl_DrawID % 416);
+    const uint nbSpheres = gridDims.x*gridDims.y + gridDims.x*gridDims.z + gridDims.y*gridDims.z;
+    const uint nbVoxels  = gridDims.x*gridDims.y*gridDims.z;
+    const ivec3 index3d = convertFlatOrthoSlicesIDTo3DVoxID(gl_DrawID % nbSpheres);
     const uint voxID = convertSHCoeffsIndex3DToFlatVoxID(index3d.x, index3d.y, index3d.z);
-    bool isAboveThreshold = shCoeffs[voxID * nbCoeffs] > sh0Threshold;
+    //bool isAboveThreshold = shCoeffs[voxID * nbCoeffs] > sh0Threshold;
 
     mat4 localMatrix;
     localMatrix[0][0] = scaling;
@@ -92,21 +86,7 @@ void main()
     localMatrix[3][2] = float(index3d.z - gridDims.z / 2);
     localMatrix[3][3] = 1.0f;
 
-    const uint nbSpheres = gridDims.x*gridDims.y + gridDims.x*gridDims.z + gridDims.y*gridDims.z;
-    const uint nbVoxels  = gridDims.x*gridDims.y*gridDims.z;
-    mat4 tensorMatrix = allTensors[voxID + nbVoxels*(gl_DrawID/nbSpheres)];//*/
-
-    /*mat4 tensorMatrix;
-    tensorMatrix[0][0] = 0.000756478;
-    tensorMatrix[1][1] = 0.000765284;
-    tensorMatrix[2][2] = 0.000339484;
-    tensorMatrix[0][1] = tensorMatrix[1][0] = 0.0;
-    tensorMatrix[0][2] = tensorMatrix[2][0] = 0.0;
-    tensorMatrix[1][2] = tensorMatrix[2][1] = -0.000112218;
-    tensorMatrix[0][3] = tensorMatrix[1][3] = tensorMatrix[2][3] = 0.0f;
-    tensorMatrix[3][0] = tensorMatrix[3][1] = tensorMatrix[3][2] = 0.0f;
-    tensorMatrix = (1/0.000756478) * tensorMatrix;
-    tensorMatrix[3][3] = 1.0f;//*/
+    mat4 tensorMatrix = allTensors[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
 
     const vec4 currentVertex = vec4(vertices[gl_VertexID%nbVertices].xyz, 1.0f) * tensorMatrix;
 
@@ -124,7 +104,7 @@ void main()
                  * allNormals[gl_VertexID];
 
     color = setColorMapMode(currentVertex);
-    is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID%nbSpheres) && isAboveThreshold ? 1.0f : -1.0f;
+    is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID % nbSpheres) ? 1.0f : -1.0f;
     world_eye_pos = vec4(eye.xyz, 1.0f);
     vertex_slice = getVertexSlice(index3d);
     fade_enabled = fadeIfHidden > 0 && is3DMode() ? 1.0 : -1.0;

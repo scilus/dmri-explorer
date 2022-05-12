@@ -4,6 +4,7 @@
 #include "/include/camera_util.glsl"
 #include "/include/shfield_util.glsl"
 #include "/include/orthogrid_util.glsl"
+#include "/include/sphere_util.glsl"
 
 layout(std430, binding=0) buffer allRadiisBuffer
 {

@@ -191,9 +191,6 @@ private:
     /// Tensor values GPU data.
     GPU::ShaderData mTensorValuesData;
 
-    /// SH functions GPU data.
-    GPU::ShaderData mSphHarmFuncsData;
-
     /// Voxel grid GPU data.
     GPU::ShaderData mGridInfoData;
 
@@ -207,17 +204,8 @@ private:
     /// \see SphereData
     GPU::ShaderData mSphereInfoData;
 
-    /// Glyphs radiis GPU data.
-    GPU::ShaderData mAllRadiisData;
-
-    /// Glyphs maximum radius GPU data.
-    GPU::ShaderData mAllMaxAmplitudeData;
-
     /// Glyphs normals GPU data.
     GPU::ShaderData mAllSpheresNormalsData;
-
-    /// All SH orders, repeated.
-    GPU::ShaderData mAllOrdersData;
 
     /// DrawElementsIndirectCommand array.
     std::vector<DrawElementsIndirectCommand> mIndirectCmd;

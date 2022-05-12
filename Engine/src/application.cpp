@@ -176,11 +176,6 @@ void Application::initApplicationState(const ArgumentParser& parser)
     for (int i=0; i < tensorsPaths.size(); i++)
         mState->TImages[i].Update(NiftiImageWrapper<float>( tensorsPaths[i] ));
 
-    //mState->TImages[0].Update(NiftiImageWrapper<float>( "/home/local/USHERBROOKE/here2602/SCIL/phantom/mrtrix/tensor.nii" ));
-    /*mState->TImages[0].Update(NiftiImageWrapper<float>( "/home/local/USHERBROOKE/here2602/SCIL/phantom/mrds/results_MRDS_Diff_BIC_TENSOR_T0.nii" ));
-    mState->TImages[1].Update(NiftiImageWrapper<float>( "/home/local/USHERBROOKE/here2602/SCIL/phantom/mrds/results_MRDS_Diff_BIC_TENSOR_T1.nii" ));
-    mState->TImages[2].Update(NiftiImageWrapper<float>( "/home/local/USHERBROOKE/here2602/SCIL/phantom/mrds/results_MRDS_Diff_BIC_TENSOR_T2.nii" ));*/
-
     mState->Sphere.Resolution.Update(parser.GetSphereResolution());
     mState->Sphere.IsNormalized.Update(false);
     mState->Sphere.Scaling.Update(0.5f);
@@ -188,7 +183,15 @@ void Application::initApplicationState(const ArgumentParser& parser)
     mState->Sphere.FadeIfHidden.Update(false);
     mState->Sphere.ColorMapMode.Update(0);
 
-    mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().GetDims());
+    if (tensorsPaths.size()==0)
+    {
+        mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().GetDims());
+    }
+    else
+    {
+        mState->VoxelGrid.VolumeShape.Update(mState->TImages[0].Get().GetDims());
+    }
+    //mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().GetDims());
     mState->VoxelGrid.SliceIndices.Update(mState->VoxelGrid.VolumeShape.Get() / 2);
 
     mState->Window.Height.Update(WIN_HEIGHT);
