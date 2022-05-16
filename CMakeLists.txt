@@ -33,6 +33,9 @@ include_directories("deps/stb/include/")
 # glm math library include
 include_directories("deps/glm/")
 
+# linear algebra matrix math library include
+include_directories("deps/linalg/")
+
 #args parser library include
 include_directories("deps/args/")
 

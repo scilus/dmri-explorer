@@ -9,6 +9,7 @@ ApplicationState::ApplicationState()
 ,ViewMode()
 ,FODFImage()
 ,TImages()
+,nbTensors()
 ,BackgroundImage()
 {
 }

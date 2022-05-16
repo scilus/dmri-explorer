@@ -188,6 +188,8 @@ void Application::initApplicationState(const ArgumentParser& parser)
     {
         mState->TImages[i].Update(NiftiImageWrapper<float>( tensorsPaths[i] ));
     }
+    mState->nbTensors = tensorsPaths.size();
+    std::cout << "nbTensors = " << mState->nbTensors << std::endl;
 
     mState->Sphere.Resolution.Update(parser.GetSphereResolution());
     mState->Sphere.IsNormalized.Update(false);

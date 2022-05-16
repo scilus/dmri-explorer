@@ -20,7 +20,8 @@ enum class Binding
     modelTransform = 10,
     allOrders = 11,
     allMaxAmplitude = 12,
-    tensorValues = 13,//erick
+    tensorValues = 13,
+    coefsValues = 14,
     none = 30
 };
 } // namespace GPU

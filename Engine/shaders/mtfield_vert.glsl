@@ -21,6 +21,11 @@ layout(std430, binding=13) buffer tensorValuesBuffer
     mat4 allTensors[];
 };
 
+layout(std430, binding=14) buffer coefsValuesBuffer
+{
+    vec3 allCoefs[];
+};
+
 // Outputs
 out gl_PerVertex{
     vec4 gl_Position;
@@ -75,7 +80,6 @@ void main()
     const uint nbVoxels  = gridDims.x*gridDims.y*gridDims.z;
     const ivec3 index3d = convertFlatOrthoSlicesIDTo3DVoxID(gl_DrawID % nbSpheres);
     const uint voxID = convertSHCoeffsIndex3DToFlatVoxID(index3d.x, index3d.y, index3d.z);
-    //bool isAboveThreshold = shCoeffs[voxID * nbCoeffs] > sh0Threshold;
 
     mat4 localMatrix;
     localMatrix[0][0] = scaling;
@@ -88,7 +92,11 @@ void main()
 
     mat4 tensorMatrix = allTensors[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
 
-    const vec4 currentVertex = vec4(vertices[gl_VertexID%nbVertices].xyz, 1.0f) * tensorMatrix;
+    const vec4 currentVertex = tensorMatrix
+                             * vec4(vertices[gl_VertexID%nbVertices].xyz, 1.0f);
+
+    //vec4 currentVertex = vec4(vertices[gl_VertexID%nbVertices].xyz, 1.0f);
+    //currentVertex = vec4(currentVertex.x, currentVertex.y*0.5f, currentVertex.z, 1.0f);
 
     gl_Position = projectionMatrix
                 * viewMatrix
@@ -100,8 +108,10 @@ void main()
                    * localMatrix
                    * currentVertex;
 
-    world_normal = modelMatrix
-                 * allNormals[gl_VertexID];
+    vec3 coefs = allCoefs[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
+    world_normal = vec4(transpose(inverse(mat3(modelMatrix * localMatrix)))
+                 //* normalize(vec3(currentVertex.x, currentVertex.y, currentVertex.z)), 1.0f);
+                 * normalize(vec3(2.0f*currentVertex.x*coefs.x, 2.0f*currentVertex.y*coefs.y, 2.0f*currentVertex.z*coefs.z)), 1.0f);
 
     color = setColorMapMode(currentVertex);
     is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID % nbSpheres) ? 1.0f : -1.0f;
