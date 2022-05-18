@@ -1,23 +1,12 @@
 #include <mt_field.h>
 #include <glad/glad.h>
 #include <timer.h>
-#include <matrix.h>
 #include <math.h>
+#include <eigen.hpp>
 
 namespace
 {
 const int NB_THREADS_FOR_SPHERES = 2;
-}
-
-void print_matrix(Matrix M){
-    for (int a=0; a<3; a++) {
-        std::cout << "| ";
-        for (int b=0; b<3; b++){
-            std::cout << M[a][b] << "\t";
-        } 
-        std::cout << "|";
-        std::cout << std::endl;
-    }
 }
 
 namespace Slicer
@@ -34,6 +23,7 @@ MTField::MTField(const std::shared_ptr<ApplicationState>& state,
 ,mIndicesBO(0)
 ,mIndirectBO(0)
 ,mTensorValuesData()
+,mCoefsValuesData()
 ,mSphereVerticesData()
 ,mSphereIndicesData()
 ,mSphereInfoData()
@@ -116,11 +106,7 @@ void MTField::initProgramPipeline()
 
 void MTField::initializeMembers()
 {
-    // Initialize compute shader
-    //const std::string csPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_comp.glsl");
-    //mComputeShader = GPU::ShaderProgram(csPath, GL_COMPUTE_SHADER);
-
-    //TODO: Try to decrease the sphere resolution
+    //TODO: Decrease the sphere resolution
 
     // Initialize a sphere for SH to SF projection
     const auto& image = mState->TImages[0].Get();
@@ -151,9 +137,13 @@ void MTField::initializeMembers()
     std::cout << "nbSpheres = " << nbSpheres << std::endl;
     for (int i=0; i < nbSpheres; i++){
         if (nbTensors > 1)
+        {
             mIndirectCmd[  nbSpheres + i] = mIndirectCmd[i];
+        }
         if (nbTensors > 2)
+        {
             mIndirectCmd[2*nbSpheres + i] = mIndirectCmd[i];
+        }
     }
 
     // Bind primitives to GPU
@@ -210,8 +200,8 @@ void MTField::initializeGPUData()
 
     // temporary zero-filled array for all spheres vertices and normals
     std::vector<glm::vec4> allVertices(nbSpheres * nbTensors * mSphere->GetPoints().size());
-    std::vector<float> allMaxAmplitude(nbSpheres);
-    std::vector<glm::vec3> allCoefs;
+    std::vector<glm::vec4> allCoefs;
+    std::vector<glm::mat4> allTensors;
 
     // Sphere data GPU buffer
     SphereData sphereData;
@@ -233,9 +223,7 @@ void MTField::initializeGPUData()
     gridData.IsVisible = glm::ivec4(1, 1, 1, 0);
     gridData.CurrentSlice = 0;
 
-    //erick
     // Build tensor matrices from tensor values
-    std::vector<glm::mat4> tensors;
     for (int i=0; i < nbTensors; i++)
     {
         const std::vector<float>& tensor_image = mState->TImages[i].Get().GetVoxelData();
@@ -245,44 +233,29 @@ void MTField::initializeGPUData()
 
             //TODO: Make this value a user parameter
             float cmax = 0.001f;
-            //std::cout << "max val = " << cmax << std::endl;
+            //float cmax = -1.0f;
             //for (uint k=0; k<6; k++) if (cmax < tensor_image[offset + k]) cmax = tensor_image[offset + k];
+            //std::cout << "cmax = " << cmax << std::endl;
             tensor[0][0] = tensor_image[offset]   / cmax;
             tensor[1][1] = tensor_image[offset+1] / cmax;
             tensor[2][2] = tensor_image[offset+2] / cmax;
             tensor[0][1] = tensor[1][0] = tensor_image[offset+3] / cmax;
             tensor[0][2] = tensor[2][0] = tensor_image[offset+4] / cmax;
             tensor[1][2] = tensor[2][1] = tensor_image[offset+5] / cmax;
-            tensors.push_back( tensor );
+            allTensors.push_back( tensor );
 
-            Matrix M(3, 3, 0);
-            for (int a=0; a<3; a++) for (int b=0; b<3; b++) M[a][b] = tensor[a][b];
-            std::vector<double> lambdas = M.eigs();
-            array<Matrix, 3> res = M.singular_value_decomposition();
-            
-            //std::cout << "lambdas = ";
-            //for (int a=0; a<3; a++) std::cout << lambdas[a] << ", "; std::cout << std::endl;
+            glm::vec3 lambdas = getEigenvaluesFromMatrix(glm::mat3(tensor));
+            //std::cout << "lambdas new = (";
+            //for (int a=0; a<3; a++) std::cout << lambdas[a] << ", "; std::cout << ")" << std::endl;
 
-            /*std::cout << "M=\n";
-            print_matrix(M);
-
-            std::cout << "U=\n";
-            print_matrix(res[0]);
-            std::cout << "S=\n";
-            print_matrix(res[1]);
-            std::cout << "Vt=\n";
-            print_matrix(res[2]);//*/
-            
-            glm::vec3 coefs(1.0f/(lambdas[0]), 1.0f/(lambdas[1]), 1.0f/(lambdas[2]));
-            //if (std::abs(lambdas[0]) < 1-3) coefs.x = 0.0;
-            //if (std::abs(lambdas[1]) < 1-3) coefs.y = 0.0;
-            //if (std::abs(lambdas[2]) < 1-3) coefs.z = 0.0;
-            //std::cout << "coefs = (" << coefs.x << "," << coefs.y << "," << coefs.z << ")\n\n";
+            //glm::vec4 coefs(1.0f/sqrt(lambdas[0]), 1.0f/sqrt(lambdas[1]), 1.0f/sqrt(lambdas[2]), 1.0f);
+            glm::vec4 coefs(1.0f/lambdas.x, 1.0f/lambdas.y, 1.0f/lambdas.z, 1.0f);
             allCoefs.push_back( coefs );
+            //std::cout << "coefs = (" << coefs.x << "," << coefs.y << "," << coefs.z << ")\n\n";            
         }
     }
-    mTensorValuesData      = GPU::ShaderData(tensors.data(),               GPU::Binding::tensorValues,      sizeof(glm::mat4) * tensors.size());
-    mCoefsValuesData       = GPU::ShaderData(allCoefs.data(),              GPU::Binding::coefsValues,       sizeof(glm::vec3) * allCoefs.size());
+    mTensorValuesData      = GPU::ShaderData(allTensors.data(),            GPU::Binding::tensorValues,      sizeof(glm::mat4) * allTensors.size());
+    mCoefsValuesData       = GPU::ShaderData(allCoefs.data(),              GPU::Binding::coefsValues,       sizeof(glm::vec4) * allCoefs.size());
     mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(),           GPU::Binding::allSpheresNormals, sizeof(glm::vec4) * allVertices.size());
     mSphereVerticesData    = GPU::ShaderData(mSphere->GetPoints().data(),  GPU::Binding::sphereVertices,    sizeof(glm::vec4) * mSphere->GetPoints().size());
     mSphereIndicesData     = GPU::ShaderData(mSphere->GetIndices().data(), GPU::Binding::sphereIndices,     sizeof(uint) * mSphere->GetIndices().size());

@@ -6,11 +6,6 @@
 #include "/include/shfield_util.glsl"
 #include "/include/sphere_util.glsl"
 
-layout(std430, binding=1) buffer allNormalsBuffer
-{
-    vec4 allNormals[];
-};
-
 layout(std430, binding=10) buffer modelTransformsBuffer
 {
     mat4 modelMatrix;
@@ -23,7 +18,7 @@ layout(std430, binding=13) buffer tensorValuesBuffer
 
 layout(std430, binding=14) buffer coefsValuesBuffer
 {
-    vec3 allCoefs[];
+    vec4 allCoefs[];
 };
 
 // Outputs
@@ -92,10 +87,9 @@ void main()
 
     mat4 tensorMatrix = allTensors[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
 
-    const vec4 currentVertex = tensorMatrix
-                             * vec4(vertices[gl_VertexID%nbVertices].xyz, 1.0f);
+    const vec4 currentVertex = tensorMatrix * vec4(vertices[gl_VertexID%nbVertices].xyz, 1.0f);
 
-    //vec4 currentVertex = vec4(vertices[gl_VertexID%nbVertices].xyz, 1.0f);
+    vec4 sphereVertex = vec4(vertices[gl_VertexID%nbVertices].xyz, 1.0f);
     //currentVertex = vec4(currentVertex.x, currentVertex.y*0.5f, currentVertex.z, 1.0f);
 
     gl_Position = projectionMatrix
@@ -108,10 +102,11 @@ void main()
                    * localMatrix
                    * currentVertex;
 
-    vec3 coefs = allCoefs[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
-    world_normal = vec4(transpose(inverse(mat3(modelMatrix * localMatrix)))
-                 //* normalize(vec3(currentVertex.x, currentVertex.y, currentVertex.z)), 1.0f);
-                 * normalize(vec3(2.0f*currentVertex.x*coefs.x, 2.0f*currentVertex.y*coefs.y, 2.0f*currentVertex.z*coefs.z)), 1.0f);
+    vec3 coefs = allCoefs[voxID + nbVoxels*(gl_DrawID/nbSpheres)].xyz;
+    world_normal = modelMatrix
+                 //* vec4(currentVertex.x, currentVertex.y, currentVertex.z, 0.0f);
+                 //* vec4(2.0f*currentVertex.x*coefs.x, 2.0f*currentVertex.y*coefs.y, 2.0f*currentVertex.z*coefs.z, 0.0f);
+                 * vec4(2.0f*sphereVertex.x*coefs.x, 2.0f*sphereVertex.y*coefs.y, 2.0f*sphereVertex.z*coefs.z, 0.0f);
 
     color = setColorMapMode(currentVertex);
     is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID % nbSpheres) ? 1.0f : -1.0f;
