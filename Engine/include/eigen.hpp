@@ -95,12 +95,14 @@ double frobeniusNorm(glm::mat3 matrix)
     return sqrt(sum(elementWiseSquare(matrix), -1)[0]);
 }
 
-void jacobiRotationMatrix(glm::mat3& G, double& t, double alpha, double beta, double gamma)
+std::tuple<glm::mat3, double> jacobiRotationMatrix(double alpha, double beta, double gamma)
 {
+    glm::mat3 G(0.0f);
+
     double c = 1.0f;
     double s = 0.0f;
-    
-    t = 0.0f;
+    double t = 0.0f;
+
     if (beta != 0) {
 		double tau = (gamma - alpha) / (2 * beta);
 		if (tau >= 0)
@@ -120,6 +122,8 @@ void jacobiRotationMatrix(glm::mat3& G, double& t, double alpha, double beta, do
     G[1][0] = -s;
     G[1][1] =  c;
     s = t;
+
+    return {G, t};
 }
 
 glm::vec3 getEigenvaluesFromMatrix(glm::mat3 matrix)
@@ -142,16 +146,12 @@ glm::vec3 getEigenvaluesFromMatrix(glm::mat3 matrix)
                 double beta = a.x*b.x + a.y*b.y + a.z*b.z;
                 if ((sigma[p]*sigma[q] > tolsigma) && (abs(beta) >= eps*sqrt(sigma[p]*sigma[q])))
                 {
-                    //TODO: change G and t for modern tuple
                     rots++;
-                    glm::mat3 G(0.0f);
-                    double t = 0.0f;
-                    jacobiRotationMatrix(G, t, sigma[p], beta, sigma[q]);
+                    auto [G, t] = jacobiRotationMatrix(sigma[p], beta, sigma[q]);
                     // update eigenvalues
                     sigma[p] = sigma[p] - beta*t;
                     sigma[q] = sigma[q] + beta*t;
-                    glm::mat3 d = concatenateColumns(a, b, glm::vec3(0.0f));
-                    glm::mat3 temp = G * d;
+                    glm::mat3 temp = G * concatenateColumns(a, b, glm::vec3(0.0f));
                     // update pth and qth cols of the matrix
                     overwriteColumn(matrix, getColumn(temp, 0), p);
                     overwriteColumn(matrix, getColumn(temp, 1), q);
