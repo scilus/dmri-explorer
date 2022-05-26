@@ -3,6 +3,7 @@
 #include <timer.h>
 #include <math.h>
 #include <eigen.hpp>
+#include <utils.hpp>
 
 namespace
 {
@@ -24,6 +25,7 @@ MTField::MTField(const std::shared_ptr<ApplicationState>& state,
 ,mIndirectBO(0)
 ,mTensorValuesData()
 ,mCoefsValuesData()
+,mPddsValuesData()
 ,mSphereVerticesData()
 ,mSphereIndicesData()
 ,mSphereInfoData()
@@ -202,6 +204,7 @@ void MTField::initializeGPUData()
     std::vector<glm::vec4> allVertices(nbSpheres * nbTensors * mSphere->GetPoints().size());
     std::vector<glm::vec4> allCoefs;
     std::vector<glm::mat4> allTensors;
+    std::vector<glm::vec4> allPdds;
 
     // Sphere data GPU buffer
     SphereData sphereData;
@@ -224,7 +227,41 @@ void MTField::initializeGPUData()
     gridData.CurrentSlice = 0;
 
     // Build tensor matrices from tensor values
+    double tmax = -1.0;
     for (int i=0; i < nbTensors; i++)
+    {
+        const std::vector<float>& tensor_image = mState->TImages[i].Get().GetVoxelData();
+        for(size_t offset=0; offset < tensor_image.size(); offset+=6)
+        {
+            glm::mat4 tensor = glm::mat4(1.0f);
+
+            tensor[0][0] = tensor_image[offset];
+            tensor[1][1] = tensor_image[offset+1];
+            tensor[2][2] = tensor_image[offset+2];
+            tensor[0][1] = tensor[1][0] = tensor_image[offset+3];
+            tensor[0][2] = tensor[2][0] = tensor_image[offset+4];
+            tensor[1][2] = tensor[2][1] = tensor_image[offset+5];
+            allTensors.push_back( tensor );
+
+            for (uint k=0; k<6; k++) if (tmax < tensor_image[offset + k]) tmax = tensor_image[offset + k];
+        }
+    }
+
+    //TODO: add feature to control this parameter from the GUI
+    double scale = 1.0;
+    for (int i=0; i<allTensors.size(); i++)
+    {
+        // scale tensor
+        for (int a=0; a<3; a++) for (int b=0; b<3; b++) allTensors[i][a][b] /= (tmax/scale);
+
+        glm::vec3 lambdas = eigenvalues(glm::mat3(allTensors[i]));
+        auto [e1, e2, e3] = eigenvectors(glm::mat3(allTensors[i]));
+
+        allPdds.push_back( glm::vec4(abs(e1[0]), abs(e1[1]), abs(e1[2]), 0.0f) );
+        allCoefs.push_back( glm::vec4(1.0f/(2.0f*lambdas.x), 1.0f/(2.0f*lambdas.y), 1.0f/(2.0f*lambdas.z), 1.0f) );
+    }
+
+    /*for (int i=0; i < nbTensors; i++)
     {
         const std::vector<float>& tensor_image = mState->TImages[i].Get().GetVoxelData();
         for(size_t offset=0; offset < tensor_image.size(); offset+=6)
@@ -244,18 +281,40 @@ void MTField::initializeGPUData()
             tensor[1][2] = tensor[2][1] = tensor_image[offset+5] / cmax;
             allTensors.push_back( tensor );
 
-            glm::vec3 lambdas = getEigenvaluesFromMatrix(glm::mat3(tensor));
-            //std::cout << "lambdas new = (";
-            //for (int a=0; a<3; a++) std::cout << lambdas[a] << ", "; std::cout << ")" << std::endl;
+            glm::vec3 lambdas_jacobi = getEigenvaluesFromMatrix(glm::mat3(tensor));
+            glm::vec3 lambdas = eigenvalues(glm::mat3(tensor));
+            //std::tuple<glm::vec3,glm::vec3,glm::vec3> e = eigenvectors(glm::mat3(tensor));
+            auto [e1, e2, e3] = eigenvectors(glm::mat3(tensor));
+            glm::mat3 LAMBDA = glm::mat3(1.0f);
+            LAMBDA[0][0] = lambdas.x;
+            LAMBDA[1][1] = lambdas.y;
+            LAMBDA[2][2] = lambdas.z;
+            //glm::mat3 E = concatenate(e1, e2, e3);
+            //glm::mat3 D = glm::transpose(E) * LAMBDA * E;
+            //glm::mat3 D = E * LAMBDA * glm::transpose(E);
+            //print(tensor, "tensor");
+            //print(D, "D");
+            std::cout << "e1 = (";
+            for (int a=0; a<3; a++) std::cout << e1[a] << ", "; std::cout << ")" << std::endl;
+            std::cout << "lambdas jacobi = (";
+            for (int a=0; a<3; a++) std::cout << lambdas_jacobi[a] << ", "; std::cout << ")" << std::endl;
+            std::cout << "lambdas analyt = (";
+            for (int a=0; a<3; a++) std::cout << lambdas[a] << ", "; std::cout << ")" << std::endl << std::endl;
+            allPdds.push_back( glm::vec4(abs(e1[0]), abs(e1[1]), abs(e1[2]), 1.0f) );
 
             //glm::vec4 coefs(1.0f/sqrt(lambdas[0]), 1.0f/sqrt(lambdas[1]), 1.0f/sqrt(lambdas[2]), 1.0f);
-            glm::vec4 coefs(1.0f/lambdas.x, 1.0f/lambdas.y, 1.0f/lambdas.z, 1.0f);
+            //glm::vec4 coefs(1.0f/lambdas.x, 1.0f/lambdas.y, 1.0f/lambdas.z, 1.0f);
+            glm::vec4 coefs(1.0f/(2.0f*lambdas.x), 1.0f/(2.0f*lambdas.y), 1.0f/(2.0f*lambdas.z), 1.0f);
             allCoefs.push_back( coefs );
             //std::cout << "coefs = (" << coefs.x << "," << coefs.y << "," << coefs.z << ")\n\n";            
         }
-    }
+    }//*/
+
+
+
     mTensorValuesData      = GPU::ShaderData(allTensors.data(),            GPU::Binding::tensorValues,      sizeof(glm::mat4) * allTensors.size());
     mCoefsValuesData       = GPU::ShaderData(allCoefs.data(),              GPU::Binding::coefsValues,       sizeof(glm::vec4) * allCoefs.size());
+    mPddsValuesData        = GPU::ShaderData(allPdds.data(),               GPU::Binding::pddsValues,        sizeof(glm::vec4) * allPdds.size());
     mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(),           GPU::Binding::allSpheresNormals, sizeof(glm::vec4) * allVertices.size());
     mSphereVerticesData    = GPU::ShaderData(mSphere->GetPoints().data(),  GPU::Binding::sphereVertices,    sizeof(glm::vec4) * mSphere->GetPoints().size());
     mSphereIndicesData     = GPU::ShaderData(mSphere->GetIndices().data(), GPU::Binding::sphereIndices,     sizeof(uint) * mSphere->GetIndices().size());
@@ -265,6 +324,7 @@ void MTField::initializeGPUData()
     // push all data to GPU
     mTensorValuesData.ToGPU();
     mCoefsValuesData.ToGPU();
+    mPddsValuesData.ToGPU();
     mSphereVerticesData.ToGPU();
     mSphereIndicesData.ToGPU();
     mSphereInfoData.ToGPU();

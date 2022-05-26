@@ -8,6 +8,8 @@
 #include <limits>
 #include <cmath>
 #include <iostream>
+#include <tuple>
+#include <algorithm>
 
 namespace Slicer
 {
@@ -131,4 +133,72 @@ static inline void print(const glm::mat4& mat, const std::string& m)
     std::cout << mat[2][0] << " " << mat[2][1] << " " << mat[2][2] << " " << mat[2][3] << " " <<std::endl;
     std::cout << mat[3][0] << " " << mat[3][1] << " " << mat[3][2] << " " << mat[3][3] << " " <<std::endl;
 }
+}
+
+// Returns rotationally invariant parameters of 3D Diffusion Tensor D
+static inline glm::vec3 invariants(glm::mat3 D)
+{
+    double I1 = D[0][0] + D[1][1] + D[2][2];
+    double I2 = D[0][0]*D[1][1] + D[1][1]*D[2][2] + D[2][2]*D[0][0] - (D[0][1]*D[0][1] + D[0][2]*D[0][2] + D[1][2]*D[1][2]);
+    double I3 = D[0][0]*D[1][1]*D[2][2] + 2*D[0][1]*D[0][2]*D[1][2] - (D[2][2]*D[0][1]*D[0][1] + D[1][1]*D[0][2]*D[0][2] + D[0][0]*D[1][2]*D[1][2]);
+
+    return glm::vec3(I1, I2, I3);
+}
+
+// Returns eigenvalues of 3D tensor D
+static inline glm::vec3 eigenvalues(glm::mat3 D)
+{
+    glm::vec3 I = invariants(D);
+
+    double v = (I.x/3)*(I.x/3) - I.y/3;
+    double s = (I.x/3)*(I.x/3)*(I.x/3) - I.x*I.y/6 + I.z/2;
+    //double c = std::max();
+    double o = acos(std::clamp<double>(s / pow(v,3.0/2.0), -1.0, 1.0)) / 3.0;
+    /*std::cout << "v = " << v << std::endl;
+    std::cout << "s = " << s << std::endl;
+    std::cout << "phi = " << o << std::endl;//*/
+
+    double lambda1 = I.x/3 + 2*sqrt(v)*cos(o);
+    double lambda2 = I.x/3 - 2*sqrt(v)*cos(M_PI/3 + o);
+    double lambda3 = I.x/3 - 2*sqrt(v)*cos(M_PI/3 - o);
+
+    return glm::vec3(lambda1, lambda2, lambda3);
+}
+
+// Returns eigenvectors of 3D tensor D
+static inline std::tuple<glm::vec3, glm::vec3, glm::vec3> eigenvectors(glm::mat3 D)
+{
+    glm::vec3 lambdas = eigenvalues(D);
+
+    glm::vec3 A = glm::vec3(D[0][0]) - lambdas;
+    glm::vec3 B = glm::vec3(D[1][1]) - lambdas;
+    glm::vec3 C = glm::vec3(D[2][2]) - lambdas;
+
+    glm::vec3 e[3];
+    for (int i=0; i<3; i++)
+    {
+        e[i] = glm::vec3(
+            (D[0][1]*D[1][2] - B[i]*D[0][2])*(D[0][2]*D[1][2] - C[i]*D[0][1]),
+            (D[0][2]*D[1][2] - C[i]*D[0][1])*(D[0][1]*D[0][2] - A[i]*D[1][2]),
+            (D[0][1]*D[0][2] - A[i]*D[1][2])*(D[0][1]*D[1][2] - B[i]*D[0][2])
+        );
+    }
+
+    return std::make_tuple(glm::normalize(e[0]), glm::normalize(e[1]), glm::normalize(e[2]));
+    //return std::make_tuple(e[0], e[1], e[2]);
+}
+
+// Concatenates 3 column vectors as a matrix
+static inline glm::mat3 concatenate(glm::vec3 a, glm::vec3 b, glm::vec3 c)
+{
+    glm::mat3 result;
+
+    for (int i=0; i<3; i++)
+    {
+        result[i][0] = a[i];
+        result[i][1] = b[i];
+        result[i][2] = c[i];
+    }
+
+    return result;
 }

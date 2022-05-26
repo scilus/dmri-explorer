@@ -21,6 +21,11 @@ layout(std430, binding=14) buffer coefsValuesBuffer
     vec4 allCoefs[];
 };
 
+layout(std430, binding=15) buffer pddsValuesBuffer
+{
+    vec4 allPdds[];
+};
+
 // Outputs
 out gl_PerVertex{
     vec4 gl_Position;
@@ -29,6 +34,7 @@ out vec4 world_frag_pos;
 out vec4 color;
 out vec4 world_normal;
 out vec4 world_eye_pos;
+out vec4 pdd;
 
 // Identify the slice a vertex belongs to.
 // -1 if the vertex does not belong to slice at index;
@@ -87,10 +93,10 @@ void main()
 
     mat4 tensorMatrix = allTensors[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
 
-    const vec4 currentVertex = tensorMatrix * vec4(vertices[gl_VertexID%nbVertices].xyz, 1.0f);
+    const vec4 currentVertex = tensorMatrix
+                             * vec4(vertices[gl_VertexID%nbVertices].xyz, 1.0f);
 
     vec4 sphereVertex = vec4(vertices[gl_VertexID%nbVertices].xyz, 1.0f);
-    //currentVertex = vec4(currentVertex.x, currentVertex.y*0.5f, currentVertex.z, 1.0f);
 
     gl_Position = projectionMatrix
                 * viewMatrix
@@ -104,8 +110,6 @@ void main()
 
     vec3 coefs = allCoefs[voxID + nbVoxels*(gl_DrawID/nbSpheres)].xyz;
     world_normal = modelMatrix
-                 //* vec4(currentVertex.x, currentVertex.y, currentVertex.z, 0.0f);
-                 //* vec4(2.0f*currentVertex.x*coefs.x, 2.0f*currentVertex.y*coefs.y, 2.0f*currentVertex.z*coefs.z, 0.0f);
                  * vec4(2.0f*sphereVertex.x*coefs.x, 2.0f*sphereVertex.y*coefs.y, 2.0f*sphereVertex.z*coefs.z, 0.0f);
 
     color = setColorMapMode(currentVertex);
@@ -113,4 +117,5 @@ void main()
     world_eye_pos = vec4(eye.xyz, 1.0f);
     vertex_slice = getVertexSlice(index3d);
     fade_enabled = fadeIfHidden > 0 && is3DMode() ? 1.0 : -1.0;
+    pdd = allPdds[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
 }

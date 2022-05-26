@@ -194,6 +194,8 @@ private:
     /// Tensor coefs values GPU data.
     GPU::ShaderData mCoefsValuesData;
 
+    GPU::ShaderData mPddsValuesData;
+
     /// Voxel grid GPU data.
     GPU::ShaderData mGridInfoData;
 

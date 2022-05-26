@@ -22,6 +22,7 @@ enum class Binding
     allMaxAmplitude = 12,
     tensorValues = 13,
     coefsValues = 14,
+    pddsValues = 15,
     none = 30
 };
 } // namespace GPU
