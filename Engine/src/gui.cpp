@@ -305,6 +305,21 @@ void UIManager::drawSlicersWindow()
         colorMapModeParam.Update(1);
     }
     ImGui::SameLine();
+    if(ImGui::RadioButton("PDD", &colorMapMode, 2))
+    {
+        colorMapModeParam.Update(2);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("FA", &colorMapMode, 3))
+    {
+        colorMapModeParam.Update(3);
+    }
+    ImGui::SameLine();
+    /*if(ImGui::RadioButton("Viridis", &colorMapMode, 4))
+    {
+        colorMapModeParam.Update(4);
+    }
+    ImGui::SameLine();//*/
 
     ImGui::Spacing();
     ImGui::End();

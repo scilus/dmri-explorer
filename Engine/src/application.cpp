@@ -206,7 +206,7 @@ void Application::initApplicationState(const ArgumentParser& parser)
     {
         mState->VoxelGrid.VolumeShape.Update(mState->TImages[0].Get().GetDims());
     }
-    //mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().GetDims());
+    
     mState->VoxelGrid.SliceIndices.Update(mState->VoxelGrid.VolumeShape.Get() / 2);
 
     mState->Window.Height.Update(WIN_HEIGHT);

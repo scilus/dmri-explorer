@@ -136,19 +136,20 @@ static inline void print(const glm::mat4& mat, const std::string& m)
 }
 
 // Returns rotationally invariant parameters of 3D Diffusion Tensor D
-static inline glm::vec3 invariants(glm::mat3 D)
+static inline glm::vec4 invariants(glm::mat3 D)
 {
     double I1 = D[0][0] + D[1][1] + D[2][2];
     double I2 = D[0][0]*D[1][1] + D[1][1]*D[2][2] + D[2][2]*D[0][0] - (D[0][1]*D[0][1] + D[0][2]*D[0][2] + D[1][2]*D[1][2]);
     double I3 = D[0][0]*D[1][1]*D[2][2] + 2*D[0][1]*D[0][2]*D[1][2] - (D[2][2]*D[0][1]*D[0][1] + D[1][1]*D[0][2]*D[0][2] + D[0][0]*D[1][2]*D[1][2]);
+    double I4 = D[0][0]*D[0][0] + D[1][1]*D[1][1] + D[2][2]*D[2][2] + 2*(D[0][1]*D[0][1] + D[0][2]*D[0][2] + D[1][2]*D[1][2]);
 
-    return glm::vec3(I1, I2, I3);
+    return glm::vec4(I1, I2, I3, I4);
 }
 
 // Returns eigenvalues of 3D tensor D
 static inline glm::vec3 eigenvalues(glm::mat3 D)
 {
-    glm::vec3 I = invariants(D);
+    glm::vec4 I = invariants(D);
 
     double v = (I.x/3)*(I.x/3) - I.y/3;
     double s = (I.x/3)*(I.x/3)*(I.x/3) - I.x*I.y/6 + I.z/2;
@@ -177,7 +178,8 @@ static inline std::tuple<glm::vec3, glm::vec3, glm::vec3> eigenvectors(glm::mat3
     glm::vec3 e[3];
     for (int i=0; i<3; i++)
     {
-        e[i] = glm::vec3(
+        e[i] = glm::vec3
+        (
             (D[0][1]*D[1][2] - B[i]*D[0][2])*(D[0][2]*D[1][2] - C[i]*D[0][1]),
             (D[0][2]*D[1][2] - C[i]*D[0][1])*(D[0][1]*D[0][2] - A[i]*D[1][2]),
             (D[0][1]*D[0][2] - A[i]*D[1][2])*(D[0][1]*D[1][2] - B[i]*D[0][2])
@@ -186,6 +188,26 @@ static inline std::tuple<glm::vec3, glm::vec3, glm::vec3> eigenvectors(glm::mat3
 
     return std::make_tuple(glm::normalize(e[0]), glm::normalize(e[1]), glm::normalize(e[2]));
     //return std::make_tuple(e[0], e[1], e[2]);
+}
+
+// Returns fractional anisotropy (FA) of the 3D tensor D
+static inline float fractionalAnisotropy(glm::mat3 D)
+{
+    glm::vec4 I = invariants(D);
+
+    return sqrt(1 - I.y/I.w);
+}
+
+static inline float fractionalAnisotropy(glm::vec3 lambdas)
+{
+    float MD = (lambdas[0] + lambdas[1] + lambdas[2])/3;
+
+    float a = 3*(lambdas[0] - MD)*(lambdas[0] - MD);
+    float b = 3*(lambdas[1] - MD)*(lambdas[1] - MD);
+    float c = 3*(lambdas[2] - MD)*(lambdas[2] - MD);
+    float d = 2*(lambdas[0]*lambdas[0] + lambdas[1]*lambdas[1] + lambdas[2]*lambdas[2]);
+
+    return sqrt( (a+b+c)/d );
 }
 
 // Concatenates 3 column vectors as a matrix

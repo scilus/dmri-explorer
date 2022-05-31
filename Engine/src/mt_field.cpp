@@ -26,6 +26,7 @@ MTField::MTField(const std::shared_ptr<ApplicationState>& state,
 ,mTensorValuesData()
 ,mCoefsValuesData()
 ,mPddsValuesData()
+,mFAsValuesData()
 ,mSphereVerticesData()
 ,mSphereIndicesData()
 ,mSphereInfoData()
@@ -205,6 +206,7 @@ void MTField::initializeGPUData()
     std::vector<glm::vec4> allCoefs;
     std::vector<glm::mat4> allTensors;
     std::vector<glm::vec4> allPdds;
+    std::vector<float> allFAs;
 
     // Sphere data GPU buffer
     SphereData sphereData;
@@ -248,7 +250,7 @@ void MTField::initializeGPUData()
     }
 
     //TODO: add feature to control this parameter from the GUI
-    double scale = 1.0;
+    double scale = 2.0;
     for (int i=0; i<allTensors.size(); i++)
     {
         // scale tensor
@@ -256,9 +258,16 @@ void MTField::initializeGPUData()
 
         glm::vec3 lambdas = eigenvalues(glm::mat3(allTensors[i]));
         auto [e1, e2, e3] = eigenvectors(glm::mat3(allTensors[i]));
+        float FA1 = fractionalAnisotropy(glm::mat3(allTensors[i]));
+        float FA2 = fractionalAnisotropy(lambdas);
+
+        //std::cout << " tensor FA = " << FA1 << " " << int(FA1*32) << std::endl;
+        //std::cout << " lambda FA = " << FA2 << std::endl;
+        //std::cout << "\n\n";
 
         allPdds.push_back( glm::vec4(abs(e1[0]), abs(e1[1]), abs(e1[2]), 0.0f) );
         allCoefs.push_back( glm::vec4(1.0f/(2.0f*lambdas.x), 1.0f/(2.0f*lambdas.y), 1.0f/(2.0f*lambdas.z), 1.0f) );
+        allFAs.push_back( FA1 );
     }
 
     /*for (int i=0; i < nbTensors; i++)
@@ -315,6 +324,7 @@ void MTField::initializeGPUData()
     mTensorValuesData      = GPU::ShaderData(allTensors.data(),            GPU::Binding::tensorValues,      sizeof(glm::mat4) * allTensors.size());
     mCoefsValuesData       = GPU::ShaderData(allCoefs.data(),              GPU::Binding::coefsValues,       sizeof(glm::vec4) * allCoefs.size());
     mPddsValuesData        = GPU::ShaderData(allPdds.data(),               GPU::Binding::pddsValues,        sizeof(glm::vec4) * allPdds.size());
+    mFAsValuesData         = GPU::ShaderData(allFAs.data(),                GPU::Binding::faValues,          sizeof(float) * allFAs.size());
     mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(),           GPU::Binding::allSpheresNormals, sizeof(glm::vec4) * allVertices.size());
     mSphereVerticesData    = GPU::ShaderData(mSphere->GetPoints().data(),  GPU::Binding::sphereVertices,    sizeof(glm::vec4) * mSphere->GetPoints().size());
     mSphereIndicesData     = GPU::ShaderData(mSphere->GetIndices().data(), GPU::Binding::sphereIndices,     sizeof(uint) * mSphere->GetIndices().size());
@@ -325,6 +335,7 @@ void MTField::initializeGPUData()
     mTensorValuesData.ToGPU();
     mCoefsValuesData.ToGPU();
     mPddsValuesData.ToGPU();
+    mFAsValuesData.ToGPU();
     mSphereVerticesData.ToGPU();
     mSphereIndicesData.ToGPU();
     mSphereInfoData.ToGPU();

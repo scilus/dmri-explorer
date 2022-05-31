@@ -5,6 +5,7 @@
 #include "/include/orthogrid_util.glsl"
 #include "/include/shfield_util.glsl"
 #include "/include/sphere_util.glsl"
+#include "/include/color_maps.glsl"
 
 layout(std430, binding=10) buffer modelTransformsBuffer
 {
@@ -26,6 +27,11 @@ layout(std430, binding=15) buffer pddsValuesBuffer
     vec4 allPdds[];
 };
 
+layout(std430, binding=16) buffer faValuesBuffer
+{
+    float allFAs[];
+};
+
 // Outputs
 out gl_PerVertex{
     vec4 gl_Position;
@@ -34,7 +40,6 @@ out vec4 world_frag_pos;
 out vec4 color;
 out vec4 world_normal;
 out vec4 world_eye_pos;
-out vec4 pdd;
 
 // Identify the slice a vertex belongs to.
 // -1 if the vertex does not belong to slice at index;
@@ -66,12 +71,24 @@ vec4 getVertexSlice(ivec3 index3d)
     return grayScale;
 }*/
 
-vec4 setColorMapMode(vec4 currentVertex)
+vec4 setColorMapMode(vec4 currentVertex, const uint voxID, const uint nbSpheres, const uint nbVoxels)
 {
     /*if (colorMapMode == 1)
     {
         return grayScaleColorMap();
     }*/
+    if(colorMapMode == 2) // color by PDD
+    {
+        vec4 pdd = allPdds[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
+        return abs(normalize(pdd));
+    }
+    else if (colorMapMode == 3) // color by FA (viridis color map) TODO: add more color maps
+    {
+        float fa = allFAs[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
+        int idx = int(fa*32);
+        return vec4(viridis[ idx ], 1.0f);
+    }
+
     return abs(vec4(normalize(currentVertex.xyz), 1.0f));
 }
 
@@ -112,10 +129,9 @@ void main()
     world_normal = modelMatrix
                  * vec4(2.0f*sphereVertex.x*coefs.x, 2.0f*sphereVertex.y*coefs.y, 2.0f*sphereVertex.z*coefs.z, 0.0f);
 
-    color = setColorMapMode(currentVertex);
+    color = setColorMapMode(currentVertex, voxID, nbSpheres, nbVoxels);
     is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID % nbSpheres) ? 1.0f : -1.0f;
     world_eye_pos = vec4(eye.xyz, 1.0f);
     vertex_slice = getVertexSlice(index3d);
     fade_enabled = fadeIfHidden > 0 && is3DMode() ? 1.0 : -1.0;
-    pdd = allPdds[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
 }

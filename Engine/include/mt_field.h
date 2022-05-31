@@ -195,6 +195,7 @@ private:
     GPU::ShaderData mCoefsValuesData;
 
     GPU::ShaderData mPddsValuesData;
+    GPU::ShaderData mFAsValuesData;
 
     /// Voxel grid GPU data.
     GPU::ShaderData mGridInfoData;
