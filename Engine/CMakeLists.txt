@@ -4,7 +4,7 @@ add_executable(dmriexplorer ${SOURCES})
 
 target_link_libraries(dmriexplorer PRIVATE GLAD)
 target_link_libraries(dmriexplorer PRIVATE glfw)
-target_link_libraries(dmriexplorer PRIVATE NIFTI::nifticdf)
+target_link_libraries(dmriexplorer PRIVATE NIFTI_LIB)
 target_link_libraries(dmriexplorer PRIVATE IMGUI)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)

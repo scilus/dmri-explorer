@@ -1,4 +1,4 @@
-set(CMAKE_TOOLCHAIN_FILE "vcpkg/scripts/buildsystems/vcpkg.cmake")
+#set(CMAKE_TOOLCHAIN_FILE "vcpkg/scripts/buildsystems/vcpkg.cmake")
 
 if(UNIX)
     set(CMAKE_GENERATOR "Unix Makefiles")
@@ -20,9 +20,11 @@ add_library(GLAD "deps/glad/src/glad.c")
 include_directories("deps/glad/include/")
 
 # nifti clib library
-find_package(ZLIB REQUIRED)
-set(NIFTI_ZLIB_LIBRARIES ZLIB::ZLIB)
-add_subdirectory("deps/nifti_clib")
+#find_package(ZLIB REQUIRED)
+#set(NIFTI_ZLIB_LIBRARIES ZLIB::ZLIB)
+add_compile_definitions(HAVE_ZLIB)
+add_subdirectory("deps/nifti")
+include_directories("deps/nifti")
 
 # imgui include
 file(GLOB IMGUI_SRC "deps/imgui/src/*.cpp")
