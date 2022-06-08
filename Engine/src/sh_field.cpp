@@ -226,7 +226,7 @@ void SHField::initializeGPUData()
     mSphereVerticesData = GPU::ShaderData(mSphere->GetPoints().data(), GPU::Binding::sphereVertices,
                                           sizeof(glm::vec4) * mSphere->GetPoints().size());
     mSphereIndicesData = GPU::ShaderData(mSphere->GetIndices().data(), GPU::Binding::sphereIndices,
-                                         sizeof(uint) * mSphere->GetIndices().size());
+                                         sizeof(unsigned int) * mSphere->GetIndices().size());
     mSphereInfoData = GPU::ShaderData(&sphereData, GPU::Binding::sphereInfo,
                                       sizeof(SphereData));
     mGridInfoData = GPU::ShaderData(&gridData, GPU::Binding::gridInfo,

@@ -12,11 +12,11 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 add_compile_definitions(DMRI_EXPLORER_BINARY_DIR="${CMAKE_CURRENT_BINARY_DIR}")
 
 add_custom_command(TARGET dmriexplorer POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E create_symlink
+                   COMMAND ${CMAKE_COMMAND} -E copy_if_different
                    ${CMAKE_CURRENT_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:dmriexplorer>/shaders
                    COMMENT "Creating symlink to shader directory" VERBATIM)
 
 add_custom_command(TARGET dmriexplorer POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E create_symlink
+                   COMMAND ${CMAKE_COMMAND} -E copy_if_different
                    ${CMAKE_SOURCE_DIR}/icons/ $<TARGET_FILE_DIR:dmriexplorer>/icons
                    COMMENT "Creating symlink to icons directory" VERBATIM)

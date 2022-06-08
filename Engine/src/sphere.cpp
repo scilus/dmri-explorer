@@ -1,10 +1,15 @@
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
+#include <cmath>
+
 #include <sphere.h>
 #include <glm/gtx/norm.hpp>
 #include <map>
 
 namespace
 {
-const uint DEFAULT_NB_COEFFS = 45;
+const unsigned int DEFAULT_NB_COEFFS = 45;
 const double ICOSAHEDRON_X = 0.525731112119133606;
 const double ICOSAHEDRON_Z = 0.850650808352039932;
 const unsigned int BASE_ICOSAHEDRON_NB_VERTS = 12;

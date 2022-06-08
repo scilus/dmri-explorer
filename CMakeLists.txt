@@ -1,9 +1,11 @@
-set(CMAKE_GENERATOR "Unix Makefiles")
+set(CMAKE_TOOLCHAIN_FILE "vcpkg/scripts/buildsystems/vcpkg.cmake")
 
-#========== Global Configurations =============#
-#----------------------------------------------#
+if(UNIX)
+    set(CMAKE_GENERATOR "Unix Makefiles")
+endif()
+
 cmake_minimum_required(VERSION 3.11)
-project(dmriexplorer)
+project(dmriexplorer LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -18,6 +20,8 @@ add_library(GLAD "deps/glad/src/glad.c")
 include_directories("deps/glad/include/")
 
 # nifti clib library
+find_package(ZLIB REQUIRED)
+set(NIFTI_ZLIB_LIBRARIES ZLIB::ZLIB)
 add_subdirectory("deps/nifti_clib")
 
 # imgui include

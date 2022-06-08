@@ -31,9 +31,9 @@ struct DrawElementsIndirectCommand
     /// \param[in] firstIndex Offset to the beginning of elements.
     /// \param[in] baseVertex Constant that should be added to each indice.
     /// \param[in] baseInstance Base instance for use in fetching instanced vertex attributes.
-    DrawElementsIndirectCommand(uint count, uint instanceCount,
-                                uint firstIndex, uint baseVertex,
-                                uint baseInstance)
+    DrawElementsIndirectCommand(unsigned int count, unsigned int instanceCount,
+                                unsigned int firstIndex, unsigned int baseVertex,
+                                unsigned int baseInstance)
     :count(count)
     ,instanceCount(instanceCount)
     ,firstIndex(firstIndex)
@@ -42,19 +42,19 @@ struct DrawElementsIndirectCommand
     {};
 
     /// Number of elements to be rendered.
-    uint count;
+    unsigned int count;
 
     /// Number of instances of the indexed geometry to draw.
-    uint instanceCount;
+    unsigned int instanceCount;
 
     /// Offset to the beginning of elements.
-    uint firstIndex;
+    unsigned int firstIndex;
 
     /// Constant that should be added to each element of indices.
-    uint baseVertex;
+    unsigned int baseVertex;
 
     /// Base instance for use in fetching instanced vertex attributes.
-    uint baseInstance;
+    unsigned int baseInstance;
 };
 
 /// \brief Spherical harmonics field.
@@ -118,7 +118,7 @@ private:
         glm::ivec4 VolumeShape;
         glm::ivec4 SliceIndices;
         glm::ivec4 IsVisible;
-        uint CurrentSlice;
+        unsigned int CurrentSlice;
     };
 
     /// \brief Initialize class members.
@@ -205,13 +205,13 @@ private:
     std::shared_ptr<Primitive::Sphere> mSphere;
 
     /// Maximum number of spheres rendered in X-plane.
-    uint mNbSpheresX;
+    unsigned int mNbSpheresX;
 
     /// Maximum number of spheres rendered in Y-plane.
-    uint mNbSpheresY;
+    unsigned int mNbSpheresY;
 
     /// Maximum number of spheres rendered in Z-plane.
-    uint mNbSpheresZ;
+    unsigned int mNbSpheresZ;
 
     /// Indicates what slices need to be computed.
     glm::bvec3 mIsSliceDirty;
