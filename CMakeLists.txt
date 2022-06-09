@@ -1,12 +1,16 @@
-set(CMAKE_TOOLCHAIN_FILE "deps/zlib/scripts/buildsystems/vcpkg.cmake")
-set(CMAKE_GENERATOR_PLATFORM "x64")
 
-if(UNIX) # force the buildsystem to unix makefiles on linux
+if(UNIX)
+    # force the buildsystem to unix makefiles on linux
     set(CMAKE_GENERATOR "Unix Makefiles")
+elseif(WIN32)
+    # use zlib binaries
+    set(CMAKE_TOOLCHAIN_FILE "deps/zlib/scripts/buildsystems/vcpkg.cmake")
+    # force generator platform to x64 on Windows
+    set(CMAKE_GENERATOR_PLATFORM "x64")
 endif()
 
 cmake_minimum_required(VERSION 3.11)
-project(dmriexplorer LANGUAGES CXX)
+project(dmriexplorer)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
