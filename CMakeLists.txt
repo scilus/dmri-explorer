@@ -1,4 +1,5 @@
-#set(CMAKE_TOOLCHAIN_FILE "vcpkg/scripts/buildsystems/vcpkg.cmake")
+set(CMAKE_TOOLCHAIN_FILE "deps/zlib/scripts/buildsystems/vcpkg.cmake")
+set(CMAKE_GENERATOR_PLATFORM "x64")
 
 if(UNIX)
     set(CMAKE_GENERATOR "Unix Makefiles")
@@ -19,12 +20,9 @@ add_subdirectory("deps/glfw-3.3.6")
 add_library(GLAD "deps/glad/src/glad.c")
 include_directories("deps/glad/include/")
 
-# nifti clib library
-#find_package(ZLIB REQUIRED)
-#set(NIFTI_ZLIB_LIBRARIES ZLIB::ZLIB)
-add_compile_definitions(HAVE_ZLIB)
+# nifti i/o library
 add_subdirectory("deps/nifti")
-include_directories("deps/nifti")
+include_directories("deps/nifti/include/")
 
 # imgui include
 file(GLOB IMGUI_SRC "deps/imgui/src/*.cpp")
@@ -41,5 +39,11 @@ include_directories("deps/glm/")
 
 #args parser library include
 include_directories("deps/args/")
+
+# get icon images; will be passed on to Engine
+file(GLOB DMRI_EXP_ICONS
+     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+     "icons/*")
+set(DMRI_EXP_ICONS_ABS_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory("Engine")
