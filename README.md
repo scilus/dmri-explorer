@@ -19,8 +19,10 @@ Before installing the software, please make sure you meet the requirements below
 
 
 ### Building the application
+The application is tested on both `Ubuntu 20.04` and `Windows 10`.
 
-The build the program, run the following commands from the project root directory:
+#### On Linux
+To build the program, run the following commands from the project root directory:
 ```
 mkdir build
 cd build
@@ -34,9 +36,21 @@ Alternatively, a helper script containing the four commands shown above is made 
 ```
 The above script creates the build directory, runs `Cmake` and `make`. The executable file will be in the folder `${project_root}/build/Engine`.
 
+#### On Windows
+The Windows build is also done using `cmake`. The build has been tested with `msbuild` version 16.9. Using the **Developer Command Prompt for VS 2019**, the program can be built with:
+```
+cd /path/to/dmriexplorer/
+mkdir build
+cd build
+cmake ..
+msbuild dmriexplorer.sln
+```
+
+The executable will be built under `build/Engine/` under the name `dmriexplorer.exe`.
+
 
 ### Adding to `path`
-Once the program is built, you can add the path to the directory containing the executable to your `.bashrc` configuration to make it available system-wide.
+Once the program is built, you can add the path to the directory containing the executable to your `.bashrc` configuration to make it available system-wide. On Linux, this is done with
 
 ```
 export PATH='${absolute_path_to_project}/build/Engine':$PATH

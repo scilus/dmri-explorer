@@ -1,7 +1,7 @@
 set(CMAKE_TOOLCHAIN_FILE "deps/zlib/scripts/buildsystems/vcpkg.cmake")
 set(CMAKE_GENERATOR_PLATFORM "x64")
 
-if(UNIX)
+if(UNIX) # force the buildsystem to unix makefiles on linux
     set(CMAKE_GENERATOR "Unix Makefiles")
 endif()
 
