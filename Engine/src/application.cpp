@@ -79,6 +79,16 @@ void Application::initialize()
         return;
     }
 
+    // For debugging only.
+    // Verify that the host supports ARB extensions used by the application
+    if(glfwGetProcAddress("glNamedStringARB") == NULL
+    || glfwGetProcAddress("glCompileShaderIncludeARB") == NULL)
+    {
+        std::cerr << "Required OpenGL ARB extension not available on system." << std::endl;
+        glfwTerminate();
+        return;
+    }
+
     // OpenGL render parameters
     glEnable(GL_SCISSOR_TEST);
     glEnable(GL_DEPTH_TEST);
