@@ -1,12 +1,25 @@
 
 if(UNIX)
-    # force the buildsystem to unix makefiles on linux
+    # set generator to makefile
     set(CMAKE_GENERATOR "Unix Makefiles")
+
+    # if they are not supplied by the user,
+    # force default c/c++ compilers
+    if (NOT DEFINED CMAKE_CXX_COMPILER)
+        set(CMAKE_CXX_COMPILER "g++")
+    endif()
+    if (NOT DEFINED CMAKE_C_COMPILER)
+        set(CMAKE_C_COMPILER "gcc")
+    endif()
+
 elseif(WIN32)
-    # use zlib binaries
+    # use zlib binaries, built and exported using vcpkg
     set(CMAKE_TOOLCHAIN_FILE "deps/zlib/scripts/buildsystems/vcpkg.cmake")
+
     # force generator platform to x64 on Windows
+    # (for use with MSVC)
     set(CMAKE_GENERATOR_PLATFORM "x64")
+
 endif()
 
 cmake_minimum_required(VERSION 3.11)
