@@ -1,16 +1,8 @@
+# dmri-explorer build system entry-point
 
 if(UNIX)
     # set generator to makefile
     set(CMAKE_GENERATOR "Unix Makefiles")
-
-    # if they are not supplied by the user,
-    # force default c/c++ compilers
-    if (NOT DEFINED CMAKE_CXX_COMPILER)
-        set(CMAKE_CXX_COMPILER "g++")
-    endif()
-    if (NOT DEFINED CMAKE_C_COMPILER)
-        set(CMAKE_C_COMPILER "gcc")
-    endif()
 
 elseif(WIN32)
     # use zlib binaries, built and exported using vcpkg
