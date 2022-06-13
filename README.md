@@ -1,6 +1,6 @@
 ![Banner logo](banner-logo.png)
 # dmri-explorer : A Diffusion MRI Visualization Application
-A real-time diffusion MRI slicing application for Linux and Windows using `OpenGL 4.6`. It can visualize spherical functions expressed as a series of spherical harmonics coefficients in DIPY's `descoteaux07` legacy real symmetric or full SH basis (See [this link](https://dipy.org/documentation/1.4.1./theory/sh_basis/) for more details.).
+A real-time diffusion MRI slicing application for Linux and Windows using `OpenGL 4.6`. It can visualize spherical functions expressed as a series of spherical harmonics coefficients in DIPY's `descoteaux07` legacy real symmetric or full SH basis (See [this link](https://dipy.org/documentation/1.4.1./theory/sh_basis/) for more details.). The application also supports grayscale and color background images.
 
 
 ## Installation
@@ -14,15 +14,11 @@ Before installing the software, please make sure you meet the requirements below
 * `Cmake` minimum version 3.11 is required for installing the application.
 * A compiler supporting `C++17` features is required (for GCC, `C++17` is available for [versions 5 and above](https://gcc.gnu.org/projects/cxx-status.html#cxx17)).
 * You have an OpenGL implementation available on your system. On Ubuntu, it can be installed with `sudo apt install mesa-common-dev`. `mesa-common-dev` is an open-source implementation of OpenGL. See this [link from wikipedia](https://en.wikipedia.org/wiki/OpenGL#Implementations) for more information.
-
-#### Additional Linux requirements
-* The generator used by default is `GNU Make`.
-
-#### Additional Windows requirements
-* The application is tested using MSVC compiler toolset, available [here](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022).
+* **If you are using Linux**, please note that the generator used by default is `GNU Make`.
+* **If you are a Windows user**, the expected generator is `Visual Studio 2019` and the application must be built for `x64` architecture. You can get the latest MSVC compiler toolset [here](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022).
 
 ### Building the application
-The application is tested on both `Ubuntu 20.04` and `Windows 10`.
+The application is tested on both **Ubuntu 20.04** and **Windows 10**.
 
 #### On Linux
 To build the program, run the following commands from the project root directory:
@@ -40,7 +36,7 @@ Alternatively, a helper script containing the four commands shown above is made 
 The above script creates the build directory, runs `Cmake` and `make`. The executable file will be in the folder `${project_root}/build/Engine`.
 
 #### On Windows
-The Windows build is also done using `cmake`. The build has been tested with `msbuild` version 16.9. Using the **Developer Command Prompt for VS 2019**, the program can be built with:
+The Windows build is also done using `cmake`. The build has been tested with `msbuild` version 16.9. Using the **Developer Command Prompt for VS**, the program can be built with:
 ```
 cd /path/to/dmriexplorer/
 mkdir build
@@ -57,6 +53,8 @@ Once the program is built, you can add the path to the directory containing the 
 ```
 export PATH='${absolute_path_to_project}/build/Engine':$PATH
 ```
+
+On Windows, this can be done manually from the `Control panel`.
 
 ## Running the application
 The application can be launched using the command:
