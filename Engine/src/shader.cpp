@@ -29,7 +29,7 @@ ShaderProgram::ShaderProgram(const std::string& filePath,
     GLuint shaderID = glCreateShader(shaderType);
     glShaderSource(shaderID, 1, &strShaderC_str, lenShader);
     glCompileShaderIncludeARB(shaderID,
-                              mShaderIncludePaths.size(),
+                              static_cast<int>(mShaderIncludePaths.size()),
                               mShaderIncludePaths.data(),
                               mShaderIncludeLengths.data());
     assertShaderCompilationSuccess(shaderID, filePath);
@@ -46,7 +46,7 @@ void ShaderProgram::CreateFilesystemForInclude()
     for(int i = 0; i < NUM_SHADER_INCLUDES; ++i)
     {
         const auto pathName = SHADER_INCLUDE_PATHS[i];
-        const auto pathNameLen = std::strlen(pathName);
+        const auto pathNameLen = static_cast<int>(std::strlen(pathName));
 
         const std::string strInclude = readFile(
             DMRI_EXPLORER_BINARY_DIR + std::string("/shaders") +
@@ -54,7 +54,8 @@ void ShaderProgram::CreateFilesystemForInclude()
 
         // Add to virtual filesystem.
         glNamedStringARB(GL_SHADER_INCLUDE_ARB, pathNameLen,
-                         pathName, strInclude.length(), strInclude.c_str());
+                         pathName, static_cast<int>(strInclude.length()),
+                         strInclude.c_str());
         mShaderIncludePaths.push_back(pathName);
         mShaderIncludeLengths.push_back(static_cast<int>(pathNameLen));
     }

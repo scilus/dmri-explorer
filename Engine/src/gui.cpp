@@ -14,6 +14,7 @@ UIManager::UIManager()
 ,mShowDemoWindow(false)
 ,mShowMagnifyingMode(false)
 ,mShowSlicers(false)
+,mShowPreferences(false)
 {
 }
 
@@ -24,6 +25,7 @@ UIManager::UIManager(GLFWwindow* window, const std::string& glslVersion,
 ,mShowDemoWindow(false)
 ,mShowMagnifyingMode(false)
 ,mShowSlicers(false)
+,mShowPreferences(false)
 ,mState(state)
 {
     // Initialize imgui

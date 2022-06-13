@@ -28,7 +28,7 @@ const unsigned int BASE_ICOSAHEDRON_INDICES[BASE_ICOSAHEDRON_NB_FACES*3] = {
     7,3,10, 7,10,6, 7,6,11, 11,6,0, 0,6,1,
     6,10,1, 9,11,0, 9,2,11, 9,5,2, 7,11,2
 };
-const double NUMERICAL_DERIVATIVE_DELTA = 0.001;
+const float PI_F = static_cast<float>(M_PI);
 
 std::pair<unsigned int, unsigned int> GetKey(unsigned int v0, unsigned int v1)
 {
@@ -139,15 +139,15 @@ Math::SphericalCoordinates Sphere::convertToSpherical(const glm::vec3& cartesian
     }
     else if(n_cartesian.x < 0.0 && n_cartesian.y > -epsilon)
     {
-        coord.phi = atan(n_cartesian.y / n_cartesian.x) + M_PI;
+        coord.phi = atan(n_cartesian.y / n_cartesian.x) + PI_F;
     }
     else if(n_cartesian.x < 0.0 && n_cartesian.y < 0.0)
     {
-        coord.phi = atan(n_cartesian.y / n_cartesian.x) - M_PI;
+        coord.phi = atan(n_cartesian.y / n_cartesian.x) - PI_F;
     }
     else if(n_cartesian.x > -epsilon && n_cartesian.x < epsilon)
     {
-        coord.phi = n_cartesian.y > 0.0 ? M_PI / 2.0 : - M_PI / 2.0;
+        coord.phi = n_cartesian.y > 0.0f ? PI_F / 2.0f : -PI_F / 2.0f;
     }
     return coord;
 }
@@ -155,19 +155,19 @@ Math::SphericalCoordinates Sphere::convertToSpherical(const glm::vec3& cartesian
 void Sphere::genUnitIcosahedron()
 {
     // Add base vertices
-    for(int i = 0; i < BASE_ICOSAHEDRON_NB_VERTS; ++i)
+    for(unsigned int i = 0; i < BASE_ICOSAHEDRON_NB_VERTS; ++i)
     {
         addPoint(BASE_ICOSAHEDRON_VERTS[i]);
     }
 
     // Add base faces
-    for(int i = 0; i < BASE_ICOSAHEDRON_NB_FACES*3; ++i)
+    for(unsigned int i = 0; i < BASE_ICOSAHEDRON_NB_FACES*3; ++i)
     {
         mIndices.push_back(BASE_ICOSAHEDRON_INDICES[i]);
     }
 
     // Subdivide icosahedron up to mResolution
-    for(int i = 0; i < mResolution; ++i)
+    for(unsigned int i = 0; i < mResolution; ++i)
     {
         subdivide();
     }
@@ -177,7 +177,7 @@ void Sphere::subdivide()
 {
     // each triangular face is subdivided into 4 smaller triangular faces
     // we will need to triangulate the new faces from scratch
-    const int nbIndices = mIndices.size();
+    const int nbIndices = static_cast<int>(mIndices.size());
     const auto indices = mIndices;
     mIndices.clear();
     std::map<std::pair<unsigned int, unsigned int>, unsigned int> edgeMidIndices;
@@ -203,21 +203,21 @@ void Sphere::subdivide()
         if(it == edgeMidIndices.end())
         {
             addPoint(v01);
-            edgeMidIndices[GetKey(ind0, ind1)] = mPoints.size() - 1;
+            edgeMidIndices[GetKey(ind0, ind1)] = static_cast<unsigned int>(mPoints.size() - 1);
         }
 
         it = edgeMidIndices.find(GetKey(ind0, ind2));
         if(it == edgeMidIndices.end())
         {
             addPoint(v02); // first index + 1
-            edgeMidIndices[GetKey(ind0, ind2)] = mPoints.size() - 1;
+            edgeMidIndices[GetKey(ind0, ind2)] = static_cast<unsigned int>(mPoints.size() - 1);
         }
 
         it = edgeMidIndices.find(GetKey(ind1, ind2));
         if(it == edgeMidIndices.end())
         {
             addPoint(v12); // first index + 2
-            edgeMidIndices[GetKey(ind1, ind2)] = mPoints.size() - 1;
+            edgeMidIndices[GetKey(ind1, ind2)] = static_cast<unsigned int>(mPoints.size() - 1);
         }
 
         // add faces

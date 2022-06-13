@@ -276,8 +276,8 @@ void Application::onMouseButton(GLFWwindow* window, int button, int action, int 
         app->mClicSecondaryViewport = false;
     }
 
-    app->mCursorPos.x = xPos;
-    app->mCursorPos.y = yPos;
+    app->mCursorPos.x = static_cast<float>(xPos);
+    app->mCursorPos.y = static_cast<float>(yPos);
     app->mLastButton = button;
     app->mLastAction = action;
     app->mLastModifier = mod;

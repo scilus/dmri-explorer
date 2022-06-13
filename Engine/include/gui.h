@@ -59,7 +59,7 @@ private:
     std::shared_ptr<ApplicationState> mState;
 
     /// True to show demo window.
-    bool mShowDemoWindow;    
+    bool mShowDemoWindow;
     
     /// True to show magnifiying mode.
     bool mShowMagnifyingMode;
