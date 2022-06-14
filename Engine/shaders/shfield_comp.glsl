@@ -11,6 +11,8 @@ layout(std430, binding=0) buffer allRadiisBuffer
     uint allRadiis[];
 };
 
+// TODO: Investigate ARB_shading_language_packing for compressing normals.
+// https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_shading_language_packing.txt
 layout(std430, binding=1) buffer allSpheresNormalsBuffer
 {
     vec4 allNormals[];
