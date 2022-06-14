@@ -7,7 +7,7 @@
 
 layout(std430, binding=0) buffer allRadiisBuffer
 {
-    float allRadiis[];
+    uint allRadiis[];
 };
 
 layout(std430, binding=1) buffer allNormalsBuffer
@@ -46,6 +46,49 @@ out float is_visible;
 // Fade is disabled when in 2D!
 out float fade_enabled;
 
+// 00000000 00000000 00000000 11111111
+const uint bitMask8 = 255;
+// 00000000 00000000 11111111 00000000
+const uint bitMask16 = bitMask8 << 8;
+// 00000000 11111111 00000000 00000000
+const uint bitMask24 = bitMask16 << 8;
+// 11111111 00000000 00000000 00000000
+const uint bitMask32 = bitMask24 << 8;
+
+
+float readRadius(uint dirIndex, uint voxIndex)
+{
+    const uint trueIndex = dirIndex / 4;
+    const uint bitOffset = dirIndex - trueIndex * 4;
+    uint mask;
+    uint radius = allRadiis[trueIndex];
+    if(bitOffset == 0)
+    {
+        mask = bitMask8;
+        radius = radius & mask;
+    }
+    else if(bitOffset == 1)
+    {
+        mask = bitMask16;
+        radius = radius & mask;
+        radius = radius >> 8;
+    }
+    else if(bitOffset == 2)
+    {
+        mask = bitMask24;
+        radius = radius & mask;
+        radius = radius >> 16;
+    }
+    else if(bitOffset == 3)
+    {
+        mask = bitMask32;
+        radius = radius & mask;
+        radius = radius >> 24;
+    }
+
+    return float(radius) / 255.0f * allMaxAmplitude[voxIndex];
+}
+
 vec4 getVertexSlice(ivec3 index3d)
 {
     const float i = index3d.x == sliceIndex.x ? 1.0f : -1.0f;
@@ -58,18 +101,19 @@ vec4 getVertexSlice(ivec3 index3d)
 vec4 grayScaleColorMap()
 {   
     const float maxAmplitude = allMaxAmplitude[gl_DrawID];
-    const float currentRadius = allRadiis[gl_VertexID];
+    const float currentRadius = readRadius(gl_VertexID, gl_DrawID);
     const vec4 grayScale = vec4(currentRadius/maxAmplitude, currentRadius/maxAmplitude, currentRadius/maxAmplitude, 1.0f);
     return grayScale;
 }
 
-vec4 setColorMapMode(vec4 currentVertex)
+vec4 getColor()
 {
     if (colorMapMode == 1)
     {
         return grayScaleColorMap();
     }
-    return abs(vec4(normalize(currentVertex.xyz), 1.0f));
+    // direction-encoded colormap
+    return abs(vec4(normalize(vertices[gl_VertexID%nbVertices].xyz), 1.0f));
 }
 
 void main()
@@ -87,7 +131,8 @@ void main()
     localMatrix[3][2] = float(index3d.z - gridDims.z / 2);
     localMatrix[3][3] = 1.0f;
 
-    const vec4 scaledVertice = vec4(vertices[gl_VertexID%nbVertices].xyz * allRadiis[gl_VertexID], 1.0f);
+    const float radius = readRadius(gl_VertexID, gl_DrawID);
+    const vec4 scaledVertice = vec4(vertices[gl_VertexID%nbVertices].xyz * radius, 1.0f);
     const float isNormalizedf= isNormalized > 0 ? 1.0f : 0.0f;
     const float normalizationFactor = pow(1.0f/allMaxAmplitude[gl_DrawID], isNormalizedf);
     const vec4 currentVertex = vec4(scaledVertice.xyz * normalizationFactor, 1.0f);
@@ -105,7 +150,7 @@ void main()
     world_normal = modelMatrix
                  * allNormals[gl_VertexID];
 
-    color = setColorMapMode(scaledVertice);
+    color = getColor();
     is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID) && isAboveThreshold ? 1.0f : -1.0f;
     world_eye_pos = vec4(eye.xyz, 1.0f);
     vertex_slice = getVertexSlice(index3d);
