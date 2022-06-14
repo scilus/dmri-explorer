@@ -83,7 +83,7 @@ private:
     std::vector<float> mScaling;
 
     /// Maximum SH order.
-    uint mMaxOrder;
+    unsigned int mMaxOrder;
 
     /// Full basis flag. When true, basis includes odd order SH functions.
     bool mFullBasis;

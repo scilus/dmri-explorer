@@ -205,7 +205,7 @@ void Texture::drawSpecific()
 {
     glDisable(GL_CULL_FACE);
     glBindVertexArray(mVAO);
-    glDrawArrays(GL_TRIANGLES, 0, mVertices.size());
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(mVertices.size()));
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 }

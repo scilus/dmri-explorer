@@ -79,6 +79,16 @@ void Application::initialize()
         return;
     }
 
+    // For debugging only.
+    // Verify that the host supports ARB extensions used by the application
+    if(glfwGetProcAddress("glNamedStringARB") == NULL
+    || glfwGetProcAddress("glCompileShaderIncludeARB") == NULL)
+    {
+        std::cerr << "Required OpenGL ARB extension not available on system." << std::endl;
+        glfwTerminate();
+        return;
+    }
+
     // OpenGL render parameters
     glEnable(GL_SCISSOR_TEST);
     glEnable(GL_DEPTH_TEST);
@@ -266,8 +276,8 @@ void Application::onMouseButton(GLFWwindow* window, int button, int action, int 
         app->mClicSecondaryViewport = false;
     }
 
-    app->mCursorPos.x = xPos;
-    app->mCursorPos.y = yPos;
+    app->mCursorPos.x = static_cast<float>(xPos);
+    app->mCursorPos.y = static_cast<float>(yPos);
     app->mLastButton = button;
     app->mLastAction = action;
     app->mLastModifier = mod;

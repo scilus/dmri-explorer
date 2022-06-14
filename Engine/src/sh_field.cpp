@@ -160,7 +160,7 @@ void SHField::initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex)
     const auto numIndices = indices.size();
     const auto numVertices = mSphere->GetPoints().size();
 
-    unsigned int i, j;
+    size_t i, j;
     for(i = firstIndex; i < lastIndex; ++i)
     {
         // Add sphere faces
@@ -172,10 +172,10 @@ void SHField::initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex)
         // Add indirect draw command for current sphere
         mIndirectCmd[i] =
             DrawElementsIndirectCommand(
-                numIndices, // num of elements to draw per drawID
+                static_cast<unsigned int>(numIndices), // num of elements to draw per drawID
                 1, // number of identical instances
                 0, // offset in VBO
-                i * numVertices, // offset in element buffer array
+                static_cast<unsigned int>(i * numVertices), // offset in element buffer array
                 0);
     }
 }
@@ -192,8 +192,8 @@ void SHField::initializeGPUData()
 
     // Sphere data GPU buffer
     SphereData sphereData;
-    sphereData.NumVertices = mSphere->GetPoints().size();
-    sphereData.NumIndices = mSphere->GetIndices().size();
+    sphereData.NumVertices = static_cast<unsigned int>(mSphere->GetPoints().size());
+    sphereData.NumIndices = static_cast<unsigned int>(mSphere->GetIndices().size());
     sphereData.IsNormalized = mState->Sphere.IsNormalized.Get();
     sphereData.MaxOrder = mSphere->GetMaxSHOrder();
     sphereData.SH0threshold = mState->Sphere.SH0Threshold.Get();
@@ -226,7 +226,7 @@ void SHField::initializeGPUData()
     mSphereVerticesData = GPU::ShaderData(mSphere->GetPoints().data(), GPU::Binding::sphereVertices,
                                           sizeof(glm::vec4) * mSphere->GetPoints().size());
     mSphereIndicesData = GPU::ShaderData(mSphere->GetIndices().data(), GPU::Binding::sphereIndices,
-                                         sizeof(uint) * mSphere->GetIndices().size());
+                                         sizeof(unsigned int) * mSphere->GetIndices().size());
     mSphereInfoData = GPU::ShaderData(&sphereData, GPU::Binding::sphereInfo,
                                       sizeof(SphereData));
     mGridInfoData = GPU::ShaderData(&gridData, GPU::Binding::gridInfo,
@@ -349,7 +349,8 @@ void SHField::drawSpecific()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mIndicesBO);
     glBindBuffer(GL_DRAW_INDIRECT_BUFFER, mIndirectBO);
     glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT,
-                                (GLvoid*)0, mIndirectCmd.size(), 0);
+                                (GLvoid*)0, static_cast<int>(mIndirectCmd.size()),
+                                0);
 }
 
 void SHField::scaleSpheres()
