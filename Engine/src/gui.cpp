@@ -14,6 +14,8 @@ UIManager::UIManager()
 ,mShowDemoWindow(false)
 ,mShowMagnifyingMode(false)
 ,mShowSlicers(false)
+,mShowSHOptions(false)
+,mShowMTOptions(false)
 {
 }
 
@@ -24,6 +26,8 @@ UIManager::UIManager(GLFWwindow* window, const std::string& glslVersion,
 ,mShowDemoWindow(false)
 ,mShowMagnifyingMode(false)
 ,mShowSlicers(false)
+,mShowSHOptions(false)
+,mShowMTOptions(false)
 ,mState(state)
 {
     // Initialize imgui
@@ -48,6 +52,8 @@ void UIManager::DrawInterface()
     drawMainMenuBar();
     drawDemoWindow();
     drawSlicersWindow();
+    drawSHOptionsWindow();
+    drawMTOptionsWindow();
     drawPreferencesWindow();
     drawMagnifyingModeWindow();
 
@@ -74,7 +80,9 @@ void UIManager::drawMainMenuBar()
     ImGui::BeginMainMenuBar();
     if(ImGui::BeginMenu("Options"))
     {
-        ImGui::MenuItem("Show slicers window", NULL, &mShowSlicers);
+        ImGui::MenuItem("Show Slicers Window", NULL, &mShowSlicers);
+        ImGui::MenuItem("SH Options", NULL, &mShowSHOptions);
+        ImGui::MenuItem("MT Options", NULL, &mShowMTOptions);
         ImGui::MenuItem("Magnifying Mode", NULL, &mShowMagnifyingMode);
         ImGui::MenuItem("Preferences", NULL, &mShowPreferences);
         ImGui::Separator();
@@ -322,6 +330,168 @@ void UIManager::drawSlicersWindow()
     ImGui::SameLine();//*/
 
     ImGui::Spacing();
+    ImGui::End();
+}
+
+void UIManager::drawSHOptionsWindow()
+{
+    if(!mShowSHOptions) return;
+
+    ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(417.f, 250.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
+
+    ImGui::Begin("SH Options", &mShowSHOptions);
+
+    auto& scalingParam = mState->Sphere.Scaling;
+    auto& thresholdParam = mState->Sphere.SH0Threshold;
+    auto& normalizedParam = mState->Sphere.IsNormalized;
+    auto& fadeHiddenParam = mState->Sphere.FadeIfHidden;
+    auto& colorMapModeParam = mState->Sphere.ColorMapMode;
+    if(!scalingParam.IsInit() || !thresholdParam.IsInit() ||
+        !normalizedParam.IsInit() || !fadeHiddenParam.IsInit())
+    {
+        ImGui::Spacing();
+        ImGui::End();
+        return;
+    }
+
+    float scaling = scalingParam.Get();
+    float threshold = thresholdParam.Get();
+    bool normalized = normalizedParam.Get();
+    bool fadeIfHidden = fadeHiddenParam.Get();
+    int colorMapMode = colorMapModeParam.Get();
+
+    ImGui::Text("Sphere scaling");
+    ImGui::SameLine();
+    if(ImGui::InputFloat("##sphere.scaling", &scaling, 0.001f, 0.5f))
+    {
+        scalingParam.Update(scaling);
+    }
+    ImGui::Text("SH0 threshold");
+    ImGui::SameLine();
+    if(ImGui::InputFloat("##sphere.sh0.threshold", &threshold, 0.001f, 0.5f))
+    {
+        thresholdParam.Update(threshold);
+    }
+    ImGui::Text("Normalize per voxel");
+    ImGui::SameLine();
+    if(ImGui::Checkbox("##sphere.normalized", &normalized))
+    {
+        normalizedParam.Update(normalized);
+    }
+    ImGui::Text("Fade if hidden");
+    ImGui::SameLine();
+    if(ImGui::Checkbox("##sphere.fadeIfHidden", &fadeIfHidden))
+    {
+        fadeHiddenParam.Update(fadeIfHidden);
+    }
+
+    ImGui::Text("Color map mode");
+
+    if(ImGui::RadioButton("Default", &colorMapMode, 0))
+    {
+        colorMapModeParam.Update(0);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("Grayscale", &colorMapMode, 1))
+    {
+        colorMapModeParam.Update(1);
+    }
+
+    ImGui::End();
+}
+
+void UIManager::drawMTOptionsWindow()
+{
+    if(!mShowMTOptions) return;
+
+    ImGui::SetNextWindowPos(ImVec2(5.f, 25.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(200.0f, 200.0f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
+
+    ImGui::Begin("MT Options", &mShowMTOptions);
+
+    auto& scalingParam = mState->Sphere.Scaling;
+    auto& normalizedParam = mState->Sphere.IsNormalized;
+    auto& fadeHiddenParam = mState->Sphere.FadeIfHidden;
+    auto& colorMapModeParam = mState->Sphere.ColorMapMode;
+    if(!scalingParam.IsInit() || !normalizedParam.IsInit() || !fadeHiddenParam.IsInit())
+    {
+        ImGui::Spacing();
+        ImGui::End();
+        return;
+    }
+
+    float scaling = scalingParam.Get();
+    bool normalized = normalizedParam.Get();
+    bool fadeIfHidden = fadeHiddenParam.Get();
+    int colorMapMode = colorMapModeParam.Get();
+
+    ImGui::Text("Scaling");
+    ImGui::SameLine();
+    if(ImGui::InputFloat("##sphere.scaling", &scaling, 0.001f, 0.5f))
+    {
+        scalingParam.Update(scaling);
+    }
+    ImGui::Text("Normalize");
+    ImGui::SameLine();
+    if(ImGui::Checkbox("##sphere.normalized", &normalized))
+    {
+        normalizedParam.Update(normalized);
+    }
+    ImGui::Text("Fade if hidden");
+    ImGui::SameLine();
+    if(ImGui::Checkbox("##sphere.fadeIfHidden", &fadeIfHidden))
+    {
+        fadeHiddenParam.Update(fadeIfHidden);
+    }
+
+    ImGui::Text("Color Map");
+
+    /*if(ImGui::RadioButton("Default", &colorMapMode, 0))
+    {
+        colorMapModeParam.Update(0);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("Grayscale", &colorMapMode, 1))
+    {
+        colorMapModeParam.Update(1);
+    }//*/
+    ImGui::SameLine();
+    if(ImGui::RadioButton("PDD", &colorMapMode, 2))
+    {
+        colorMapModeParam.Update(2);
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("FA", &colorMapMode, 3))
+    {
+        colorMapModeParam.Update(3);
+    }
+    //ImGui::SameLine();
+
+    //const char* colorMaps[] = { "Smooth Cool Warm", "Bent Cool Warm", "Viridis", "Plasma", "Black body", "Inferno" };
+    const char* colorMaps[] = { "Viridis" };
+    static const char* currentItem = colorMaps[0];
+    if (ImGui::BeginCombo("##combo", currentItem)) // The second parameter is the label previewed before opening the combo.
+    {
+        for (int n = 0; n < IM_ARRAYSIZE(colorMaps); n++)
+        {
+            bool is_selected = (currentItem == colorMaps[n]); // You can store your selection however you want, outside or inside your objects
+            if (ImGui::Selectable(colorMaps[n], is_selected))
+                currentItem = colorMaps[n];
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();   // You may set the initial focus when opening the combo (scrolling + for keyboard navigation support)
+        }
+        ImGui::EndCombo();
+    }
+
+    /*if(ImGui::RadioButton("Viridis", &colorMapMode, 4))
+    {
+        colorMapModeParam.Update(4);
+    }
+    ImGui::SameLine();//*/
+
     ImGui::End();
 }
 

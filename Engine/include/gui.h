@@ -43,6 +43,12 @@ private:
     /// Draw the slicer parameter window.
     void drawSlicersWindow();
 
+    /// Draw the SH options window
+    void drawSHOptionsWindow();
+
+    /// Draw the MT options window
+    void drawMTOptionsWindow();
+
     /// Draw the preferences window.
     void drawPreferencesWindow();
 
@@ -66,6 +72,12 @@ private:
 
     /// True to show slicers window.
     bool mShowSlicers;
+
+    /// True to show SH options window
+    bool mShowSHOptions;
+
+    /// True to show MT options window
+    bool mShowMTOptions;
 
     /// True to show preferences window.
     bool mShowPreferences;
