@@ -139,9 +139,12 @@ static inline void print(const glm::mat4& mat, const std::string& m)
 static inline glm::vec4 invariants(glm::mat3 D)
 {
     double I1 = D[0][0] + D[1][1] + D[2][2];
-    double I2 = D[0][0]*D[1][1] + D[1][1]*D[2][2] + D[2][2]*D[0][0] - (D[0][1]*D[0][1] + D[0][2]*D[0][2] + D[1][2]*D[1][2]);
-    double I3 = D[0][0]*D[1][1]*D[2][2] + 2*D[0][1]*D[0][2]*D[1][2] - (D[2][2]*D[0][1]*D[0][1] + D[1][1]*D[0][2]*D[0][2] + D[0][0]*D[1][2]*D[1][2]);
-    double I4 = D[0][0]*D[0][0] + D[1][1]*D[1][1] + D[2][2]*D[2][2] + 2*(D[0][1]*D[0][1] + D[0][2]*D[0][2] + D[1][2]*D[1][2]);
+    double I2 = D[0][0]*D[1][1] + D[1][1]*D[2][2] + D[2][2]*D[0][0] - (
+                D[0][1]*D[0][1] + D[0][2]*D[0][2] + D[1][2]*D[1][2]);
+    double I3 = D[0][0]*D[1][1]*D[2][2] + 2*D[0][1]*D[0][2]*D[1][2] - (
+                D[2][2]*D[0][1]*D[0][1] + D[1][1]*D[0][2]*D[0][2] + D[0][0]*D[1][2]*D[1][2]);
+    double I4 = D[0][0]*D[0][0] + D[1][1]*D[1][1] + D[2][2]*D[2][2] + 2*(
+                D[0][1]*D[0][1] + D[0][2]*D[0][2] + D[1][2]*D[1][2]);
 
     return glm::vec4(I1, I2, I3, I4);
 }
@@ -153,11 +156,7 @@ static inline glm::vec3 eigenvalues(glm::mat3 D)
 
     double v = (I.x/3)*(I.x/3) - I.y/3;
     double s = (I.x/3)*(I.x/3)*(I.x/3) - I.x*I.y/6 + I.z/2;
-    //double c = std::max();
     double o = acos(std::clamp<double>(s / pow(v,3.0/2.0), -1.0, 1.0)) / 3.0;
-    /*std::cout << "v = " << v << std::endl;
-    std::cout << "s = " << s << std::endl;
-    std::cout << "phi = " << o << std::endl;//*/
 
     double lambda1 = I.x/3 + 2*sqrt(v)*cos(o);
     double lambda2 = I.x/3 - 2*sqrt(v)*cos(M_PI/3 + o);
@@ -198,6 +197,7 @@ static inline float fractionalAnisotropy(glm::mat3 D)
     return sqrt(1 - I.y/I.w);
 }
 
+// Returns fractional anisotropy (FA) of the lambdas
 static inline float fractionalAnisotropy(glm::vec3 lambdas)
 {
     float MD = (lambdas[0] + lambdas[1] + lambdas[2])/3;

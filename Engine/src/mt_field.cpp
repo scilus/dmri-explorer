@@ -137,7 +137,6 @@ void MTField::initializeMembers()
         t.join();
     }
 
-    std::cout << "nbSpheres = " << nbSpheres << std::endl;
     for (int i=0; i < nbSpheres; i++){
         if (nbTensors > 1)
         {

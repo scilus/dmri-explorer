@@ -110,7 +110,6 @@ void Application::initialize()
     renderFrame();
 
     // Add fields once the UI is drawn
-    //mScene->AddSTField();
     if (mState->TImages[0].IsInit())
     {
         mScene->AddMTField();

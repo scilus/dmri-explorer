@@ -24,9 +24,6 @@ public:
     /// Add an SHField instance to the scene.
     void AddSHField();
 
-    /// Add a STField instance to the scene.
-    void AddSTField();
-
     /// Add a MTField instance to the scene.
     void AddMTField();
 

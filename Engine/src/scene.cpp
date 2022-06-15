@@ -23,12 +23,6 @@ void Scene::AddSHField()
     mModels.push_back(std::shared_ptr<SHField>(new SHField(mState, mCoordinateSystem)));
 }
 
-void Scene::AddSTField()
-{
-    // create a Single Tensor Field model
-    mModels.push_back(std::shared_ptr<STField>(new STField(mState, mCoordinateSystem)));
-}
-
 void Scene::AddMTField()
 {
     // create a Multi-Tensor Field model
