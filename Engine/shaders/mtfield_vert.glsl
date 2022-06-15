@@ -62,31 +62,24 @@ vec4 getVertexSlice(ivec3 index3d)
     return vec4(i, j, k, 0.0f);
 }
 
-//TODO: Divide by the greatest eigenvalue of the 3 tensors
-/*vec4 grayScaleColorMap()
-{   
-    const float maxAmplitude = allMaxAmplitude[gl_DrawID];
-    const float currentRadius = allRadiis[gl_VertexID];
-    const vec4 grayScale = vec4(currentRadius/maxAmplitude, currentRadius/maxAmplitude, currentRadius/maxAmplitude, 1.0f);
-    return grayScale;
-}*/
-
 vec4 setColorMapMode(vec4 currentVertex, const uint voxID, const uint nbSpheres, const uint nbVoxels)
 {
-    /*if (colorMapMode == 1)
-    {
-        return grayScaleColorMap();
-    }*/
-    if(colorMapMode == 2) // color by PDD
+    if(colorMapMode == 0) // color by PDD
     {
         vec4 pdd = allPdds[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
         return abs(normalize(pdd));
     }
-    else if (colorMapMode == 3) // color by FA (viridis color map) TODO: add more color maps
+    else
     {
         float fa = allFAs[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
         int idx = int(fa*32);
-        return vec4(viridis[ idx ], 1.0f);
+
+        if (colorMapMode == 1) return vec4(smooth_cool_warm[ idx ], 1.0f);
+        if (colorMapMode == 2) return vec4(bent_cool_warm[ idx ],   1.0f);
+        if (colorMapMode == 3) return vec4(viridis[ idx ],          1.0f);
+        if (colorMapMode == 4) return vec4(plasma[ idx ],           1.0f);
+        if (colorMapMode == 5) return vec4(black_body[ idx ],       1.0f);
+        if (colorMapMode == 6) return vec4(inferno[ idx ],          1.0f);
     }
 
     return abs(vec4(normalize(currentVertex.xyz), 1.0f));

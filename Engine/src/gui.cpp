@@ -447,50 +447,37 @@ void UIManager::drawMTOptionsWindow()
         fadeHiddenParam.Update(fadeIfHidden);
     }
 
-    ImGui::Text("Color Map");
+    const char* colorMaps[] = { "Smooth Cool Warm", "Bent Cool Warm", "Viridis", "Plasma", "Black body", "Inferno" };
+    static const char* currentItem = NULL;
+    static int selectedRadio = 0;
 
-    /*if(ImGui::RadioButton("Default", &colorMapMode, 0))
+    ImGui::Text("Color Map");
+    ImGui::SameLine();
+    if(ImGui::RadioButton("PDD", &selectedRadio, 0))
     {
         colorMapModeParam.Update(0);
     }
     ImGui::SameLine();
-    if(ImGui::RadioButton("Grayscale", &colorMapMode, 1))
+    if(ImGui::RadioButton("FA", &selectedRadio, 1))
     {
+        currentItem = colorMaps[0];
         colorMapModeParam.Update(1);
-    }//*/
-    ImGui::SameLine();
-    if(ImGui::RadioButton("PDD", &colorMapMode, 2))
-    {
-        colorMapModeParam.Update(2);
     }
-    ImGui::SameLine();
-    if(ImGui::RadioButton("FA", &colorMapMode, 3))
-    {
-        colorMapModeParam.Update(3);
-    }
-    //ImGui::SameLine();
 
-    //const char* colorMaps[] = { "Smooth Cool Warm", "Bent Cool Warm", "Viridis", "Plasma", "Black body", "Inferno" };
-    const char* colorMaps[] = { "Viridis" };
-    static const char* currentItem = colorMaps[0];
-    if (ImGui::BeginCombo("##combo", currentItem)) // The second parameter is the label previewed before opening the combo.
+    if (ImGui::BeginCombo("##sphere.colormap", currentItem)) // The second parameter is the label previewed before opening the combo.
     {
         for (int n = 0; n < IM_ARRAYSIZE(colorMaps); n++)
         {
             bool is_selected = (currentItem == colorMaps[n]); // You can store your selection however you want, outside or inside your objects
-            if (ImGui::Selectable(colorMaps[n], is_selected))
+            if (ImGui::Selectable(colorMaps[n], is_selected)){
                 currentItem = colorMaps[n];
+                colorMapModeParam.Update( n+1 );
+            }
             if (is_selected)
                 ImGui::SetItemDefaultFocus();   // You may set the initial focus when opening the combo (scrolling + for keyboard navigation support)
         }
         ImGui::EndCombo();
     }
-
-    /*if(ImGui::RadioButton("Viridis", &colorMapMode, 4))
-    {
-        colorMapModeParam.Update(4);
-    }
-    ImGui::SameLine();//*/
 
     ImGui::End();
 }

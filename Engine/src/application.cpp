@@ -195,15 +195,14 @@ void Application::initApplicationState(const ArgumentParser& parser)
     mState->Sphere.Scaling.Update(0.5f);
     mState->Sphere.SH0Threshold.Update(0.0f);
     mState->Sphere.FadeIfHidden.Update(false);
+    mState->Sphere.ColorMapMode.Update(0);
 
     if (tensorsPaths.size()==0)
-    {
-        mState->Sphere.ColorMapMode.Update(0);
+    {    
         mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().GetDims());
     }
     else
     {
-        mState->Sphere.ColorMapMode.Update(2);
         mState->VoxelGrid.VolumeShape.Update(mState->TImages[0].Get().GetDims());
     }
     
