@@ -2,6 +2,59 @@
 Global variables for spherical harmonics (SH) field parameters.
 */
 
+const uint N_BITS_PER_SF = 4;
+const uint N_VALUES_PER_DTYPE = 32 / N_BITS_PER_SF;
+const uint BITMASK = (1 << (N_BITS_PER_SF)) - 1;
+
+/// Compressed SF coefficients. Needs to be accessed with
+/// zeroInitRadius, writeRadius and readRadius.
+layout(std430, binding=0) buffer allRadiisBuffer
+{
+    uint allRadiis[];
+};
+
+/// Maximum amplitudes of SF.
+layout(std430, binding=12) buffer allMaxAmplitudeBuffer
+{
+    float allMaxAmplitude[];
+};
+
+/// Set radius at index to 0.
+void zeroInitRadius(uint index)
+{
+    // 1. convert index to **true index**
+    const uint trueIndex = index / N_VALUES_PER_DTYPE;
+    const uint bitOffset = index - trueIndex * N_VALUES_PER_DTYPE;
+    uint notMask = ~(BITMASK<<(bitOffset*N_BITS_PER_SF));
+
+    // 2. set to 0 using atomicAnd operator
+    atomicAnd(allRadiis[trueIndex], notMask);
+    memoryBarrier();
+}
+
+/// Set radius at index to newValue [0.0, 1.0].
+void writeRadius(uint index, float newValue)
+{
+    const uint trueIndex = index / N_VALUES_PER_DTYPE;
+    const uint bitOffset = index - trueIndex * N_VALUES_PER_DTYPE;
+    uint value = uint(newValue * float(BITMASK)); // bounded between 0-255
+    value = value << (bitOffset*N_BITS_PER_SF);
+
+    atomicOr(allRadiis[trueIndex], value);
+    memoryBarrier();
+}
+
+float readRadius(uint dirIndex, uint voxIndex)
+{
+    const uint trueIndex = dirIndex / N_VALUES_PER_DTYPE;
+    const uint bitOffset = dirIndex - trueIndex * N_VALUES_PER_DTYPE;
+    uint radius = allRadiis[trueIndex];
+    uint mask = BITMASK << (bitOffset*N_BITS_PER_SF);
+    radius = (radius & mask) >> (N_BITS_PER_SF*bitOffset);
+
+    return float(radius) / float(BITMASK) * allMaxAmplitude[voxIndex];
+}
+
 /// SH coefficients image buffer.
 layout(std430, binding=3) buffer shCoeffsBuffer
 {

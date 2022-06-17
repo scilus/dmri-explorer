@@ -16,8 +16,9 @@ layout(std430, binding=1) buffer allSpheresNormalsBuffer
 const float FLOAT_EPS = 1e-4;
 const float PI = 3.14159265358979323;
 
-bool scaleSphere(uint voxID, uint firstVertID)
+bool scaleSphere(uint voxID)
 {
+    const uint firstVertID = voxID * nbVertices;
     float sfEval;
     vec3 normal;
     float rmax;
@@ -118,9 +119,9 @@ void main()
     }
 
     const uint voxID = convertSHCoeffsIndex3DToFlatVoxID(i, j, k);
-    const uint firstVertID = outSphereID * nbVertices;
-    if(scaleSphere(voxID, firstVertID))
+    if(scaleSphere(voxID))
     {
-        updateNormals(firstVertID);
+        const uint firstNormalID = outSphereID * nbVertices;
+        updateNormals(firstNormalID);
     }
 }

@@ -5,11 +5,6 @@
 #include "/include/shfield_util.glsl"
 #include "/include/orthogrid_util.glsl"
 
-layout(std430, binding=0) buffer allRadiisBuffer
-{
-    uint allRadiis[];
-};
-
 layout(std430, binding=1) buffer allNormalsBuffer
 {
     vec4 allNormals[];
@@ -18,11 +13,6 @@ layout(std430, binding=1) buffer allNormalsBuffer
 layout(std430, binding=10) buffer modelTransformsBuffer
 {
     mat4 modelMatrix;
-};
-
-layout(std430, binding=12) buffer allMaxAmplitudeBuffer
-{
-    float allMaxAmplitude[];
 };
 
 // Outputs
@@ -45,49 +35,6 @@ out float is_visible;
 
 // Fade is disabled when in 2D!
 out float fade_enabled;
-
-// 00000000 00000000 00000000 11111111
-const uint bitMask8 = 255;
-// 00000000 00000000 11111111 00000000
-const uint bitMask16 = bitMask8 << 8;
-// 00000000 11111111 00000000 00000000
-const uint bitMask24 = bitMask16 << 8;
-// 11111111 00000000 00000000 00000000
-const uint bitMask32 = bitMask24 << 8;
-
-
-float readRadius(uint dirIndex, uint voxIndex)
-{
-    const uint trueIndex = dirIndex / 4;
-    const uint bitOffset = dirIndex - trueIndex * 4;
-    uint mask;
-    uint radius = allRadiis[trueIndex];
-    if(bitOffset == 0)
-    {
-        mask = bitMask8;
-        radius = radius & mask;
-    }
-    else if(bitOffset == 1)
-    {
-        mask = bitMask16;
-        radius = radius & mask;
-        radius = radius >> 8;
-    }
-    else if(bitOffset == 2)
-    {
-        mask = bitMask24;
-        radius = radius & mask;
-        radius = radius >> 16;
-    }
-    else if(bitOffset == 3)
-    {
-        mask = bitMask32;
-        radius = radius & mask;
-        radius = radius >> 24;
-    }
-
-    return float(radius) / 255.0f * allMaxAmplitude[voxIndex];
-}
 
 vec4 getVertexSlice(ivec3 index3d)
 {

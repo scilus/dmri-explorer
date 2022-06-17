@@ -105,8 +105,10 @@ void SHField::initProgramPipeline()
 void SHField::initializeMembers()
 {
     // Initialize compute shader
-    const std::string csPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_comp.glsl");
-    mComputeShader = GPU::ShaderProgram(csPath, GL_COMPUTE_SHADER);
+    const std::string csRadiisPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_radiis_comp.glsl");
+    const std::string csNormalsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_comp.glsl");
+    mComputeRadiisShader = GPU::ShaderProgram(csRadiisPath, GL_COMPUTE_SHADER);
+    mComputeNormalsShader = GPU::ShaderProgram(csNormalsPath, GL_COMPUTE_SHADER);
 
     // Initialize a sphere for SH to SF projection
     const auto& image = mState->FODFImage.Get();
@@ -182,14 +184,17 @@ void SHField::initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex)
 
 void SHField::initializeGPUData()
 {
-    const int nbSpheres = getMaxNbSpheres();
+    // The SH coefficients image to copy on the GPU.
+    const auto& image = mState->FODFImage.Get();
+
+    const int nbSpheres = image.GetDims().x*image.GetDims().y*image.GetDims().z;
 
     // temporary zero-filled array for all spheres vertices and normals
-    std::vector<glm::vec4> allVertices(nbSpheres * mSphere->GetPoints().size());
+    std::vector<glm::vec4> allVertices(getMaxNbSpheres() * mSphere->GetPoints().size());
 
-    // to compress the SF amplitudes, we will pack 4 values per int
+    // to compress the SF amplitudes, we will pack 8 values per int
     const size_t nbRadiis = nbSpheres * mSphere->GetPoints().size();
-    const size_t nbIntegersForRadiis = ceil(static_cast<float>(nbRadiis) / 4.0f);
+    const size_t nbIntegersForRadiis = ceil(static_cast<float>(nbRadiis) / 8.0f);
     std::vector<GLuint> allRadiis(nbIntegersForRadiis);
 
     std::vector<float> allOrders = mSphere->GetOrdersList();
@@ -214,9 +219,6 @@ void SHField::initializeGPUData()
     gridData.VolumeShape = glm::ivec4(mState->VoxelGrid.VolumeShape.Get(), 0);
     gridData.IsVisible = glm::ivec4(1, 1, 1, 0);
     gridData.CurrentSlice = 0;
-
-    // The SH coefficients image to copy on the GPU.
-    const auto& image = mState->FODFImage.Get();
 
     mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(), GPU::Binding::allSpheresNormals,
                                              sizeof(glm::vec4) * allVertices.size());
@@ -358,9 +360,22 @@ void SHField::drawSpecific()
                                 0);
 }
 
+void SHField::scaleWholeVolume()
+{
+    glUseProgram(mComputeRadiisShader.ID());
+    const auto& image = mState->FODFImage.Get();
+    const auto& dims = image.GetDims();
+    for(int i = 0; i < dims.x; ++i)
+    {
+        scaleSpheres(i, mNbSpheresX);
+    }
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    glUseProgram(0);
+}
+
 void SHField::scaleSpheres()
 {
-    glUseProgram(mComputeShader.ID());
+    glUseProgram(mComputeNormalsShader.ID());
     if(mIsSliceDirty.x)
     {
         scaleSpheres(0, mNbSpheresX);

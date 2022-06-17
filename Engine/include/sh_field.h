@@ -198,6 +198,8 @@ private:
     /// \param[in] nbSpheres Number of spheres for the slice of interest.
     void scaleSpheres(unsigned int sliceId, unsigned int nbSpheres);
 
+    void scaleWholeVolume();
+
     /// Mutex for multithreading.
     std::mutex mMutex;
 
@@ -229,7 +231,10 @@ private:
     GLuint mIndirectBO;
 
     /// Compute shader for sphere deformation.
-    GPU::ShaderProgram mComputeShader;
+    GPU::ShaderProgram mComputeRadiisShader;
+
+    /// Compute shader for sphere deformation.
+    GPU::ShaderProgram mComputeNormalsShader;
 
     /// SH coefficients GPU data.
     GPU::ShaderData mSphHarmCoeffsData;
