@@ -1,3 +1,6 @@
+#ifndef _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES
+#endif
 #include <spherical_harmonic.h>
 #include <utils.hpp>
 #include <cmath>
@@ -46,12 +49,15 @@ void DescoteauxBasis::computeScaling()
 {
     const size_t nCoeffs = numCoeffs();
     mScaling.resize(nCoeffs);
-    for(int l = 0; l <= mMaxOrder; l += mFullBasis ? 1 : 2)
+
+    const auto maxOrder = static_cast<int>(mMaxOrder);
+    for(int l = 0; l <= maxOrder; l += mFullBasis ? 1 : 2)
     {
         for(int m = -l; m <= l; ++m)
         {
-            mScaling[J(l, m)] = sqrt((2.0 * l + 1) / 4.0 / M_PI
-                                     * factorial(l - m) / factorial(l + m));
+            mScaling[J(l, m)] = sqrtf(
+                static_cast<float>((2.0 * l + 1.0) / 4.0 / M_PI
+                                   * factorial(l - m) / factorial(l + m)));
             if(m != 0)
             {
                 mScaling[J(l, m)] = mScaling[J(l, m)] * sqrt(2.0f);
@@ -81,7 +87,8 @@ float DescoteauxBasis::at(unsigned int l, int m, float theta, float phi) const
 std::vector<float> DescoteauxBasis::at(float theta, float phi) const
 {
     std::vector<float> shFuncs;
-    for(int l = 0; l <= mMaxOrder; l += mFullBasis ? 1 : 2)
+    const auto maxOrder = static_cast<int>(mMaxOrder);
+    for(int l = 0; l <= maxOrder; l += mFullBasis ? 1 : 2)
     {
         for(int m = -l; m <= l; ++m)
         {
@@ -93,7 +100,7 @@ std::vector<float> DescoteauxBasis::at(float theta, float phi) const
 
 std::complex<float> DescoteauxBasis::computeSHFunc(unsigned int l, int m, float theta, float phi) const
 {
-    const float r = mScaling[J(l, m)] * legendre(l, m, cos(theta));
+    const float r = static_cast<float>(mScaling[J(l, m)] * legendre(l, m, cos(theta)));
     std::complex<float> sh = std::polar(r, m * phi);
     return sh;
 }
@@ -101,11 +108,12 @@ std::complex<float> DescoteauxBasis::computeSHFunc(unsigned int l, int m, float 
 std::vector<float> DescoteauxBasis::GetOrderList() const
 {
     std::vector<float> orders;
-    for(int l = 0; l <= mMaxOrder; l += mFullBasis? 1:2)
+    const auto maxOrder = static_cast<int>(mMaxOrder);
+    for(int l = 0; l <= maxOrder; l += mFullBasis? 1:2)
     {
         for(int m = -l; m <= l; ++m)
         {
-            orders.push_back(l);
+            orders.push_back(static_cast<float>(l));
         }
     }
     return orders;
@@ -114,7 +122,7 @@ std::vector<float> DescoteauxBasis::GetOrderList() const
 unsigned int DescoteauxBasis::getOrderFromNbCoeffs(unsigned int nbCoeffs, bool* fullBasis) const
 {
     const float& floatEpsilon = std::numeric_limits<float>::epsilon();
-    const float symOrder = (-3.0 + sqrt(1.0 + 8.0 * nbCoeffs)) / 2.0;
+    const float symOrder = static_cast<float>((-3.0 + sqrt(1.0 + 8.0 * nbCoeffs)) / 2.0);
     if((std::trunc(symOrder) >= (symOrder - floatEpsilon)) &&
        (std::trunc(symOrder) <= (symOrder + floatEpsilon)))
     {
@@ -124,7 +132,7 @@ unsigned int DescoteauxBasis::getOrderFromNbCoeffs(unsigned int nbCoeffs, bool* 
         }
         return static_cast<unsigned int>(symOrder);
     }
-    const float fullOrder = sqrt((float)nbCoeffs) - 1.0;
+    const float fullOrder = sqrtf((float)nbCoeffs) - 1.0f;
     if((std::trunc(fullOrder) >= (fullOrder - floatEpsilon)) &&
        (std::trunc(fullOrder) <= (fullOrder + floatEpsilon)))
     {
