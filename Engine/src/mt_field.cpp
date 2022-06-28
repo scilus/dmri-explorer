@@ -1,8 +1,7 @@
 #include <mt_field.h>
 #include <glad/glad.h>
 #include <timer.h>
-#include <math.h>
-#include <eigen.hpp>
+#include <cmath>
 #include <utils.hpp>
 
 namespace
@@ -244,7 +243,7 @@ void MTField::initializeGPUData()
             tensor[1][2] = tensor[2][1] = tensor_image[offset+5];
             allTensors.push_back( tensor );
 
-            for (uint k=0; k<6; k++) if (tmax < tensor_image[offset + k]) tmax = tensor_image[offset + k];
+            for (unsigned int k=0; k<6; k++) if (tmax < tensor_image[offset + k]) tmax = tensor_image[offset + k];
         }
     }
 
@@ -326,7 +325,7 @@ void MTField::initializeGPUData()
     mFAsValuesData         = GPU::ShaderData(allFAs.data(),                GPU::Binding::faValues,          sizeof(float) * allFAs.size());
     mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(),           GPU::Binding::allSpheresNormals, sizeof(glm::vec4) * allVertices.size());
     mSphereVerticesData    = GPU::ShaderData(mSphere->GetPoints().data(),  GPU::Binding::sphereVertices,    sizeof(glm::vec4) * mSphere->GetPoints().size());
-    mSphereIndicesData     = GPU::ShaderData(mSphere->GetIndices().data(), GPU::Binding::sphereIndices,     sizeof(uint) * mSphere->GetIndices().size());
+    mSphereIndicesData     = GPU::ShaderData(mSphere->GetIndices().data(), GPU::Binding::sphereIndices,     sizeof(unsigned int) * mSphere->GetIndices().size());
     mSphereInfoData        = GPU::ShaderData(&sphereData,                  GPU::Binding::sphereInfo,        sizeof(SphereData));
     mGridInfoData          = GPU::ShaderData(&gridData,                    GPU::Binding::gridInfo,          sizeof(GridData));
 

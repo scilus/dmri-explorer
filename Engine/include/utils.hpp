@@ -1,4 +1,5 @@
 #pragma once
+
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
@@ -6,10 +7,13 @@
 #include <fstream>
 #include <sstream>
 #include <limits>
-#include <cmath>
 #include <iostream>
+#include <cmath>
 #include <tuple>
 #include <algorithm>
+
+//TODO: Check why M_PI does not work with cmath
+# define M_PI           3.14159265358979323846  /* pi */
 
 namespace Slicer
 {

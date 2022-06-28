@@ -1,6 +1,5 @@
 #include <scene.h>
 #include <sh_field.h>
-#include <st_field.h>
 #include <mt_field.h>
 #include <texture.h>
 #include <glm/gtx/transform.hpp>

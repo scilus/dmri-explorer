@@ -75,7 +75,7 @@ private:
         glm::ivec4 VolumeShape;
         glm::ivec4 SliceIndices;
         glm::ivec4 IsVisible;
-        uint CurrentSlice;
+        unsigned int CurrentSlice;
     };
 
     /// \brief Initialize class members.
@@ -162,13 +162,13 @@ private:
     std::shared_ptr<Primitive::Sphere> mSphere;
 
     /// Maximum number of spheres rendered in X-plane.
-    uint mNbSpheresX;
+    unsigned int mNbSpheresX;
 
     /// Maximum number of spheres rendered in Y-plane.
-    uint mNbSpheresY;
+    unsigned int mNbSpheresY;
 
     /// Maximum number of spheres rendered in Z-plane.
-    uint mNbSpheresZ;
+    unsigned int mNbSpheresZ;
 
     /// Indicates what slices need to be computed.
     glm::bvec3 mIsSliceDirty;
