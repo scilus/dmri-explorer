@@ -4,7 +4,7 @@
 
 namespace
 {
-const int NB_THREADS_FOR_SPHERES = 2;
+const int NB_THREADS_FOR_SPHERES = 4;
 }
 
 namespace Slicer
@@ -34,7 +34,7 @@ SHField::SHField(const std::shared_ptr<ApplicationState>& state,
     initializeMembers();
     initializeGPUData();
 
-    scaleSpheres();
+    scaleAllSpheres();
 }
 
 SHField::~SHField()
@@ -47,12 +47,14 @@ void SHField::updateApplicationStateAtInit()
 
 void SHField::registerStateCallbacks()
 {
+    /*
     mState->VoxelGrid.SliceIndices.RegisterCallback(
         [this](glm::vec3 p, glm::vec3 n)
         {
             this->setSliceIndex(p, n);
         }
     );
+    */
     mState->Sphere.IsNormalized.RegisterCallback(
         [this](bool p, bool n)
         {
@@ -105,10 +107,8 @@ void SHField::initProgramPipeline()
 void SHField::initializeMembers()
 {
     // Initialize compute shader
-    const std::string csRadiisPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_radiis_comp.glsl");
-    const std::string csNormalsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_comp.glsl");
+    const std::string csRadiisPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_comp.glsl");
     mComputeRadiisShader = GPU::ShaderProgram(csRadiisPath, GL_COMPUTE_SHADER);
-    mComputeNormalsShader = GPU::ShaderProgram(csNormalsPath, GL_COMPUTE_SHADER);
 
     // Initialize a sphere for SH to SF projection
     const auto& image = mState->FODFImage.Get();
@@ -120,7 +120,7 @@ void SHField::initializeMembers()
 
     // Preallocate buffers for draw call
     const auto numIndices = mSphere->GetIndices().size();
-    const int nbSpheres = getMaxNbSpheres();
+    const int nbSpheres = dims.x*dims.y*dims.z;
     mIndices.resize(nbSpheres * numIndices);
     mIndirectCmd.resize(nbSpheres);
 
@@ -188,12 +188,12 @@ void SHField::initializeGPUData()
     const auto& image = mState->FODFImage.Get();
 
     const int nbSpheres = image.GetDims().x*image.GetDims().y*image.GetDims().z;
+    const size_t nbRadiis = nbSpheres * mSphere->GetPoints().size();
 
-    // temporary zero-filled array for all spheres vertices and normals
-    std::vector<glm::vec4> allVertices(getMaxNbSpheres() * mSphere->GetPoints().size());
+    // temporary zero-filled array for all normals
+    std::vector<glm::vec4> allNormals(nbRadiis);
 
     // to compress the SF amplitudes, we will pack 8 values per int
-    const size_t nbRadiis = nbSpheres * mSphere->GetPoints().size();
     const size_t nbIntegersForRadiis = ceil(static_cast<float>(nbRadiis) / 8.0f);
     std::vector<GLuint> allRadiis(nbIntegersForRadiis);
 
@@ -220,8 +220,8 @@ void SHField::initializeGPUData()
     gridData.IsVisible = glm::ivec4(1, 1, 1, 0);
     gridData.CurrentSlice = 0;
 
-    mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(), GPU::Binding::allSpheresNormals,
-                                             sizeof(glm::vec4) * allVertices.size());
+    mAllSpheresNormalsData = GPU::ShaderData(allNormals.data(), GPU::Binding::allSpheresNormals,
+                                             sizeof(glm::vec4) * allNormals.size());
     mAllRadiisData = GPU::ShaderData(allRadiis.data(), GPU::Binding::allRadiis,
                                      sizeof(GLuint) * allRadiis.size());
     mSphHarmCoeffsData = GPU::ShaderData(image.GetVoxelData().data(), GPU::Binding::shCoeffs,
@@ -290,10 +290,9 @@ void SHField::setColorMapMode(int previous, int mode)
 {
     if(previous != mode)
     {
-        mSphereInfoData.Update(6*sizeof(unsigned int) + 2*sizeof(float), sizeof(unsigned int), &mode);       
+        mSphereInfoData.Update(6*sizeof(unsigned int) + 2*sizeof(float), sizeof(unsigned int), &mode);
     }
 }
-
 
 void SHField::setSH0Threshold(float previous, float threshold)
 {
@@ -302,7 +301,6 @@ void SHField::setSH0Threshold(float previous, float threshold)
         mSphereInfoData.Update(4*sizeof(unsigned int), sizeof(float), &threshold);
     }
 }
-
 
 void SHField::setSphereScaling(float previous, float scaling)
 {
@@ -360,22 +358,20 @@ void SHField::drawSpecific()
                                 0);
 }
 
-void SHField::scaleWholeVolume()
+void SHField::scaleAllSpheres()
 {
-    glUseProgram(mComputeRadiisShader.ID());
+    glm::vec3 prevIndices(-1.0, 0.0, 0.0);
     const auto& image = mState->FODFImage.Get();
     const auto& dims = image.GetDims();
     for(int i = 0; i < dims.x; ++i)
     {
-        scaleSpheres(i, mNbSpheresX);
+        setSliceIndex(prevIndices, glm::vec3((float)i, 0.0f, 0.0f));
     }
-    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-    glUseProgram(0);
 }
 
 void SHField::scaleSpheres()
 {
-    glUseProgram(mComputeNormalsShader.ID());
+    glUseProgram(mComputeRadiisShader.ID());
     if(mIsSliceDirty.x)
     {
         scaleSpheres(0, mNbSpheresX);

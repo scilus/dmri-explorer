@@ -44,15 +44,16 @@ void writeRadius(uint index, float newValue)
     memoryBarrier();
 }
 
-float readRadius(uint dirIndex, uint voxIndex)
+float readRadius(uint index)
 {
-    const uint trueIndex = dirIndex / N_VALUES_PER_DTYPE;
-    const uint bitOffset = dirIndex - trueIndex * N_VALUES_PER_DTYPE;
+    memoryBarrier();
+    const uint trueIndex = index / N_VALUES_PER_DTYPE;
+    const uint bitOffset = index - trueIndex * N_VALUES_PER_DTYPE;
     uint radius = allRadiis[trueIndex];
     uint mask = BITMASK << (bitOffset*N_BITS_PER_SF);
     radius = (radius & mask) >> (N_BITS_PER_SF*bitOffset);
 
-    return float(radius) / float(BITMASK) * allMaxAmplitude[voxIndex];
+    return float(radius) / float(BITMASK);
 }
 
 /// SH coefficients image buffer.

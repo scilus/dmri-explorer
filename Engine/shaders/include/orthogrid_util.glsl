@@ -105,3 +105,13 @@ bool getIsFlatOrthoSlicesIDVisible(const uint flatOrthoSlicesID)
     }
     return isSliceVisible.y != 0;
 }
+
+ivec3 convertFlatVoxIDTo3DVoxID(const uint flatVoxID)
+{
+    ivec3 index3d;
+    index3d.z = int(flatVoxID) / (gridDims.x * gridDims.y);
+    index3d.y = (int(flatVoxID) - index3d.z*gridDims.x*gridDims.y)/gridDims.x;
+    index3d.x = int(flatVoxID) - index3d.z*gridDims.x*gridDims.y - index3d.y*gridDims.x;
+    return index3d;
+}
+

@@ -74,5 +74,14 @@ void ShaderData::ToGPU()
         mIsDirty = false;
     }
 };
+
+void ShaderData::Clear()
+{
+    GLuint index = static_cast<GLuint>(mBinding);
+    // glInvalidateBufferData(mSSBO);
+    // glDeleteBuffers(1, &mSSBO);
+    glNamedBufferData(mSSBO, 0, 0, mUsage);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, index, mSSBO);
+}
 } // namespace GPU
 } // namespace Slicer
