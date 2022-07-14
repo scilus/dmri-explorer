@@ -200,6 +200,8 @@ private:
 
     void scaleAllSpheres();
 
+    void computeNormals(unsigned int sliceId, unsigned int nbSpheres);
+
     /// Mutex for multithreading.
     std::mutex mMutex;
 
@@ -232,6 +234,9 @@ private:
 
     /// Compute shader for sphere deformation.
     GPU::ShaderProgram mComputeRadiisShader;
+
+    /// Compute shader for computing normals from radiis.
+    GPU::ShaderProgram mComputeNormalsShader;
 
     /// SH coefficients GPU data.
     GPU::ShaderData mSphHarmCoeffsData;

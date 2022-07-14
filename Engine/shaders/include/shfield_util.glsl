@@ -46,12 +46,13 @@ void writeRadius(uint index, float newValue)
 
 float readRadius(uint index)
 {
-    memoryBarrier();
     const uint trueIndex = index / N_VALUES_PER_DTYPE;
     const uint bitOffset = index - trueIndex * N_VALUES_PER_DTYPE;
+    memoryBarrier();
     uint radius = allRadiis[trueIndex];
     uint mask = BITMASK << (bitOffset*N_BITS_PER_SF);
     radius = (radius & mask) >> (N_BITS_PER_SF*bitOffset);
+    memoryBarrier();
 
     return float(radius) / float(BITMASK);
 }

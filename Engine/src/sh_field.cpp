@@ -107,8 +107,10 @@ void SHField::initProgramPipeline()
 void SHField::initializeMembers()
 {
     // Initialize compute shader
-    const std::string csRadiisPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_comp.glsl");
+    const std::string csRadiisPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shradiis_comp.glsl");
+    const std::string csNormalsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shnormals_comp.glsl");
     mComputeRadiisShader = GPU::ShaderProgram(csRadiisPath, GL_COMPUTE_SHADER);
+    mComputeNormalsShader = GPU::ShaderProgram(csNormalsPath, GL_COMPUTE_SHADER);
 
     // Initialize a sphere for SH to SF projection
     const auto& image = mState->FODFImage.Get();
@@ -360,13 +362,20 @@ void SHField::drawSpecific()
 
 void SHField::scaleAllSpheres()
 {
-    glm::vec3 prevIndices(-1.0, 0.0, 0.0);
     const auto& image = mState->FODFImage.Get();
     const auto& dims = image.GetDims();
-    for(int i = 0; i < dims.x; ++i)
-    {
-        setSliceIndex(prevIndices, glm::vec3((float)i, 0.0f, 0.0f));
-    }
+
+    // compute radiis
+    glUseProgram(mComputeRadiisShader.ID());
+    glDispatchCompute(dims.x, dims.y, dims.z);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    glUseProgram(0);
+
+    // compute normals
+    glUseProgram(mComputeNormalsShader.ID());
+    glDispatchCompute(dims.x, dims.y, dims.z);
+    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    glUseProgram(0);
 }
 
 void SHField::scaleSpheres()
@@ -393,7 +402,17 @@ void SHField::scaleSpheres()
 
 void SHField::scaleSpheres(unsigned int sliceId, unsigned int nbSpheres)
 {
-    mGridInfoData.Update(3*sizeof(glm::ivec4), sizeof(unsigned int), &sliceId);
+    mGridInfoData.Update(3*sizeof(glm::ivec4),
+                         sizeof(unsigned int),
+                         &sliceId);
+    glDispatchCompute(nbSpheres, 1, 1);
+}
+
+void SHField::computeNormals(unsigned int sliceId, unsigned int nbSpheres)
+{
+    mGridInfoData.Update(3*sizeof(glm::ivec4),
+                         sizeof(unsigned int),
+                         &sliceId);
     glDispatchCompute(nbSpheres, 1, 1);
 }
 } // namespace Slicer
