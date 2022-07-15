@@ -368,13 +368,12 @@ void SHField::scaleAllSpheres()
     // compute radiis
     glUseProgram(mComputeRadiisShader.ID());
     glDispatchCompute(dims.x, dims.y, dims.z);
-    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-    glUseProgram(0);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
     // compute normals
     glUseProgram(mComputeNormalsShader.ID());
     glDispatchCompute(dims.x, dims.y, dims.z);
-    glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    glMemoryBarrier(GL_ALL_BARRIER_BITS);
     glUseProgram(0);
 }
 

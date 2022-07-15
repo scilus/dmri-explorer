@@ -15,7 +15,6 @@ layout(std430, binding=1) buffer allSpheresNormalsBuffer
 const float FLOAT_EPS = 1e-8;
 const float PI = 3.14159265358979323;
 
-// TODO: Move to second compute shader.
 void updateNormals(uint flatVoxID)
 {
     uint firstNormalID = flatVoxID * nbVertices;
@@ -23,17 +22,19 @@ void updateNormals(uint flatVoxID)
     // reset normals for sphere
     for(uint i = 0; i < nbVertices; ++i)
     {
-        allNormals[firstNormalID + i] = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+        // TODO: Make sure allNormals is zero-initialized
+        // so we can remove this.
+        allNormals[firstNormalID + i] = vec4(0.0f);
     }
 
     for(uint i = 0; i < nbIndices; i += 3)
     {
-        const float xxx = readRadius(indices[i] + firstNormalID);
-        const float yyy = readRadius(indices[i + 1] + firstNormalID);
-        const float zzz = readRadius(indices[i + 2] + firstNormalID);
-        const vec3 a =/* readRadius(indices[i] + firstNormalID) **/ vertices[indices[i]].xyz;
-        const vec3 b =/* readRadius(indices[i + 1] + firstNormalID) **/ vertices[indices[i + 1]].xyz;
-        const vec3 c =/* readRadius(indices[i + 2] + firstNormalID) **/ vertices[indices[i + 2]].xyz;
+        const float rA = readRadius(flatVoxID*nbVertices + indices[i]);
+        const float rB = readRadius(flatVoxID*nbVertices + indices[i + 1]);
+        const float rC = readRadius(flatVoxID*nbVertices + indices[i + 2]);
+        const vec3 a = rA * vertices[indices[i]].xyz;
+        const vec3 b = rB * vertices[indices[i + 1]].xyz;
+        const vec3 c = rC * vertices[indices[i + 2]].xyz;
         const vec3 ab = normalize(b - a);
         const vec3 ac = normalize(c - a);
         if(length(ab) > FLOAT_EPS && length(ac) > FLOAT_EPS)
@@ -41,9 +42,9 @@ void updateNormals(uint flatVoxID)
             if(abs(dot(ab, ac)) < 1.0)
             {
                 const vec3 n = normalize(cross(ab, ac));
-                allNormals[indices[i] + firstNormalID] += vec4(n, 0.0);
-                allNormals[indices[i + 1] + firstNormalID] += vec4(n, 0.0);
-                allNormals[indices[i + 2] + firstNormalID] += vec4(n, 0.0);
+                allNormals[indices[i] + firstNormalID] += vec4(n, 0.0f);
+                allNormals[indices[i + 1] + firstNormalID] += vec4(n, 0.0f);
+                allNormals[indices[i + 2] + firstNormalID] += vec4(n, 0.0f);
             }
         }
     }
@@ -51,11 +52,9 @@ void updateNormals(uint flatVoxID)
 
 void main()
 {
-    uint i, j, k;
-
-    i = gl_GlobalInvocationID.x;
-    j = gl_GlobalInvocationID.y;
-    k = gl_GlobalInvocationID.z;
+    const uint i = gl_GlobalInvocationID.x;
+    const uint j = gl_GlobalInvocationID.y;
+    const uint k = gl_GlobalInvocationID.z;
     const uint flatVoxID = convertSHCoeffsIndex3DToFlatVoxID(i, j, k);
     updateNormals(flatVoxID);
 }

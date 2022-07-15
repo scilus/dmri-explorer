@@ -53,7 +53,6 @@ vec4 getColor()
 
 void main()
 {
-    // FIXME: gl_DrawID is actually the flatVoxID right now so index3D makes no sense.
     const uint flatVoxID = gl_DrawID;
     const ivec3 index3d = convertFlatVoxIDTo3DVoxID(gl_DrawID);
 
@@ -84,7 +83,7 @@ void main()
                    * currentVertex;
 
     world_normal = modelMatrix
-                 * allNormals[flatVoxID + gl_VertexID%nbVertices];
+                 * allNormals[flatVoxID*nbVertices + gl_VertexID%nbVertices];
 
     color = getColor();
     is_visible = 1.0f; // getIsFlatOrthoSlicesIDVisible(gl_DrawID) && isAboveThreshold ? 1.0f : -1.0f;

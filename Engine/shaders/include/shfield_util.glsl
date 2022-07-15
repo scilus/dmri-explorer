@@ -28,8 +28,8 @@ void zeroInitRadius(uint index)
     uint notMask = ~(BITMASK<<(bitOffset*N_BITS_PER_SF));
 
     // 2. set to 0 using atomicAnd operator
-    atomicAnd(allRadiis[trueIndex], notMask);
     memoryBarrier();
+    atomicAnd(allRadiis[trueIndex], notMask);
 }
 
 /// Set radius at index to newValue [0.0, 1.0].
@@ -40,8 +40,8 @@ void writeRadius(uint index, float newValue)
     uint value = uint(newValue * float(BITMASK)); // bounded between 0-255
     value = value << (bitOffset*N_BITS_PER_SF);
 
-    atomicOr(allRadiis[trueIndex], value);
     memoryBarrier();
+    atomicOr(allRadiis[trueIndex], value);
 }
 
 float readRadius(uint index)
@@ -49,10 +49,10 @@ float readRadius(uint index)
     const uint trueIndex = index / N_VALUES_PER_DTYPE;
     const uint bitOffset = index - trueIndex * N_VALUES_PER_DTYPE;
     memoryBarrier();
-    uint radius = allRadiis[trueIndex];
-    uint mask = BITMASK << (bitOffset*N_BITS_PER_SF);
-    radius = (radius & mask) >> (N_BITS_PER_SF*bitOffset);
-    memoryBarrier();
+    const uint packedRadius = allRadiis[trueIndex];
+
+    const uint mask = BITMASK << (bitOffset*N_BITS_PER_SF);
+    const uint radius = (packedRadius & mask) >> (N_BITS_PER_SF*bitOffset);
 
     return float(radius) / float(BITMASK);
 }
@@ -95,7 +95,7 @@ layout(std430, binding=6) buffer sphereIndicesBuffer
 };
 
 /// Sphere parameters buffer.
-layout(std430, binding=7) buffer sphereInfoBuffer
+layout(std430, binding=7) readonly buffer sphereInfoBuffer
 {
     /// Number of vertices.
     uint nbVertices;

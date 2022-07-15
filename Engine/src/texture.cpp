@@ -203,10 +203,10 @@ GLuint Texture::genVBO(const std::vector<T>& data) const
 
 void Texture::drawSpecific()
 {
-    //glDisable(GL_CULL_FACE);
+    glDisable(GL_CULL_FACE);
     glBindVertexArray(mVAO);
     glDrawArrays(GL_TRIANGLES, 0, static_cast<int>(mVertices.size()));
-    //glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 }
 } // namespace Slicer
