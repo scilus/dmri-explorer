@@ -98,7 +98,7 @@ private:
 
         mVoxelData.resize(nbValues);
         size_t flatIndex = 0;
-        site_t nonZeroIndex = 0;
+        size_t nonZeroIndex = 0;
         for(int k = 0; k < dimZ; ++k)
         {
             for(int j = 0; j < dimY; ++j)
