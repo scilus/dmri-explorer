@@ -37,8 +37,7 @@ template <typename T> class NiftiImageWrapper
 public:
     /// Default constructor.
     NiftiImageWrapper()
-    :mHeader()
-    ,mImage()
+    :mImage()
     ,mVoxelData()
     {
     };
@@ -47,8 +46,6 @@ public:
     /// \param[in] path Path to file.
     NiftiImageWrapper(const std::string& path)
     {
-        nifti_1_header* header = nifti_read_header(path.c_str(), nullptr, true);
-        mHeader.reset(header);
         mImage.reset(nifti_image_read(path.c_str(), false));
 
         // copy image data
@@ -101,6 +98,7 @@ private:
 
         mVoxelData.resize(nbValues);
         size_t flatIndex = 0;
+        site_t nonZeroIndex = 0;
         for(int k = 0; k < dimZ; ++k)
         {
             for(int j = 0; j < dimY; ++j)
@@ -248,13 +246,14 @@ private:
         }
     };
 
-    /// Nifti image header.
-    std::shared_ptr<nifti_1_header> mHeader;
-
     /// Reference to the loaded image.
+    /// Does not contain the actual data.
     std::shared_ptr<nifti_image> mImage;
 
     /// Voxel data.
     std::vector<T> mVoxelData;
+
+    /// TODO: Assign contiguous ids to non-zero voxels in mVoxelData.
+    std::vector<unsigned int> mNonZeroVoxelsMapping;
 };
 } // namespace Slicer
