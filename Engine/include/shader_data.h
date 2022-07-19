@@ -50,8 +50,6 @@ public:
     /// Copy SSBO to the GPU.
     void ToGPU();
 
-    void Clear();
-
 private:
     /// SSBO identifier.
     GLuint mSSBO;
