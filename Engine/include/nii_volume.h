@@ -45,6 +45,8 @@ public:
     /// Constructor
     /// \param[in] path Path to file.
     NiftiImageWrapper(const std::string& path)
+    :mImage()
+    ,mVoxelData()
     {
         mImage.reset(nifti_image_read(path.c_str(), false));
 
@@ -63,6 +65,7 @@ public:
 
     /// Get the maximum values in the image.
     /// \return max value.
+    /// TODO: Precompute max value inside copyImageVoxels
     T GetMax() const
     {
         T max = std::numeric_limits<T>::lowest();
@@ -252,8 +255,5 @@ private:
 
     /// Voxel data.
     std::vector<T> mVoxelData;
-
-    /// TODO: Assign contiguous ids to non-zero voxels in mVoxelData.
-    std::vector<unsigned int> mNonZeroVoxelsMapping;
 };
 } // namespace Slicer

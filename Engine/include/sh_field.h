@@ -5,6 +5,7 @@
 #include <memory>
 #include <thread>
 #include <binding.h>
+#include <nii_volume.h>
 #include <shader_data.h>
 #include <sphere.h>
 #include <shader.h>
@@ -94,7 +95,6 @@ private:
     /// The order of members is critical. The same order must be used
     /// when declaring the struct on the GPU and the order is used for
     /// modifying shader subdata from the CPU.
-    
     struct SphereData
     {
         unsigned int NumVertices;
@@ -120,6 +120,8 @@ private:
         glm::ivec4 IsVisible;
         unsigned int CurrentSlice;
     };
+
+    void computeNonZeroVoxels(const NiftiImageWrapper<float>& image);
 
     /// \brief Initialize class members.
     ///
@@ -184,44 +186,15 @@ private:
     /// \return VBO index.
     template<typename T> GLuint genVBO(const std::vector<T>& data) const;
 
-    /// Get the maximum number of spheres rendered.
-    /// \return The maximum number of spheres rendered.
-    inline unsigned int getMaxNbSpheres() const { return mNbSpheresX +
-                                                         mNbSpheresY +
-                                                         mNbSpheresZ; };
-
-    /// Scale spheres by launching a compute shader pass.
-    void scaleSpheres();
-
-    /// Scale spheres for a single slice.
-    /// \param[in] sliceId Index of the slice to scale.
-    /// \param[in] nbSpheres Number of spheres for the slice of interest.
-    void scaleSpheres(unsigned int sliceId, unsigned int nbSpheres);
-
     void scaleAllSpheres();
-
-    void computeNormals(unsigned int sliceId, unsigned int nbSpheres);
-
-    /// Mutex for multithreading.
-    std::mutex mMutex;
 
     /// Sphere used for SH projection.
     std::shared_ptr<Primitive::Sphere> mSphere;
 
-    /// Maximum number of spheres rendered in X-plane.
-    unsigned int mNbSpheresX;
-
-    /// Maximum number of spheres rendered in Y-plane.
-    unsigned int mNbSpheresY;
-
-    /// Maximum number of spheres rendered in Z-plane.
-    unsigned int mNbSpheresZ;
-
-    /// Indicates what slices need to be computed.
-    glm::bvec3 mIsSliceDirty;
-
-    /// Mesh triangulation for all spheres.
+    /// Mesh triangulation for *all* spheres.
     std::vector<GLuint> mIndices;
+
+    std::vector<unsigned int> mNonZeroVoxels;
 
     /// Vertex array object.
     GLuint mVAO;
@@ -266,8 +239,7 @@ private:
     /// Glyphs normals GPU data.
     GPU::ShaderData mAllSpheresNormalsData;
 
-    /// All SH orders, repeated.
-    GPU::ShaderData mAllOrdersData;
+    GPU::ShaderData mNonZeroVoxelsData;
 
     /// DrawElementsIndirectCommand array.
     std::vector<DrawElementsIndirectCommand> mIndirectCmd;

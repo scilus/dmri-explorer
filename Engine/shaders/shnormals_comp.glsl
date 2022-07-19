@@ -15,9 +15,9 @@ layout(std430, binding=1) buffer allSpheresNormalsBuffer
 const float FLOAT_EPS = 1e-8;
 const float PI = 3.14159265358979323;
 
-void updateNormals(uint flatVoxID)
+void updateNormals(uint outputID)
 {
-    uint firstNormalID = flatVoxID * nbVertices;
+    uint firstNormalID = outputID * nbVertices;
 
     // reset normals for sphere
     for(uint i = 0; i < nbVertices; ++i)
@@ -29,9 +29,9 @@ void updateNormals(uint flatVoxID)
 
     for(uint i = 0; i < nbIndices; i += 3)
     {
-        const float rA = readRadius(flatVoxID*nbVertices + indices[i]);
-        const float rB = readRadius(flatVoxID*nbVertices + indices[i + 1]);
-        const float rC = readRadius(flatVoxID*nbVertices + indices[i + 2]);
+        const float rA = readRadius(outputID*nbVertices + indices[i]);
+        const float rB = readRadius(outputID*nbVertices + indices[i + 1]);
+        const float rC = readRadius(outputID*nbVertices + indices[i + 2]);
         const vec3 a = rA * vertices[indices[i]].xyz;
         const vec3 b = rB * vertices[indices[i + 1]].xyz;
         const vec3 c = rC * vertices[indices[i + 2]].xyz;
@@ -52,9 +52,5 @@ void updateNormals(uint flatVoxID)
 
 void main()
 {
-    const uint i = gl_GlobalInvocationID.x;
-    const uint j = gl_GlobalInvocationID.y;
-    const uint k = gl_GlobalInvocationID.z;
-    const uint flatVoxID = convertSHCoeffsIndex3DToFlatVoxID(i, j, k);
-    updateNormals(flatVoxID);
+    updateNormals(gl_GlobalInvocationID.x);
 }

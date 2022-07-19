@@ -10,7 +10,7 @@ layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 const float FLOAT_EPS = 1e-8;
 const float PI = 3.14159265358979323;
 
-bool scaleSphere(uint flatVoxID)
+void scaleSphere(uint flatVoxID, uint outputID)
 {
     float sfEval;
     vec3 normal;
@@ -34,7 +34,7 @@ bool scaleSphere(uint flatVoxID)
 
     for(uint sphVertID = 0; sphVertID < nbVertices; ++sphVertID)
     {
-        zeroInitRadius(flatVoxID*nbVertices + sphVertID);
+        zeroInitRadius(outputID*nbVertices + sphVertID);
         if(maxAmplitude > FLOAT_EPS)
         {
             sfEval = 0.0f;
@@ -43,19 +43,16 @@ bool scaleSphere(uint flatVoxID)
                 sfEval += shCoeffs[flatVoxID * nbCoeffs + i]
                         * shFuncs[sphVertID * nbCoeffs + i];
             }
-            writeRadius(flatVoxID*nbVertices + sphVertID, sfEval / maxAmplitude);
+            writeRadius(outputID*nbVertices + sphVertID, sfEval / maxAmplitude);
         }
     }
     maxAmplitude = maxAmplitude > 0.0f ? maxAmplitude : 0.0f;
-    allMaxAmplitude[flatVoxID] = maxAmplitude;
-    return nonZero;
+    allMaxAmplitude[outputID] = maxAmplitude;
 }
 
 void main()
 {
-    const uint i = gl_GlobalInvocationID.x;
-    const uint j = gl_GlobalInvocationID.y;
-    const uint k = gl_GlobalInvocationID.z;
-    const uint flatVoxID = convertSHCoeffsIndex3DToFlatVoxID(i, j, k);
-    scaleSphere(flatVoxID);
+    const uint flatVoxID = nonZeroVoxels[gl_GlobalInvocationID.x];
+    const uint outputID = gl_GlobalInvocationID.x;
+    scaleSphere(flatVoxID, outputID);
 }

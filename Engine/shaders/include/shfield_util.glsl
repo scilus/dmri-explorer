@@ -2,7 +2,7 @@
 Global variables for spherical harmonics (SH) field parameters.
 */
 
-const uint N_BITS_PER_SF = 4;
+const uint N_BITS_PER_SF = 8;
 const uint N_VALUES_PER_DTYPE = 32 / N_BITS_PER_SF;
 const uint BITMASK = (1 << (N_BITS_PER_SF)) - 1;
 
@@ -70,14 +70,6 @@ layout(std430, binding=4) buffer shFunctionsBuffer
     /// Table of all SH functions evaluated for each sphere
     /// direction on the sphere to use for rendering.
     float shFuncs[];
-};
-
-/// SH orders buffer.
-layout(std430, binding=11) buffer ordersBuffer
-{
-    /// Array of length equal to the number of SH coefficients containing the
-    /// integer order for each SH coefficient.
-    float L[];
 };
 
 /// Sphere vertices buffer.

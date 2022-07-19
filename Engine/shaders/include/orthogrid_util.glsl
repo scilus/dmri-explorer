@@ -2,10 +2,10 @@
 Utilities and buffer objects for managing the voxel grid.
 */
 
-layout(std430, binding=13) buffer nonZeroMappingBuffer
+layout(std430, binding=13) buffer nonZeroVoxelsBuffer
 {
-    uint nonZeroMapping;
-}
+    uint[] nonZeroVoxels;
+};
 
 /// Grid parameters buffer.
 layout(std430, binding=8) buffer gridInfoBuffer
