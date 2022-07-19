@@ -5,11 +5,6 @@
 #include "/include/shfield_util.glsl"
 #include "/include/orthogrid_util.glsl"
 
-layout(std430, binding=0) buffer allRadiisBuffer
-{
-    float allRadiis[];
-};
-
 layout(std430, binding=1) buffer allNormalsBuffer
 {
     vec4 allNormals[];
@@ -18,11 +13,6 @@ layout(std430, binding=1) buffer allNormalsBuffer
 layout(std430, binding=10) buffer modelTransformsBuffer
 {
     mat4 modelMatrix;
-};
-
-layout(std430, binding=12) buffer allMaxAmplitudeBuffer
-{
-    float allMaxAmplitude[];
 };
 
 // Outputs
@@ -55,28 +45,16 @@ vec4 getVertexSlice(ivec3 index3d)
     return vec4(i, j, k, 0.0f);
 }
 
-vec4 grayScaleColorMap()
-{   
-    const float maxAmplitude = allMaxAmplitude[gl_DrawID];
-    const float currentRadius = allRadiis[gl_VertexID];
-    const vec4 grayScale = vec4(currentRadius/maxAmplitude, currentRadius/maxAmplitude, currentRadius/maxAmplitude, 1.0f);
-    return grayScale;
-}
-
-vec4 setColorMapMode(vec4 currentVertex)
+vec4 getColor()
 {
-    if (colorMapMode == 1)
-    {
-        return grayScaleColorMap();
-    }
-    return abs(vec4(normalize(currentVertex.xyz), 1.0f));
+    // direction-encoded colormap
+    return abs(vec4(normalize(vertices[gl_VertexID%nbVertices].xyz), 1.0f));
 }
 
 void main()
 {
-    const ivec3 index3d = convertFlatOrthoSlicesIDTo3DVoxID(gl_DrawID);
-    const uint voxID = convertSHCoeffsIndex3DToFlatVoxID(index3d.x, index3d.y, index3d.z);
-    bool isAboveThreshold = shCoeffs[voxID * nbCoeffs] > sh0Threshold;
+    const uint flatVoxID = nonZeroVoxels[gl_DrawID];
+    const ivec3 index3d = convertFlatVoxIDTo3DVoxID(flatVoxID);
 
     mat4 localMatrix;
     localMatrix[0][0] = scaling;
@@ -87,9 +65,11 @@ void main()
     localMatrix[3][2] = float(index3d.z - gridDims.z / 2);
     localMatrix[3][3] = 1.0f;
 
-    const vec4 scaledVertice = vec4(vertices[gl_VertexID%nbVertices].xyz * allRadiis[gl_VertexID], 1.0f);
+    const float radius = readRadius(gl_DrawID*nbVertices+gl_VertexID%nbVertices)
+                       * allMaxAmplitude[gl_DrawID];
+    const vec4 scaledVertice = vec4(vertices[gl_VertexID%nbVertices].xyz * radius, 1.0f);
     const float isNormalizedf= isNormalized > 0 ? 1.0f : 0.0f;
-    const float normalizationFactor = pow(1.0f/allMaxAmplitude[gl_DrawID], isNormalizedf);
+    const float normalizationFactor = 1.0f;
     const vec4 currentVertex = vec4(scaledVertice.xyz * normalizationFactor, 1.0f);
 
     gl_Position = projectionMatrix
@@ -103,10 +83,10 @@ void main()
                    * currentVertex;
 
     world_normal = modelMatrix
-                 * allNormals[gl_VertexID];
+                 * allNormals[gl_DrawID*nbVertices + gl_VertexID%nbVertices];
 
-    color = setColorMapMode(scaledVertice);
-    is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID) && isAboveThreshold ? 1.0f : -1.0f;
+    color = getColor();
+    is_visible = 1.0f;
     world_eye_pos = vec4(eye.xyz, 1.0f);
     vertex_slice = getVertexSlice(index3d);
     fade_enabled = fadeIfHidden > 0 && is3DMode() ? 1.0 : -1.0;
