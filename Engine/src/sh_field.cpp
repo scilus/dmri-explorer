@@ -203,11 +203,11 @@ void SHField::initializeGPUData()
     const size_t nbRadiis = nbSpheres * mSphere->GetPoints().size();
 
     // temporary zero-filled array for all normals
-    std::vector<glm::vec4> allNormals(nbRadiis);
+    std::vector<GLuint> allNormals(nbRadiis, 0);
 
     // to compress the SF amplitudes, we will pack 8 values per int
     const size_t nbIntegersForRadiis = ceil(static_cast<float>(nbRadiis) / 4.0f);
-    std::vector<GLuint> allRadiis(nbIntegersForRadiis);
+    std::vector<GLuint> allRadiis(nbIntegersForRadiis, 0);
 
     std::vector<float> allMaxAmplitude(nbSpheres);
 
@@ -233,7 +233,7 @@ void SHField::initializeGPUData()
 
     // read/write
     mAllSpheresNormalsData = GPU::ShaderData(allNormals.data(), GPU::Binding::allSpheresNormals,
-                                             sizeof(glm::vec4) * allNormals.size());
+                                             sizeof(GLuint) * allNormals.size());
     mAllRadiisData = GPU::ShaderData(allRadiis.data(), GPU::Binding::allRadiis,
                                      sizeof(GLuint) * allRadiis.size());
     mSphHarmCoeffsData = GPU::ShaderData(image.GetVoxelData().data(), GPU::Binding::shCoeffs,

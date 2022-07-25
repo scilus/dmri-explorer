@@ -1,5 +1,6 @@
 #version 460
 #extension GL_ARB_shading_language_include : require
+#extension GL_ARB_shading_language_packing : require
 
 #include "/include/camera_util.glsl"
 #include "/include/shfield_util.glsl"
@@ -7,7 +8,7 @@
 
 layout(std430, binding=1) buffer allNormalsBuffer
 {
-    vec4 allNormals[];
+    uint allNormals[];
 };
 
 layout(std430, binding=10) buffer modelTransformsBuffer
@@ -83,7 +84,7 @@ void main()
                    * currentVertex;
 
     world_normal = modelMatrix
-                 * allNormals[gl_DrawID*nbVertices + gl_VertexID%nbVertices];
+                 * unpackSnorm4x8(allNormals[gl_DrawID*nbVertices + gl_VertexID%nbVertices]);
 
     color = getColor();
     is_visible = 1.0f;
