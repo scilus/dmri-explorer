@@ -24,6 +24,9 @@ enum class Binding
     coefsValues = 14,
     pddsValues = 15,
     faValues = 16,
+    mdValues = 17,
+    adValues = 18,
+    rdValues = 19,
     none = 30
 };
 } // namespace GPU

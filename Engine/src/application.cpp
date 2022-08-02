@@ -205,6 +205,7 @@ void Application::initApplicationState(const ArgumentParser& parser)
     mState->Sphere.SH0Threshold.Update(0.0f);
     mState->Sphere.FadeIfHidden.Update(false);
     mState->Sphere.ColorMapMode.Update(0);
+    mState->Sphere.ColorMap.Update(0);
 
     if (tensorsPaths.size()==0)
     {    

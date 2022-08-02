@@ -203,7 +203,7 @@ static inline float fractionalAnisotropy(glm::mat3 D)
 }
 
 // Returns fractional anisotropy (FA) of the lambdas
-static inline float fractionalAnisotropy(glm::vec3 lambdas)
+static inline float fractionalAnisotropy(const glm::vec3& lambdas)
 {
     float MD = (lambdas[0] + lambdas[1] + lambdas[2])/3;
 
@@ -213,6 +213,37 @@ static inline float fractionalAnisotropy(glm::vec3 lambdas)
     float d = 2*(lambdas[0]*lambdas[0] + lambdas[1]*lambdas[1] + lambdas[2]*lambdas[2]);
 
     return sqrt( (a+b+c)/d );
+}
+
+// Return mean diffusivity (MD) of the lambdas
+static inline float meanDiffusivity(const glm::vec3& lambdas)
+{
+    return (lambdas[0] + lambdas[1] + lambdas[2])/3;
+}
+
+// Return axial diffusivity (AD) of the lambdas
+static inline float axialDiffusivity(const glm::vec3& lambdas)
+{
+    return std::fmaxf( lambdas[0], std::fmaxf(lambdas[1], lambdas[2]) );
+}
+
+// Return radial diffusivity (RD) of the lambdas
+static inline float radialDiffusivity(const glm::vec3& lambdas)
+{
+    float AD = axialDiffusivity(lambdas);
+
+    if (AD == lambdas[0])
+    {
+        return (lambdas[1] + lambdas[2])/2;
+    }
+    else if (AD == lambdas[1])
+    {
+        return (lambdas[0] + lambdas[2])/2;
+    }
+    else
+    {
+        return (lambdas[0] + lambdas[1])/2;
+    }
 }
 
 // Concatenates 3 column vectors as a matrix
@@ -228,4 +259,21 @@ static inline glm::mat3 concatenate(glm::vec3 a, glm::vec3 b, glm::vec3 c)
     }
 
     return result;
+}
+
+// Normalize the values of the array between 0 and 1
+static inline void normalize(std::vector<float>& array)
+{
+    float cmin = array[0], cmax = array[0];
+
+    for(int i=0; i<array.size(); i++)
+    {
+        cmin = fminf(cmin, array[i]);
+        cmax = fmaxf(cmax, array[i]);
+    }
+
+    for(int i=0; i<array.size(); i++)
+    {
+        array[i] = (array[i] - cmin) / (cmax - cmin);
+    }
 }

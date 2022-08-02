@@ -44,6 +44,9 @@ layout(std430, binding=7) buffer sphereInfoBuffer
     /// 1 or 0. Flag for fading out glyphs that are below another slice.
     uint fadeIfHidden;
     
-    /// Current color map mode. Default to 0 (RGB).
+    /// Current color map mode. Default to 0 (RGB for SH and PDD for MT).
     uint colorMapMode;
+
+    /// Current color map. Default to 0 (Smooth Cool Warm).
+    uint colorMap;
 };

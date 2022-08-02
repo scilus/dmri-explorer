@@ -32,6 +32,21 @@ layout(std430, binding=16) buffer faValuesBuffer
     float allFAs[];
 };
 
+layout(std430, binding=17) buffer mdValuesBuffer
+{
+    float allMDs[];
+};
+
+layout(std430, binding=18) buffer adValuesBuffer
+{
+    float allADs[];
+};
+
+layout(std430, binding=19) buffer rdValuesBuffer
+{
+    float allRDs[];
+};
+
 // Outputs
 out gl_PerVertex{
     vec4 gl_Position;
@@ -71,15 +86,41 @@ vec4 setColorMapMode(vec4 currentVertex, const uint voxID, const uint nbSpheres,
     }
     else
     {
-        float fa = allFAs[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
-        int idx = int(fa*32);
+        int idx;
 
-        if (colorMapMode == 1) return vec4(smooth_cool_warm[ idx ], 1.0f);
-        if (colorMapMode == 2) return vec4(bent_cool_warm[ idx ],   1.0f);
-        if (colorMapMode == 3) return vec4(viridis[ idx ],          1.0f);
-        if (colorMapMode == 4) return vec4(plasma[ idx ],           1.0f);
-        if (colorMapMode == 5) return vec4(black_body[ idx ],       1.0f);
-        if (colorMapMode == 6) return vec4(inferno[ idx ],          1.0f);
+        float fa = allFAs[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
+        float md = allMDs[voxID + nbVoxels*(gl_DrawID/nbSpheres)];// * 100; //TODO: multiplica por 1000 la MD
+        float ad = allADs[voxID + nbVoxels*(gl_DrawID/nbSpheres)];// - 0.8; //TODO: borra el 0.8, only for demo
+        float rd = allRDs[voxID + nbVoxels*(gl_DrawID/nbSpheres)]; 
+
+        if(colorMapMode == 0)
+        {
+            vec4 pdd = allPdds[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
+            return abs(normalize(pdd));
+        }
+        else if(colorMapMode == 1)
+        {
+            idx = int(fa*32);
+        }
+        else if(colorMapMode == 2)
+        {
+            idx = int(md*32);
+        }
+        else if(colorMapMode == 3)
+        {
+            idx = int(ad*32);
+        }
+        else if(colorMapMode == 4)
+        {
+            idx = int(rd*32);
+        }
+
+        if (colorMap == 0) return vec4(smooth_cool_warm[ idx ], 1.0f);
+        if (colorMap == 1) return vec4(bent_cool_warm[ idx ],   1.0f);
+        if (colorMap == 2) return vec4(viridis[ idx ],          1.0f);
+        if (colorMap == 3) return vec4(plasma[ idx ],           1.0f);
+        if (colorMap == 4) return vec4(black_body[ idx ],       1.0f);
+        if (colorMap == 5) return vec4(inferno[ idx ],          1.0f);
     }
 
     return abs(vec4(normalize(currentVertex.xyz), 1.0f));

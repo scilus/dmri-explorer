@@ -63,6 +63,7 @@ private:
         unsigned int NbCoeffs;
         unsigned int FadeIfHidden;
         unsigned int ColorMapMode;
+        unsigned int ColorMap;
     };
 
     /// Struct containing the voxel grid attributes for the GPU.
@@ -125,6 +126,11 @@ private:
     /// \param[in] previous Previous color map mode.
     /// \param[in] mode The new mode.
     void setColorMapMode(int previous, int mode);
+
+    /// Set the color map.
+    /// \param[in] previous Previous color map.
+    /// \param[in] mode The new mode.
+    void setColorMap(int previous, int mode);
 
     /// Toggle fading of hidden objects.
     /// \param[in] previous Previous value.
@@ -196,6 +202,9 @@ private:
 
     GPU::ShaderData mPddsValuesData;
     GPU::ShaderData mFAsValuesData;
+    GPU::ShaderData mMDsValuesData;
+    GPU::ShaderData mADsValuesData;
+    GPU::ShaderData mRDsValuesData;
 
     /// Voxel grid GPU data.
     GPU::ShaderData mGridInfoData;

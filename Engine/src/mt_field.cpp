@@ -26,6 +26,9 @@ MTField::MTField(const std::shared_ptr<ApplicationState>& state,
 ,mCoefsValuesData()
 ,mPddsValuesData()
 ,mFAsValuesData()
+,mMDsValuesData()
+,mADsValuesData()
+,mRDsValuesData()
 ,mSphereVerticesData()
 ,mSphereIndicesData()
 ,mSphereInfoData()
@@ -67,6 +70,12 @@ void MTField::registerStateCallbacks()
         [this](int p, int n)
         {
             this->setColorMapMode(p, n);
+        }
+    );
+    mState->Sphere.ColorMap.RegisterCallback(
+        [this](int p, int n)
+        {
+            this->setColorMap(p, n);
         }
     );
     mState->Sphere.SH0Threshold.RegisterCallback(
@@ -205,6 +214,9 @@ void MTField::initializeGPUData()
     std::vector<glm::mat4> allTensors;
     std::vector<glm::vec4> allPdds;
     std::vector<float> allFAs;
+    std::vector<float> allMDs;
+    std::vector<float> allADs;
+    std::vector<float> allRDs;
 
     // Sphere data GPU buffer
     SphereData sphereData;
@@ -217,6 +229,7 @@ void MTField::initializeGPUData()
     sphereData.NbCoeffs = mState->TImages[0].Get().GetDims().w;
     sphereData.FadeIfHidden = mState->Sphere.FadeIfHidden.Get();
     sphereData.ColorMapMode = mState->Sphere.ColorMapMode.Get();
+    sphereData.ColorMap = mState->Sphere.ColorMap.Get();
 
     // Grid data GPU buffer
     // TODO: Move out of MTField. Should be in a standalone class.
@@ -244,6 +257,21 @@ void MTField::initializeGPUData()
             allTensors.push_back( tensor );
 
             for (unsigned int k=0; k<6; k++) if (tmax < tensor_image[offset + k]) tmax = tensor_image[offset + k];
+
+            /*glm::vec3 lambdas = eigenvalues(glm::mat3(tensor));
+            float FA = fractionalAnisotropy(lambdas);
+            float MD = meanDiffusivity(lambdas);
+            float AD = axialDiffusivity(lambdas);
+            float RD = radialDiffusivity(lambdas);
+            allFAs.push_back( FA );
+            allMDs.push_back( MD );
+            allADs.push_back( AD );
+            allRDs.push_back( RD );//*/
+
+            /*if (!std::isnan(MD)){
+                std::cout << lambdas.x << " " << lambdas.y << " " << lambdas.z << std::endl;
+                std::cout << FA << std::endl << std::endl;
+            }//*/
         }
     }
 
@@ -256,73 +284,30 @@ void MTField::initializeGPUData()
 
         glm::vec3 lambdas = eigenvalues(glm::mat3(allTensors[i]));
         auto [e1, e2, e3] = eigenvectors(glm::mat3(allTensors[i]));
-        float FA1 = fractionalAnisotropy(glm::mat3(allTensors[i]));
-        float FA2 = fractionalAnisotropy(lambdas);
-
-        //std::cout << " tensor FA = " << FA1 << " " << int(FA1*32) << std::endl;
-        //std::cout << " lambda FA = " << FA2 << std::endl;
-        //std::cout << "\n\n";
+        float FA = fractionalAnisotropy(lambdas);
+        float MD = meanDiffusivity(lambdas);
+        float AD = axialDiffusivity(lambdas);
+        float RD = radialDiffusivity(lambdas);
 
         allPdds.push_back( glm::vec4(abs(e1[0]), abs(e1[1]), abs(e1[2]), 0.0f) );
         allCoefs.push_back( glm::vec4(1.0f/(2.0f*lambdas.x), 1.0f/(2.0f*lambdas.y), 1.0f/(2.0f*lambdas.z), 1.0f) );
-        allFAs.push_back( FA1 );
+        allFAs.push_back( FA );
+        allMDs.push_back( MD );
+        allADs.push_back( AD );
+        allRDs.push_back( RD );//*/
     }
 
-    /*for (int i=0; i < nbTensors; i++)
-    {
-        const std::vector<float>& tensor_image = mState->TImages[i].Get().GetVoxelData();
-        for(size_t offset=0; offset < tensor_image.size(); offset+=6)
-        {
-            glm::mat4 tensor = glm::mat4(1.0f);
-
-            //TODO: Make this value a user parameter
-            float cmax = 0.001f;
-            //float cmax = -1.0f;
-            //for (uint k=0; k<6; k++) if (cmax < tensor_image[offset + k]) cmax = tensor_image[offset + k];
-            //std::cout << "cmax = " << cmax << std::endl;
-            tensor[0][0] = tensor_image[offset]   / cmax;
-            tensor[1][1] = tensor_image[offset+1] / cmax;
-            tensor[2][2] = tensor_image[offset+2] / cmax;
-            tensor[0][1] = tensor[1][0] = tensor_image[offset+3] / cmax;
-            tensor[0][2] = tensor[2][0] = tensor_image[offset+4] / cmax;
-            tensor[1][2] = tensor[2][1] = tensor_image[offset+5] / cmax;
-            allTensors.push_back( tensor );
-
-            glm::vec3 lambdas_jacobi = getEigenvaluesFromMatrix(glm::mat3(tensor));
-            glm::vec3 lambdas = eigenvalues(glm::mat3(tensor));
-            //std::tuple<glm::vec3,glm::vec3,glm::vec3> e = eigenvectors(glm::mat3(tensor));
-            auto [e1, e2, e3] = eigenvectors(glm::mat3(tensor));
-            glm::mat3 LAMBDA = glm::mat3(1.0f);
-            LAMBDA[0][0] = lambdas.x;
-            LAMBDA[1][1] = lambdas.y;
-            LAMBDA[2][2] = lambdas.z;
-            //glm::mat3 E = concatenate(e1, e2, e3);
-            //glm::mat3 D = glm::transpose(E) * LAMBDA * E;
-            //glm::mat3 D = E * LAMBDA * glm::transpose(E);
-            //print(tensor, "tensor");
-            //print(D, "D");
-            std::cout << "e1 = (";
-            for (int a=0; a<3; a++) std::cout << e1[a] << ", "; std::cout << ")" << std::endl;
-            std::cout << "lambdas jacobi = (";
-            for (int a=0; a<3; a++) std::cout << lambdas_jacobi[a] << ", "; std::cout << ")" << std::endl;
-            std::cout << "lambdas analyt = (";
-            for (int a=0; a<3; a++) std::cout << lambdas[a] << ", "; std::cout << ")" << std::endl << std::endl;
-            allPdds.push_back( glm::vec4(abs(e1[0]), abs(e1[1]), abs(e1[2]), 1.0f) );
-
-            //glm::vec4 coefs(1.0f/sqrt(lambdas[0]), 1.0f/sqrt(lambdas[1]), 1.0f/sqrt(lambdas[2]), 1.0f);
-            //glm::vec4 coefs(1.0f/lambdas.x, 1.0f/lambdas.y, 1.0f/lambdas.z, 1.0f);
-            glm::vec4 coefs(1.0f/(2.0f*lambdas.x), 1.0f/(2.0f*lambdas.y), 1.0f/(2.0f*lambdas.z), 1.0f);
-            allCoefs.push_back( coefs );
-            //std::cout << "coefs = (" << coefs.x << "," << coefs.y << "," << coefs.z << ")\n\n";            
-        }
-    }//*/
-
-
+    normalize(allMDs);
+    normalize(allADs);
+    normalize(allRDs);
 
     mTensorValuesData      = GPU::ShaderData(allTensors.data(),            GPU::Binding::tensorValues,      sizeof(glm::mat4) * allTensors.size());
     mCoefsValuesData       = GPU::ShaderData(allCoefs.data(),              GPU::Binding::coefsValues,       sizeof(glm::vec4) * allCoefs.size());
     mPddsValuesData        = GPU::ShaderData(allPdds.data(),               GPU::Binding::pddsValues,        sizeof(glm::vec4) * allPdds.size());
     mFAsValuesData         = GPU::ShaderData(allFAs.data(),                GPU::Binding::faValues,          sizeof(float) * allFAs.size());
+    mMDsValuesData         = GPU::ShaderData(allMDs.data(),                GPU::Binding::mdValues,          sizeof(float) * allMDs.size());
+    mADsValuesData         = GPU::ShaderData(allADs.data(),                GPU::Binding::adValues,          sizeof(float) * allADs.size());
+    mRDsValuesData         = GPU::ShaderData(allRDs.data(),                GPU::Binding::rdValues,          sizeof(float) * allRDs.size());
     mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(),           GPU::Binding::allSpheresNormals, sizeof(glm::vec4) * allVertices.size());
     mSphereVerticesData    = GPU::ShaderData(mSphere->GetPoints().data(),  GPU::Binding::sphereVertices,    sizeof(glm::vec4) * mSphere->GetPoints().size());
     mSphereIndicesData     = GPU::ShaderData(mSphere->GetIndices().data(), GPU::Binding::sphereIndices,     sizeof(unsigned int) * mSphere->GetIndices().size());
@@ -334,6 +319,9 @@ void MTField::initializeGPUData()
     mCoefsValuesData.ToGPU();
     mPddsValuesData.ToGPU();
     mFAsValuesData.ToGPU();
+    mMDsValuesData.ToGPU();
+    mADsValuesData.ToGPU();
+    mRDsValuesData.ToGPU();
     mSphereVerticesData.ToGPU();
     mSphereIndicesData.ToGPU();
     mSphereInfoData.ToGPU();
@@ -381,6 +369,13 @@ void MTField::setColorMapMode(int previous, int mode)
     }
 }
 
+void MTField::setColorMap(int previous, int mode)
+{
+    if(previous != mode)
+    {
+        mSphereInfoData.Update(7*sizeof(unsigned int) + 2*sizeof(float), sizeof(unsigned int), &mode);       
+    }
+}
 
 void MTField::setSH0Threshold(float previous, float threshold)
 {
