@@ -122,9 +122,14 @@ void MTField::initializeMembers()
     // Initialize a sphere for SH to SF projection
     const auto& image = mState->TImages[0].Get();
     const auto& dims = image.GetDims();
+    std::cout << dims.x << " " << dims.y << " " << dims.z << std::endl;
     mNbSpheresX = dims.y * dims.z;
     mNbSpheresY = dims.x * dims.z;
     mNbSpheresZ = dims.x * dims.y;
+    std::cout << mNbSpheresX << std::endl;
+    std::cout << mNbSpheresY << std::endl;
+    std::cout << mNbSpheresZ << std::endl;
+    std::cout << 3*(mNbSpheresX+mNbSpheresY+mNbSpheresZ) << " tensors" << std::endl;
     mSphere.reset(new Primitive::Sphere(mState->Sphere.Resolution.Get(), dims.w));
 
     // Preallocate buffers for draw call
@@ -258,20 +263,7 @@ void MTField::initializeGPUData()
 
             for (unsigned int k=0; k<6; k++) if (tmax < tensor_image[offset + k]) tmax = tensor_image[offset + k];
 
-            /*glm::vec3 lambdas = eigenvalues(glm::mat3(tensor));
-            float FA = fractionalAnisotropy(lambdas);
-            float MD = meanDiffusivity(lambdas);
-            float AD = axialDiffusivity(lambdas);
-            float RD = radialDiffusivity(lambdas);
-            allFAs.push_back( FA );
-            allMDs.push_back( MD );
-            allADs.push_back( AD );
-            allRDs.push_back( RD );//*/
-
-            /*if (!std::isnan(MD)){
-                std::cout << lambdas.x << " " << lambdas.y << " " << lambdas.z << std::endl;
-                std::cout << FA << std::endl << std::endl;
-            }//*/
+            //TODO: avoid to send NaN tensors to the GPU
         }
     }
 
@@ -294,7 +286,7 @@ void MTField::initializeGPUData()
         allFAs.push_back( FA );
         allMDs.push_back( MD );
         allADs.push_back( AD );
-        allRDs.push_back( RD );//*/
+        allRDs.push_back( RD );
     }
 
     normalize(allMDs);

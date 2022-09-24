@@ -191,7 +191,6 @@ static inline std::tuple<glm::vec3, glm::vec3, glm::vec3> eigenvectors(glm::mat3
     }
 
     return std::make_tuple(glm::normalize(e[0]), glm::normalize(e[1]), glm::normalize(e[2]));
-    //return std::make_tuple(e[0], e[1], e[2]);
 }
 
 // Returns fractional anisotropy (FA) of the 3D tensor D

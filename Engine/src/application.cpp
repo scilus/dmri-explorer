@@ -119,12 +119,13 @@ void Application::initialize()
     // Render frame without the model
     renderFrame();
 
-    // Add fields once the UI is drawn
+    // Add MTfield once the UI is drawn
     if (mState->TImages[0].IsInit())
     {
         mScene->AddMTField();
     }
 
+    // Add SHfield once the UI is drawn
     if (mState->FODFImage.IsInit())
     {
         mScene->AddSHField();

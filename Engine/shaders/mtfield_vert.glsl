@@ -89,8 +89,8 @@ vec4 setColorMapMode(vec4 currentVertex, const uint voxID, const uint nbSpheres,
         int idx;
 
         float fa = allFAs[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
-        float md = allMDs[voxID + nbVoxels*(gl_DrawID/nbSpheres)];// * 100; //TODO: multiplica por 1000 la MD
-        float ad = allADs[voxID + nbVoxels*(gl_DrawID/nbSpheres)];// - 0.8; //TODO: borra el 0.8, only for demo
+        float md = allMDs[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
+        float ad = allADs[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
         float rd = allRDs[voxID + nbVoxels*(gl_DrawID/nbSpheres)]; 
 
         if(colorMapMode == 0)
@@ -160,6 +160,7 @@ void main()
                    * currentVertex;
 
     vec3 coefs = allCoefs[voxID + nbVoxels*(gl_DrawID/nbSpheres)].xyz;
+    //TODO: this normal looks weird
     world_normal = modelMatrix
                  * vec4(2.0f*sphereVertex.x*coefs.x, 2.0f*sphereVertex.y*coefs.y, 2.0f*sphereVertex.z*coefs.z, 0.0f);
 

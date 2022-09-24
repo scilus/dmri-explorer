@@ -34,13 +34,13 @@ public:
 
     /// Sphere resolution getter.
     /// \return Sphere resolution.
-    inline int GetSphereResolution() const {return mSphereResolution; };
+    inline int GetSphereResolution() const { return mSphereResolution; };
 
 private:
-    /// Path to the image.
+    /// Path to the fodf image.
     std::string mImagePath;
 
-    /// Path to the background.
+    /// Path to the background image.
     std::string mBackgroundImagePath;
 
     /// Path to the tensor images

@@ -219,6 +219,7 @@ public:
     /// Parameter containing the fODF image object.
     ApplicationParameter<NiftiImageWrapper<float>> FODFImage;
 
+    //TODO: change this to std::vector
     /// Parameter containing the tensor image object.
     ApplicationParameter<NiftiImageWrapper<float>> TImages[3];
 
