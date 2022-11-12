@@ -2,7 +2,7 @@
 #include "utils.hpp"
 #include <algorithm>
 #include <cstring>
-
+#include <stdexcept>
 
 namespace
 {
