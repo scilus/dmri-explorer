@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include <string>
+#include <stdexcept>
 #include <fstream>
 #include <sstream>
 #include <limits>

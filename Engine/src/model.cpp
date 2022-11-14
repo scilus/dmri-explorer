@@ -1,6 +1,7 @@
 #include <model.h>
 #include <utils.hpp>
 #include <iostream>
+#include <stdexcept>
 
 namespace Slicer
 {
