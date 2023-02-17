@@ -278,59 +278,6 @@ void UIManager::drawSlicersWindow()
         return;
     }
 
-    /*float scaling = scalingParam.Get();
-    float threshold = thresholdParam.Get();
-    bool normalized = normalizedParam.Get();
-    bool fadeIfHidden = fadeHiddenParam.Get();
-    int colorMapMode = colorMapModeParam.Get();
-
-    ImGui::Text("Sphere scaling");
-    ImGui::SameLine();
-    if(ImGui::InputFloat("##sphere.scaling", &scaling, 0.001f, 0.5f))
-    {
-        scalingParam.Update(scaling);
-    }
-    ImGui::Text("SH0 threshold");
-    ImGui::SameLine();
-    if(ImGui::InputFloat("##sphere.sh0.threshold", &threshold, 0.001f, 0.5f))
-    {
-        thresholdParam.Update(threshold);
-    }
-    ImGui::Text("Normalize per voxel");
-    ImGui::SameLine();
-    if(ImGui::Checkbox("##sphere.normalized", &normalized))
-    {
-        normalizedParam.Update(normalized);
-    }
-    ImGui::Text("Fade if hidden");
-    ImGui::SameLine();
-    if(ImGui::Checkbox("##sphere.fadeIfHidden", &fadeIfHidden))
-    {
-        fadeHiddenParam.Update(fadeIfHidden);
-    }
-
-    ImGui::Text("Color map mode");
-
-    if(ImGui::RadioButton("Default", &colorMapMode, 0))
-    {
-        colorMapModeParam.Update(0);
-    }
-    ImGui::SameLine();
-    if(ImGui::RadioButton("Grayscale", &colorMapMode, 1))
-    {
-        colorMapModeParam.Update(1);
-    }
-    ImGui::SameLine();
-    if(ImGui::RadioButton("PDD", &colorMapMode, 2))
-    {
-        colorMapModeParam.Update(2);
-    }
-    ImGui::SameLine();
-    if(ImGui::RadioButton("FA", &colorMapMode, 3))
-    {
-        colorMapModeParam.Update(3);
-    }//*/
-
     ImGui::Spacing();
     ImGui::End();
 }

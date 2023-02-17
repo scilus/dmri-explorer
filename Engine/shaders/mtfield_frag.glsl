@@ -132,10 +132,6 @@ void main()
         discard;
     }
 
-    /*vec3 healthy_color = vec3(0.0f, 1.0f, 0.0f);
-    vec3 damaged_color = vec3(1.0f, 0.0f, 0.0f);
-    vec4 fa_color = vec4(healthy_color*fa + damaged_color*(1.0f-fa), 1.0f);//*/
-
     vec3 n = normalize(world_normal.xyz);
     vec3 frag_to_eye = normalize(world_eye_pos.xyz - world_frag_pos.xyz);
     vec3 frag_to_light = frag_to_eye;

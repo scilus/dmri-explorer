@@ -213,28 +213,16 @@ void SHField::initializeGPUData()
     // The SH coefficients image to copy on the GPU.
     const auto& image = mState->FODFImage.Get();
 
-    mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(), GPU::Binding::allSpheresNormals,
-                                             sizeof(glm::vec4) * allVertices.size());
-    mAllRadiisData = GPU::ShaderData(allRadiis.data(), GPU::Binding::allRadiis,
-                                     sizeof(float) * allRadiis.size());
-
-    mSphHarmCoeffsData = GPU::ShaderData(image.GetVoxelData().data(), GPU::Binding::shCoeffs,
-                                         sizeof(float) * image.GetVoxelData().size());
-
-    mSphHarmFuncsData = GPU::ShaderData(mSphere->GetSHFuncs().data(), GPU::Binding::shFunctions,
-                                        sizeof(float) * mSphere->GetSHFuncs().size());
-    mAllOrdersData = GPU::ShaderData(allOrders.data(), GPU::Binding::allOrders,
-                                     sizeof(float) * allOrders.size());
-    mSphereVerticesData = GPU::ShaderData(mSphere->GetPoints().data(), GPU::Binding::sphereVertices,
-                                          sizeof(glm::vec4) * mSphere->GetPoints().size());
-    mSphereIndicesData = GPU::ShaderData(mSphere->GetIndices().data(), GPU::Binding::sphereIndices,
-                                         sizeof(unsigned int) * mSphere->GetIndices().size());
-    mSphereInfoData = GPU::ShaderData(&sphereData, GPU::Binding::sphereInfo,
-                                      sizeof(SphereData));
-    mGridInfoData = GPU::ShaderData(&gridData, GPU::Binding::gridInfo,
-                                    sizeof(GridData));
-    mAllMaxAmplitudeData = GPU::ShaderData(allMaxAmplitude.data(), GPU::Binding::allMaxAmplitude,
-                                     sizeof(float) * allMaxAmplitude.size());
+    mAllSpheresNormalsData = GPU::ShaderData(allVertices.data(), GPU::Binding::allSpheresNormals, sizeof(glm::vec4) * allVertices.size());
+    mAllRadiisData = GPU::ShaderData(allRadiis.data(), GPU::Binding::allRadiis, sizeof(float) * allRadiis.size());
+    mSphHarmCoeffsData = GPU::ShaderData(image.GetVoxelData().data(), GPU::Binding::shCoeffs, sizeof(float) * image.GetVoxelData().size());
+    mSphHarmFuncsData = GPU::ShaderData(mSphere->GetSHFuncs().data(), GPU::Binding::shFunctions, sizeof(float) * mSphere->GetSHFuncs().size());
+    mAllOrdersData = GPU::ShaderData(allOrders.data(), GPU::Binding::allOrders, sizeof(float) * allOrders.size());
+    mSphereVerticesData = GPU::ShaderData(mSphere->GetPoints().data(), GPU::Binding::sphereVertices, sizeof(glm::vec4) * mSphere->GetPoints().size());
+    mSphereIndicesData = GPU::ShaderData(mSphere->GetIndices().data(), GPU::Binding::sphereIndices, sizeof(unsigned int) * mSphere->GetIndices().size());
+    mSphereInfoData = GPU::ShaderData(&sphereData, GPU::Binding::sphereInfo, sizeof(SphereData));
+    mGridInfoData = GPU::ShaderData(&gridData, GPU::Binding::gridInfo, sizeof(GridData));
+    mAllMaxAmplitudeData = GPU::ShaderData(allMaxAmplitude.data(), GPU::Binding::allMaxAmplitude, sizeof(float) * allMaxAmplitude.size());
 
     // push all data to GPU
     mSphHarmCoeffsData.ToGPU();
