@@ -8,12 +8,14 @@ namespace Slicer
 namespace
 {
 const int DEFAULT_SPHERE_RESOLUTION = 3;
+const int DEFAULT_TENSOR_ORDERING_MODE = 0;
 }
 
 ArgumentParser::ArgumentParser(int argc, char** argv)
 :mImagePath()
 ,mBackgroundImagePath()
 ,mSphereResolution(DEFAULT_SPHERE_RESOLUTION)
+,mTensorOrderingMode(DEFAULT_TENSOR_ORDERING_MODE)
 {
     args::ArgumentParser parser("Those are the arguments available for dmriexplorer",
                                 "dmri-explorer - Real-time Diffusion MRI viewer.");
@@ -41,6 +43,11 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
                                                  "Tensor image path",
                                                  "Path to a tensor image in nifti file format. Use the option several times for multi-tensor.",
                                                  {'t', "tensor"});
+
+    args::ValueFlag<int> tensorOrderingMode(parser,
+                                                "Tensor coefficients ordering",
+                                                "Ordering of the coefficients in the tensor image (0 -> MRtrix standard. 1 -> DiPY standard). Default: 0.",
+                                                {'o', "tensor_ordering"});
 
     try
     {
@@ -75,12 +82,17 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
         // Optional argument, sphere resolution
         mSphereResolution = args::get(sphereResolution);
     }
-
-    if(tensorsPath){
+    if(tensorsPath)
+    {
         for (const auto path : args::get(tensorsPath))
         {
             mTensorsPath.push_back( path );
         }
+    }
+    if(tensorOrderingMode)
+    {
+        // Optional argument, tensor ordering mode
+        mTensorOrderingMode = args::get(tensorOrderingMode);
     }
 
     mIsValid = true;

@@ -144,10 +144,9 @@ void main()
 
     mat4 tensorMatrix = allTensors[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
 
-    const vec4 currentVertex = tensorMatrix
-                             * vec4(vertices[gl_VertexID%nbVertices].xyz, 1.0f);
-
     vec4 sphereVertex = vec4(vertices[gl_VertexID%nbVertices].xyz, 1.0f);
+
+    const vec4 currentVertex = tensorMatrix * sphereVertex;
 
     gl_Position = projectionMatrix
                 * viewMatrix
@@ -162,7 +161,9 @@ void main()
     vec3 coefs = allCoefs[voxID + nbVoxels*(gl_DrawID/nbSpheres)].xyz;
     //TODO: this normal looks weird
     world_normal = modelMatrix
+                 //* vec4(sphereVertex.xyz, 0.0f);
                  * vec4(2.0f*sphereVertex.x*coefs.x, 2.0f*sphereVertex.y*coefs.y, 2.0f*sphereVertex.z*coefs.z, 0.0f);
+                 //* vec4(2.0f*currentVertex.xyz, 0.0f);
 
     color = setColorMapMode(currentVertex, voxID, nbSpheres, nbVoxels);
     is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID % nbSpheres) ? 1.0f : -1.0f;

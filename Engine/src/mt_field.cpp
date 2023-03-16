@@ -253,13 +253,35 @@ void MTField::initializeGPUData()
         {
             glm::mat4 tensor = glm::mat4(1.0f);
 
-            tensor[0][0] = tensor_image[offset];
-            tensor[1][1] = tensor_image[offset+1];
-            tensor[2][2] = tensor_image[offset+2];
-            tensor[0][1] = tensor[1][0] = tensor_image[offset+3];
-            tensor[0][2] = tensor[2][0] = tensor_image[offset+4];
-            tensor[1][2] = tensor[2][1] = tensor_image[offset+5];
+            if (mState->tensorOrderingMode == 0)
+            {
+                tensor[0][0] = tensor_image[offset];
+                tensor[1][1] = tensor_image[offset+1];
+                tensor[2][2] = tensor_image[offset+2];
+                tensor[0][1] = tensor[1][0] = tensor_image[offset+3];
+                tensor[0][2] = tensor[2][0] = tensor_image[offset+4];
+                tensor[1][2] = tensor[2][1] = tensor_image[offset+5];
+            }
+            else if (mState->tensorOrderingMode == 1)
+            {
+                tensor[0][0] = tensor_image[offset];
+                tensor[1][1] = tensor_image[offset+2];
+                tensor[2][2] = tensor_image[offset+5];
+                tensor[0][1] = tensor[1][0] = tensor_image[offset+1];
+                tensor[0][2] = tensor[2][0] = tensor_image[offset+3];
+                tensor[1][2] = tensor[2][1] = tensor_image[offset+4];
+            }
             allTensors.push_back( tensor );
+
+            for(int i=0; i<3; i++){
+                for(int j=0; j<3; j++){ 
+                    tensor[i][j] = fmaxf(tensor[i][j], 0.0f);
+                    //std::cout << tensor[i][j] << " ";
+                }
+
+                //std::cout << std::endl;
+            }
+            //std::cout << std::endl;
 
             for (unsigned int k=0; k<6; k++) if (tmax < tensor_image[offset + k]) tmax = tensor_image[offset + k];
 
@@ -267,8 +289,10 @@ void MTField::initializeGPUData()
         }
     }
 
+    std::cout << tmax << std::endl;
+
     //TODO: add feature to control this parameter from the GUI
-    double scale = 2.0;
+    double scale = 1.0;
     for (int i=0; i<allTensors.size(); i++)
     {
         // scale tensor
@@ -276,6 +300,16 @@ void MTField::initializeGPUData()
 
         glm::vec3 lambdas = eigenvalues(glm::mat3(allTensors[i]));
         auto [e1, e2, e3] = eigenvectors(glm::mat3(allTensors[i]));
+
+        if(std::isnan(lambdas[0])){
+            lambdas[0] = allTensors[i][0][0];
+            lambdas[1] = allTensors[i][1][1];
+            lambdas[2] = allTensors[i][2][2];
+            e1[0] = 1.0f;
+            e1[1] = 0.0f;
+            e1[2] = 0.0f;
+        }
+
         float FA = fractionalAnisotropy(lambdas);
         float MD = meanDiffusivity(lambdas);
         float AD = axialDiffusivity(lambdas);
@@ -287,6 +321,20 @@ void MTField::initializeGPUData()
         allMDs.push_back( MD );
         allADs.push_back( AD );
         allRDs.push_back( RD );
+
+        /*std::cout << "tensor = " << std::endl;
+        for(int a=0; a<3; a++){
+            for(int b=0; b<3; b++){ 
+                std::cout << allTensors[i][a][b] << " ";
+            }
+            std::cout << std::endl;
+        }
+        std::cout << "e1 = (" << e1[0] << ", " << e1[1] << ", " << e1[2] << ")" << std::endl;
+        std::cout << "e2 = (" << e2[0] << ", " << e2[1] << ", " << e2[2] << ")" << std::endl;
+        std::cout << "e3 = (" << e3[0] << ", " << e3[1] << ", " << e3[2] << ")" << std::endl;
+        std::cout << "lambdas = " << lambdas[0] << " " << lambdas[1] << " " << lambdas[2] << std::endl;
+        std::cout << "FA = " << FA << std::endl;
+        std::cout << std::endl; //*/
     }
 
     normalize(allMDs);

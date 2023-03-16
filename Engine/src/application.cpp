@@ -199,6 +199,7 @@ void Application::initApplicationState(const ArgumentParser& parser)
         mState->TImages[i].Update(NiftiImageWrapper<float>( tensorsPaths[i] ));
     }
     mState->nbTensors = tensorsPaths.size();
+    mState->tensorOrderingMode = parser.GetTensorOrderingMode();
 
     mState->Sphere.Resolution.Update(parser.GetSphereResolution());
     mState->Sphere.IsNormalized.Update(false);

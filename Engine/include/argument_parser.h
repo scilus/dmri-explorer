@@ -36,6 +36,10 @@ public:
     /// \return Sphere resolution.
     inline int GetSphereResolution() const { return mSphereResolution; };
 
+    /// Tensor coefficient ordering mode getter.
+    /// \return Tensor coefficient ordering mode.
+    inline int GetTensorOrderingMode() const { return mTensorOrderingMode; };
+
 private:
     /// Path to the fodf image.
     std::string mImagePath;
@@ -48,6 +52,9 @@ private:
 
     /// Sphere resolution for glyphs.
     int mSphereResolution;
+
+    /// Tensor coefficients ordering mode
+    int mTensorOrderingMode;
 
     /// Are all arguments valid?
     bool mIsValid;

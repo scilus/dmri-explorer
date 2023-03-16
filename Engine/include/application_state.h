@@ -213,8 +213,11 @@ public:
     /// Parameters pertaining to the 2D mode state.
     State::ViewMode ViewMode;
 
-    // Number of tensor images
+    /// Number of tensor images
     size_t nbTensors;
+
+    /// Tensor coefficient ordering mode
+    size_t tensorOrderingMode;
 
     /// Parameter containing the fODF image object.
     ApplicationParameter<NiftiImageWrapper<float>> FODFImage;

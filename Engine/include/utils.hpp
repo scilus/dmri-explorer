@@ -144,10 +144,13 @@ static inline void print(const glm::mat4& mat, const std::string& m)
 static inline glm::vec4 invariants(glm::mat3 D)
 {
     double I1 = D[0][0] + D[1][1] + D[2][2];
+
     double I2 = D[0][0]*D[1][1] + D[1][1]*D[2][2] + D[2][2]*D[0][0] - (
                 D[0][1]*D[0][1] + D[0][2]*D[0][2] + D[1][2]*D[1][2]);
+
     double I3 = D[0][0]*D[1][1]*D[2][2] + 2*D[0][1]*D[0][2]*D[1][2] - (
                 D[2][2]*D[0][1]*D[0][1] + D[1][1]*D[0][2]*D[0][2] + D[0][0]*D[1][2]*D[1][2]);
+                
     double I4 = D[0][0]*D[0][0] + D[1][1]*D[1][1] + D[2][2]*D[2][2] + 2*(
                 D[0][1]*D[0][1] + D[0][2]*D[0][2] + D[1][2]*D[1][2]);
 
