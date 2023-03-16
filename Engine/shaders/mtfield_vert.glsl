@@ -159,7 +159,7 @@ void main()
                    * currentVertex;
 
     vec3 coefs = allCoefs[voxID + nbVoxels*(gl_DrawID/nbSpheres)].xyz;
-    //TODO: this normal looks weird
+    //TODO: Generalize this normal. This normal does not consider rotations of the tensor
     world_normal = modelMatrix
                  //* vec4(sphereVertex.xyz, 0.0f);
                  * vec4(2.0f*sphereVertex.x*coefs.x, 2.0f*sphereVertex.y*coefs.y, 2.0f*sphereVertex.z*coefs.z, 0.0f);
