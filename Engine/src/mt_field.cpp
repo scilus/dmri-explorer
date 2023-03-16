@@ -281,8 +281,6 @@ void MTField::initializeGPUData()
         }
     }
 
-    std::cout << tmax << std::endl;
-
     //TODO: add feature to control this parameter from the GUI
     double scale = 1.0;
     for (int i=0; i<allTensors.size(); i++)
@@ -299,7 +297,8 @@ void MTField::initializeGPUData()
         glm::vec3 lambdas = eigenvalues(glm::mat3(allTensors[i]));
         auto [e1, e2, e3] = eigenvectors(glm::mat3(allTensors[i]));
 
-        if(std::isnan(lambdas[0])){
+        if (std::isnan(lambdas[0]))
+        {
             lambdas[0] = allTensors[i][0][0];
             lambdas[1] = allTensors[i][1][1];
             lambdas[2] = allTensors[i][2][2];
@@ -329,20 +328,6 @@ void MTField::initializeGPUData()
         allMDs.push_back( MD );
         allADs.push_back( AD );
         allRDs.push_back( RD );
-
-        /*std::cout << "tensor = " << std::endl;
-        for(int a=0; a<3; a++){
-            for(int b=0; b<3; b++){ 
-                std::cout << allTensors[i][a][b] << " ";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << "e1 = (" << e1[0] << ", " << e1[1] << ", " << e1[2] << ")" << std::endl;
-        std::cout << "e2 = (" << e2[0] << ", " << e2[1] << ", " << e2[2] << ")" << std::endl;
-        std::cout << "e3 = (" << e3[0] << ", " << e3[1] << ", " << e3[2] << ")" << std::endl;
-        std::cout << "lambdas = " << lambdas[0] << " " << lambdas[1] << " " << lambdas[2] << std::endl;
-        std::cout << "FA = " << FA << std::endl;
-        std::cout << std::endl; //*/
     }
 
     // TODO: Remove normalization and add fixed boundaries for diffusivities

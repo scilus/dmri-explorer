@@ -93,9 +93,7 @@ void UIManager::drawMainMenuBar()
     }
     // Render info
     ImGui::Separator();
-    ImGui::Text("%.1f FPS,", mIO->Framerate);
-    ImGui::Text("%d tensors, %d vertices", 1204, 772968);
-    //ImGui::Text("%d vertices, %d indices (%d triangles)", mIO->MetricsRenderVertices, mIO->MetricsRenderIndices, mIO->MetricsRenderIndices / 3);
+    ImGui::Text("%.1f FPS", mIO->Framerate);
 
     ImGui::EndMainMenuBar();
 }
