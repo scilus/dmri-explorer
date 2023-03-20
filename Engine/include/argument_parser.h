@@ -36,9 +36,9 @@ public:
     /// \return Sphere resolution.
     inline int GetSphereResolution() const { return mSphereResolution; };
 
-    /// Tensor coefficient ordering mode getter.
-    /// \return Tensor coefficient ordering mode.
-    inline int GetTensorOrderingMode() const { return mTensorOrderingMode; };
+    /// Tensor coefficient format getter.
+    /// \return Tensor coefficient format string.
+    inline std::string GetTensorFormat() const { return mTensorFormat; };
 
 private:
     /// Path to the fodf image.
@@ -54,7 +54,7 @@ private:
     int mSphereResolution;
 
     /// Tensor coefficients ordering mode
-    int mTensorOrderingMode;
+    std::string mTensorFormat;
 
     /// Are all arguments valid?
     bool mIsValid;

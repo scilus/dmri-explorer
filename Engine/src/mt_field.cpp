@@ -247,26 +247,8 @@ void MTField::initializeGPUData()
         const std::vector<float>& tensor_image = mState->TImages[i].Get().GetVoxelData();
         for(size_t offset=0; offset < tensor_image.size(); offset+=6)
         {
-            glm::mat4 tensor = glm::mat4(1.0f);
+            glm::mat4 tensor = getTensorFromCoefficients(tensor_image, offset, mState->tensorFormat);
 
-            if (mState->tensorOrderingMode == 0)
-            {
-                tensor[0][0] = tensor_image[offset];
-                tensor[1][1] = tensor_image[offset+1];
-                tensor[2][2] = tensor_image[offset+2];
-                tensor[0][1] = tensor[1][0] = tensor_image[offset+3];
-                tensor[0][2] = tensor[2][0] = tensor_image[offset+4];
-                tensor[1][2] = tensor[2][1] = tensor_image[offset+5];
-            }
-            else if (mState->tensorOrderingMode == 1)
-            {
-                tensor[0][0] = tensor_image[offset];
-                tensor[1][1] = tensor_image[offset+2];
-                tensor[2][2] = tensor_image[offset+5];
-                tensor[0][1] = tensor[1][0] = tensor_image[offset+1];
-                tensor[0][2] = tensor[2][0] = tensor_image[offset+3];
-                tensor[1][2] = tensor[2][1] = tensor_image[offset+4];
-            }
             allTensors.push_back( tensor );
 
             for (unsigned int k=0; k<6; k++)
@@ -320,7 +302,7 @@ void MTField::initializeGPUData()
             MD = 0.0;
             AD = 0.0;
             RD = 0.0;
-        }//*/
+        }
 
         allPdds.push_back( glm::vec4(abs(e1[0]), abs(e1[1]), abs(e1[2]), 0.0f) );
         allCoefs.push_back( glm::vec4(1.0f/(2.0f*lambdas.x), 1.0f/(2.0f*lambdas.y), 1.0f/(2.0f*lambdas.z), 1.0f) );

@@ -279,3 +279,38 @@ static inline void normalize(std::vector<float>& array)
         array[i] = (array[i] - cmin) / (cmax - cmin);
     }
 }
+
+static inline glm::mat4 getTensorFromCoefficients(const std::vector<float>& coefficients, size_t offset, std::string format)
+{
+    glm::mat4 tensor = glm::mat4(1.0f);
+
+    if (format.compare("mrtrix") == 0) // mrtrix -> diagonal format
+    {
+        tensor[0][0] = coefficients[offset];
+        tensor[1][1] = coefficients[offset+1];
+        tensor[2][2] = coefficients[offset+2];
+        tensor[0][1] = tensor[1][0] = coefficients[offset+3];
+        tensor[0][2] = tensor[2][0] = coefficients[offset+4];
+        tensor[1][2] = tensor[2][1] = coefficients[offset+5];
+    }
+    else if (format.compare("dipy") == 0) // lower diagonal format
+    {
+        tensor[0][0] = coefficients[offset];
+        tensor[1][1] = coefficients[offset+2];
+        tensor[2][2] = coefficients[offset+5];
+        tensor[0][1] = tensor[1][0] = coefficients[offset+1];
+        tensor[0][2] = tensor[2][0] = coefficients[offset+3];
+        tensor[1][2] = tensor[2][1] = coefficients[offset+4];
+    }
+    else if (format.compare("fsl") == 0) // upper diagonal format
+    {
+        tensor[0][0] = coefficients[offset];
+        tensor[1][1] = coefficients[offset+3];
+        tensor[2][2] = coefficients[offset+5];
+        tensor[0][1] = tensor[1][0] = coefficients[offset+1];
+        tensor[0][2] = tensor[2][0] = coefficients[offset+2];
+        tensor[1][2] = tensor[2][1] = coefficients[offset+4];
+    }
+
+    return tensor;
+}

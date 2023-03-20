@@ -383,24 +383,12 @@ void UIManager::drawMTOptionsWindow()
     {
         scalingParam.Update(scaling);
     }
-    ImGui::Text("Normalize");
-    ImGui::SameLine();
-    if(ImGui::Checkbox("##sphere.normalized", &normalized))
-    {
-        normalizedParam.Update(normalized);
-    }
-    ImGui::Text("Fade if hidden");
-    ImGui::SameLine();
-    if(ImGui::Checkbox("##sphere.fadeIfHidden", &fadeIfHidden))
-    {
-        fadeHiddenParam.Update(fadeIfHidden);
-    }
 
     const char* colorMaps[] = { "Smooth Cool Warm", "Bent Cool Warm", "Viridis", "Plasma", "Black body", "Inferno" };
     static const char* currentItem = colorMaps[0];
     static int selectedRadio = 0;
 
-    ImGui::Text("Color Map");
+    ImGui::Text("Color Mode");
     ImGui::SameLine();
     if(ImGui::RadioButton("PDD", &selectedRadio, 0))
     {
@@ -427,20 +415,43 @@ void UIManager::drawMTOptionsWindow()
         colorMapModeParam.Update(4);
     }
 
+    ImGui::Text("Color Map");
+    ImGui::SameLine();
     if (ImGui::BeginCombo("##sphere.colormap", currentItem)) // The second parameter is the label previewed before opening the combo.
     {
         for (int n = 0; n < IM_ARRAYSIZE(colorMaps); n++)
         {
+            // TODO: Add texture to this button
+            //ImGui::ColorButton("##image.colormap", ImVec4(1,0,0,1));
+            //ImGui::SameLine();
             bool is_selected = (currentItem == colorMaps[n]); // You can store your selection however you want, outside or inside your objects
-            if (ImGui::Selectable(colorMaps[n], is_selected)){
+            if (ImGui::Selectable(colorMaps[n], is_selected))
+            {
                 currentItem = colorMaps[n];
                 colorMapParam.Update( n );
             }
             if (is_selected)
+            {
                 ImGui::SetItemDefaultFocus();   // You may set the initial focus when opening the combo (scrolling + for keyboard navigation support)
+            }
         }
+
         ImGui::EndCombo();
     }
+    
+    if(ImGui::Checkbox("##sphere.normalized", &normalized))
+    {
+        normalizedParam.Update(normalized);
+    }
+    ImGui::SameLine();
+    ImGui::Text("Normalize");
+    ImGui::SameLine();
+    if(ImGui::Checkbox("##sphere.fadeIfHidden", &fadeIfHidden))
+    {
+        fadeHiddenParam.Update(fadeIfHidden);
+    }
+    ImGui::SameLine();
+    ImGui::Text("Fade if hidden");
 
     ImGui::End();
 }

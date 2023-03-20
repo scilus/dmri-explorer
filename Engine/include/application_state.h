@@ -216,8 +216,8 @@ public:
     /// Number of tensor images
     size_t nbTensors;
 
-    /// Tensor coefficient ordering mode
-    size_t tensorOrderingMode;
+    /// Tensor coefficient format
+    std::string tensorFormat;
 
     /// Parameter containing the fODF image object.
     ApplicationParameter<NiftiImageWrapper<float>> FODFImage;

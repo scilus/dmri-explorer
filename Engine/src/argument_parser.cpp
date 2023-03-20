@@ -8,14 +8,14 @@ namespace Slicer
 namespace
 {
 const int DEFAULT_SPHERE_RESOLUTION = 3;
-const int DEFAULT_TENSOR_ORDERING_MODE = 0;
+const std::string DEFAULT_TENSOR_FORMAT = "mrtrix";
 }
 
 ArgumentParser::ArgumentParser(int argc, char** argv)
 :mImagePath()
 ,mBackgroundImagePath()
 ,mSphereResolution(DEFAULT_SPHERE_RESOLUTION)
-,mTensorOrderingMode(DEFAULT_TENSOR_ORDERING_MODE)
+,mTensorFormat(DEFAULT_TENSOR_FORMAT)
 {
     args::ArgumentParser parser("Those are the arguments available for dmriexplorer",
                                 "dmri-explorer - Real-time Diffusion MRI viewer.");
@@ -44,10 +44,10 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
                                                  "Path to a tensor image in nifti file format. Use the option several times for multi-tensor.",
                                                  {'t', "tensor"});
 
-    args::ValueFlag<int> tensorOrderingMode(parser,
-                                                "Tensor coefficients ordering",
-                                                "Ordering of the coefficients in the tensor image (0 -> MRtrix standard. 1 -> DiPY standard). Default: 0.",
-                                                {'o', "tensor_ordering"});
+    args::ValueFlag<std::string> tensorFormat(parser,
+                                                "Format of tensor coefficients",
+                                                "Format of the coefficients in the tensor image: mrtrix (diagonal format), dipy (lower diagonal format), fsl (upper diagonal format). Default: mrtrix",
+                                                {'o', "tensor_format"});
 
     try
     {
@@ -89,10 +89,10 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
             mTensorsPath.push_back( path );
         }
     }
-    if(tensorOrderingMode)
+    if(tensorFormat)
     {
         // Optional argument, tensor ordering mode
-        mTensorOrderingMode = args::get(tensorOrderingMode);
+        mTensorFormat = args::get(tensorFormat);
     }
 
     mIsValid = true;
