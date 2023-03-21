@@ -439,13 +439,17 @@ void UIManager::drawMTOptionsWindow()
         ImGui::EndCombo();
     }
     
+    
+    /*
+    TODO: Implement a voxel-wise normalization for tensors using the PDD
     if(ImGui::Checkbox("##sphere.normalized", &normalized))
     {
         normalizedParam.Update(normalized);
     }
     ImGui::SameLine();
     ImGui::Text("Normalize");
-    ImGui::SameLine();
+    ImGui::SameLine(); //*/
+
     if(ImGui::Checkbox("##sphere.fadeIfHidden", &fadeIfHidden))
     {
         fadeHiddenParam.Update(fadeIfHidden);
