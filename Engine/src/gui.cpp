@@ -54,8 +54,14 @@ void UIManager::DrawInterface()
     drawMainMenuBar();
     drawDemoWindow();
     drawSlicersWindow();
-    drawSHOptionsWindow();
-    drawMTOptionsWindow();
+    if (mState->FODFImage.IsInit())
+    {
+        drawSHOptionsWindow();
+    }
+    if (mState->TImages[0].IsInit())
+    {
+        drawMTOptionsWindow();
+    }
     drawPreferencesWindow();
     drawMagnifyingModeWindow();
 
@@ -83,8 +89,14 @@ void UIManager::drawMainMenuBar()
     if(ImGui::BeginMenu("Options"))
     {
         ImGui::MenuItem("Show Slicers Window", NULL, &mShowSlicers);
-        ImGui::MenuItem("SH Options", NULL, &mShowSHOptions);
-        ImGui::MenuItem("MT Options", NULL, &mShowMTOptions);
+        if (mState->FODFImage.IsInit())
+        {
+            ImGui::MenuItem("SH Options", NULL, &mShowSHOptions);
+        }
+        if (mState->TImages[0].IsInit())
+        {
+            ImGui::MenuItem("MT Options", NULL, &mShowMTOptions);
+        }
         ImGui::MenuItem("Magnifying Mode", NULL, &mShowMagnifyingMode);
         ImGui::MenuItem("Preferences", NULL, &mShowPreferences);
         ImGui::Separator();
@@ -321,18 +333,19 @@ void UIManager::drawSHOptionsWindow()
     {
         thresholdParam.Update(threshold);
     }
-    ImGui::Text("Normalize per voxel");
-    ImGui::SameLine();
     if(ImGui::Checkbox("##sphere.normalized", &normalized))
     {
         normalizedParam.Update(normalized);
     }
-    ImGui::Text("Fade if hidden");
+    ImGui::SameLine();
+    ImGui::Text("Normalize per voxel");
     ImGui::SameLine();
     if(ImGui::Checkbox("##sphere.fadeIfHidden", &fadeIfHidden))
     {
         fadeHiddenParam.Update(fadeIfHidden);
     }
+    ImGui::SameLine();
+    ImGui::Text("Fade if hidden");
 
     ImGui::Text("Color map mode");
 
