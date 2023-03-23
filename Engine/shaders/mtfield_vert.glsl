@@ -6,6 +6,7 @@
 #include "/include/shfield_util.glsl"
 #include "/include/sphere_util.glsl"
 #include "/include/color_maps.glsl"
+#include "/include/vert_util.glsl"
 
 layout(std430, binding=10) buffer modelTransformsBuffer
 {
@@ -68,15 +69,6 @@ out float is_visible;
 // Fade is disabled when in 2D!
 out float fade_enabled;
 
-vec4 getVertexSlice(ivec3 index3d)
-{
-    const float i = index3d.x == sliceIndex.x ? 1.0f : -1.0f;
-    const float j = index3d.y == sliceIndex.y ? 1.0f : -1.0f;
-    const float k = index3d.z == sliceIndex.z ? 1.0f : -1.0f;
-
-    return vec4(i, j, k, 0.0f);
-}
-
 vec4 setColorMapMode(vec4 currentVertex, const uint voxID, const uint nbSpheres, const uint nbVoxels)
 {
     if(colorMapMode == 0) // color by PDD
@@ -84,7 +76,7 @@ vec4 setColorMapMode(vec4 currentVertex, const uint voxID, const uint nbSpheres,
         vec4 pdd = allPdds[voxID + nbVoxels*(gl_DrawID/nbSpheres)];
         return abs(normalize(pdd));
     }
-    else
+    else // color by tensor metrics
     {
         int idx;
 
@@ -116,11 +108,11 @@ vec4 setColorMapMode(vec4 currentVertex, const uint voxID, const uint nbSpheres,
         }
 
         if (colorMap == 0) return vec4(smooth_cool_warm[ idx ], 1.0f);
-        if (colorMap == 1) return vec4(bent_cool_warm[ idx ],   1.0f);
-        if (colorMap == 2) return vec4(viridis[ idx ],          1.0f);
-        if (colorMap == 3) return vec4(plasma[ idx ],           1.0f);
-        if (colorMap == 4) return vec4(black_body[ idx ],       1.0f);
-        if (colorMap == 5) return vec4(inferno[ idx ],          1.0f);
+        if (colorMap == 1) return vec4(bent_cool_warm[ idx ], 1.0f);
+        if (colorMap == 2) return vec4(viridis[ idx ], 1.0f);
+        if (colorMap == 3) return vec4(plasma[ idx ], 1.0f);
+        if (colorMap == 4) return vec4(black_body[ idx ], 1.0f);
+        if (colorMap == 5) return vec4(inferno[ idx ], 1.0f);
     }
 
     return abs(vec4(normalize(currentVertex.xyz), 1.0f));
@@ -159,11 +151,10 @@ void main()
                    * currentVertex;
 
     vec3 coefs = allCoefs[voxID + nbVoxels*(gl_DrawID/nbSpheres)].xyz;
+
     //TODO: Generalize this normal. This normal does not consider rotations of the tensor
     world_normal = modelMatrix
-                 //* vec4(sphereVertex.xyz, 0.0f);
                  * vec4(2.0f*sphereVertex.x*coefs.x, 2.0f*sphereVertex.y*coefs.y, 2.0f*sphereVertex.z*coefs.z, 0.0f);
-                 //* vec4(2.0f*currentVertex.xyz, 0.0f);
 
     color = setColorMapMode(currentVertex, voxID, nbSpheres, nbVoxels);
     is_visible = getIsFlatOrthoSlicesIDVisible(gl_DrawID % nbSpheres) ? 1.0f : -1.0f;

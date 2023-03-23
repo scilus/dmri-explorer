@@ -52,6 +52,8 @@ private:
     /// when declaring the struct on the GPU and the order is used for
     /// modifying shader subdata from the CPU.
     
+    // TODO: Split SphereData into a general SphereData and another 
+    // SH specific structure (MaxOrder, SH0Threshold and NbCoeffs)
     struct SphereData
     {
         unsigned int NumVertices;
@@ -111,16 +113,6 @@ private:
     /// \param[in] previous Previous slice index.
     /// \param[in] indices New slice index.
     void setSliceIndex(glm::vec3 previous, glm::vec3 indices);
-
-    /// Toggle per-voxel SH normalization by maximum radius.
-    /// \param[in] previous Previous value.
-    /// \param[in] normalized True to normalize SH by maximum radius.
-    void setNormalized(bool previous, bool normalized);
-
-    /// Set the threshold on 0th SH coefficient.
-    /// \param[in] previous Previous 0th SH threshold.
-    /// \param[in] threshold New SH0 threshold.
-    void setSH0Threshold(float previous, float threshold);
 
     /// Set the color map mode.
     /// \param[in] previous Previous color map mode.
@@ -200,10 +192,19 @@ private:
     /// Tensor coefs values GPU data.
     GPU::ShaderData mCoefsValuesData;
 
+    /// Principal diffusion directions of tensors GPU data
     GPU::ShaderData mPddsValuesData;
+
+    /// Fractional anisotropy values of tensors GPU data
     GPU::ShaderData mFAsValuesData;
+
+    /// Mean diffusivities values of tensors GPU data
     GPU::ShaderData mMDsValuesData;
+
+    /// Axial diffusivities values of tensors GPU data
     GPU::ShaderData mADsValuesData;
+
+    /// Radial diffusivities values of tensors GPU data
     GPU::ShaderData mRDsValuesData;
 
     /// Voxel grid GPU data.

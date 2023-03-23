@@ -5,6 +5,7 @@
 #include "/include/shfield_util.glsl"
 #include "/include/orthogrid_util.glsl"
 #include "/include/sphere_util.glsl"
+#include "/include/vert_util.glsl"
 
 layout(std430, binding=0) buffer allRadiisBuffer
 {
@@ -46,15 +47,6 @@ out float is_visible;
 
 // Fade is disabled when in 2D!
 out float fade_enabled;
-
-vec4 getVertexSlice(ivec3 index3d)
-{
-    const float i = index3d.x == sliceIndex.x ? 1.0f : -1.0f;
-    const float j = index3d.y == sliceIndex.y ? 1.0f : -1.0f;
-    const float k = index3d.z == sliceIndex.z ? 1.0f : -1.0f;
-
-    return vec4(i, j, k, 0.0f);
-}
 
 vec4 grayScaleColorMap()
 {   

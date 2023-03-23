@@ -120,7 +120,7 @@ void Application::initialize()
     renderFrame();
 
     // Add MTfield once the UI is drawn
-    if (mState->TImages[0].IsInit())
+    if (mState->TImages.IsInit())
     {
         mScene->AddMTField();
     }
@@ -131,9 +131,9 @@ void Application::initialize()
         mScene->AddSHField();
     }
 
+    // Add texture once the UI is drawn
     if(mState->BackgroundImage.IsInit())
     {
-        // Add texture once the UI is drawn
         mScene->AddTexture();
     }
 
@@ -183,6 +183,7 @@ void Application::setWindowIcon()
 
 void Application::initApplicationState(const ArgumentParser& parser)
 {
+    // TODO: Check that loaded images have the same size
     if (!parser.GetImagePath().empty())
     {
         mState->FODFImage.Update(NiftiImageWrapper<float>(parser.GetImagePath()));
@@ -194,22 +195,16 @@ void Application::initApplicationState(const ArgumentParser& parser)
     }
 
     const std::vector<std::string>& tensorsPaths = parser.GetTensorsPath();
+    std::vector<NiftiImageWrapper<float>> tensors(tensorsPaths.size());
     for (int i=0; i < tensorsPaths.size(); i++)
     {
-        mState->TImages[i].Update(NiftiImageWrapper<float>( tensorsPaths[i] ));
+        tensors[i] = NiftiImageWrapper<float>(tensorsPaths[i]);
     }
-    mState->nbTensors = tensorsPaths.size();
-    mState->tensorFormat = parser.GetTensorFormat();
+    mState->TImages.Update(tensors);
+    mState->TensorFormat = parser.GetTensorFormat();
 
     mState->Sphere.Resolution.Update(parser.GetSphereResolution());
-    if (tensorsPaths.size() > 0)
-    {
-        mState->Sphere.IsNormalized.Update(true);
-    }
-    else
-    {
-        mState->Sphere.IsNormalized.Update(false);
-    }
+    mState->Sphere.IsNormalized.Update(false);
     mState->Sphere.Scaling.Update(0.5f);
     mState->Sphere.SH0Threshold.Update(0.0f);
     mState->Sphere.FadeIfHidden.Update(false);
@@ -222,7 +217,7 @@ void Application::initApplicationState(const ArgumentParser& parser)
     }
     else
     {
-        mState->VoxelGrid.VolumeShape.Update(mState->TImages[0].Get().GetDims());
+        mState->VoxelGrid.VolumeShape.Update(mState->TImages.Get()[0].GetDims());
     }
     
     mState->VoxelGrid.SliceIndices.Update(mState->VoxelGrid.VolumeShape.Get() / 2);

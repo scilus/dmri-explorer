@@ -60,12 +60,6 @@ void MTField::registerStateCallbacks()
             this->setSliceIndex(p, n);
         }
     );
-    mState->Sphere.IsNormalized.RegisterCallback(
-        [this](bool p, bool n)
-        {
-            this->setNormalized(p, n);
-        }
-    );
     mState->Sphere.ColorMapMode.RegisterCallback(
         [this](int p, int n)
         {
@@ -76,12 +70,6 @@ void MTField::registerStateCallbacks()
         [this](int p, int n)
         {
             this->setColorMap(p, n);
-        }
-    );
-    mState->Sphere.SH0Threshold.RegisterCallback(
-        [this](float p, float n)
-        {
-            this->setSH0Threshold(p, n);
         }
     );
     mState->Sphere.Scaling.RegisterCallback(
@@ -119,9 +107,8 @@ void MTField::initializeMembers()
 {
     //TODO: Decrease the sphere resolution
 
-    // Initialize a sphere for SH to SF projection
-    const auto& image = mState->TImages[0].Get();
-    const auto& dims = image.GetDims();
+    // Initialize a sphere for MT
+    const auto& dims = mState->TImages.Get()[0].GetDims();
     mNbSpheresX = dims.y * dims.z;
     mNbSpheresY = dims.x * dims.z;
     mNbSpheresZ = dims.x * dims.y;
@@ -130,7 +117,7 @@ void MTField::initializeMembers()
     // Preallocate buffers for draw call
     const auto numIndices = mSphere->GetIndices().size();
     const int nbSpheres = getMaxNbSpheres();
-    const int nbTensors = mState->nbTensors;
+    const int nbTensors = (int) mState->TImages.Get().size();
     mIndices.resize(nbSpheres * numIndices);
     mIndirectCmd.resize(nbSpheres * nbTensors);
 
@@ -146,13 +133,9 @@ void MTField::initializeMembers()
     }
 
     for (int i=0; i < nbSpheres; i++){
-        if (nbTensors > 1)
+        for (int j=1; j<nbTensors; j++)
         {
-            mIndirectCmd[  nbSpheres + i] = mIndirectCmd[i];
-        }
-        if (nbTensors > 2)
-        {
-            mIndirectCmd[2*nbSpheres + i] = mIndirectCmd[i];
+            mIndirectCmd[j*nbSpheres + i] = mIndirectCmd[i];
         }
     }
 
@@ -206,7 +189,7 @@ void MTField::initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex)
 void MTField::initializeGPUData()
 {
     const int nbSpheres = getMaxNbSpheres();
-    const int nbTensors = mState->nbTensors;
+    const int nbTensors = mState->TImages.Get().size();
 
     // temporary zero-filled array for all spheres vertices and normals
     std::vector<glm::vec4> allVertices(nbSpheres * nbTensors * mSphere->GetPoints().size());
@@ -226,7 +209,7 @@ void MTField::initializeGPUData()
     sphereData.MaxOrder = mSphere->GetMaxSHOrder();
     sphereData.SH0threshold = mState->Sphere.SH0Threshold.Get();
     sphereData.Scaling = mState->Sphere.Scaling.Get();
-    sphereData.NbCoeffs = mState->TImages[0].Get().GetDims().w;
+    sphereData.NbCoeffs = mState->TImages.Get()[0].GetDims().w;
     sphereData.FadeIfHidden = mState->Sphere.FadeIfHidden.Get();
     sphereData.ColorMapMode = mState->Sphere.ColorMapMode.Get();
     sphereData.ColorMap = mState->Sphere.ColorMap.Get();
@@ -239,55 +222,66 @@ void MTField::initializeGPUData()
     gridData.IsVisible = glm::ivec4(1, 1, 1, 0);
     gridData.CurrentSlice = 0;
 
-    // Build tensor matrices from tensor values
-    // TODO: add tmax as parameter in the GUI
-    double tmax = -1.0;
-    for (int i=0; i < nbTensors; i++)
+    const auto& tensorImages = mState->TImages.Get();
+
+    // Build tensor matrices from tensor data
+    for (auto& image : tensorImages)
     {
-        const std::vector<float>& tensor_image = mState->TImages[i].Get().GetVoxelData();
-        for(size_t offset=0; offset < tensor_image.size(); offset+=6)
+        const std::vector<float>& tensorData = image.GetVoxelData();
+
+        for(int offset=0; offset < tensorData.size(); offset+=6)
         {
-            glm::mat4 tensor = getTensorFromCoefficients(tensor_image, offset, mState->tensorFormat);
+            glm::mat4 tensor = getTensorFromCoefficients(tensorData, offset, mState->TensorFormat);
 
-            allTensors.push_back( tensor );
+            glm::vec3 lambdas = eigenvalues(glm::mat3(tensor));
+            auto [e1, e2, e3] = eigenvectors(glm::mat3(tensor));
 
-            for (unsigned int k=0; k<6; k++)
+            float FA = fractionalAnisotropy(lambdas);
+            float MD = meanDiffusivity(lambdas);
+            float AD = axialDiffusivity(lambdas);
+            float RD = radialDiffusivity(lambdas);
+
+            if ( std::isnan(lambdas[0]) || std::isnan(lambdas[1]) || std::isnan(lambdas[2]) || FA<1e-2 )
             {
-                if (tmax < tensor_image[offset + k])
+                lambdas = glm::vec3( 0.001 );
+                e1 = glm::vec3(0.5);
+                FA = 0.0;
+                MD = 0.0;
+                AD = 0.0;
+                RD = 0.0;
+            }
+
+            allPdds.push_back( glm::vec4(abs(e1.x), abs(e1.y), abs(e1.z), 0.0f) );
+            allCoefs.push_back( glm::vec4(1.0f/(2.0f*lambdas[0]), 1.0f/(2.0f*lambdas[1]), 1.0f/(2.0f*lambdas[2]), 1.0f) );
+            allFAs.push_back( FA );
+            allMDs.push_back( MD );
+            allADs.push_back( AD );
+            allRDs.push_back( RD );
+
+            // Normalize tensor
+            float tmax = -1.0f;
+            for (int k=0; k<6; k++)
+            {
+                tmax = std::fmaxf(tmax, tensorData[offset + k]);
+            }
+
+            for (int a=0; a<3; a++)
+            {
+                for (int b=0; b<3; b++)
                 {
-                    tmax = tensor_image[offset + k];
+                    tensor[a][b] /= tmax;
                 } 
-            } 
+            }
 
             //TODO: avoid to send NaN tensors to the GPU
+            allTensors.push_back(tensor);
         }
     }
 
-    //TODO: add feature to control this parameter from the GUI
-    double scale = 1.0;
-    for (int i=0; i<allTensors.size(); i++)
+    /*for (glm::mat4& tensor : allTensors)
     {
-        // scale tensor
-        for (int a=0; a<3; a++)
-        {
-            for (int b=0; b<3; b++)
-            {
-                allTensors[i][a][b] /= (tmax/scale);
-            } 
-        }
-
-        glm::vec3 lambdas = eigenvalues(glm::mat3(allTensors[i]));
-        auto [e1, e2, e3] = eigenvectors(glm::mat3(allTensors[i]));
-
-        if (std::isnan(lambdas[0]))
-        {
-            lambdas[0] = allTensors[i][0][0];
-            lambdas[1] = allTensors[i][1][1];
-            lambdas[2] = allTensors[i][2][2];
-            e1[0] = 1.0f;
-            e1[1] = 0.0f;
-            e1[2] = 0.0f;
-        }
+        glm::vec3 lambdas = eigenvalues(glm::mat3(tensor));
+        auto [e1, e2, e3] = eigenvectors(glm::mat3(tensor));
 
         float FA = fractionalAnisotropy(lambdas);
         float MD = meanDiffusivity(lambdas);
@@ -304,13 +298,13 @@ void MTField::initializeGPUData()
             RD = 0.0;
         }
 
-        allPdds.push_back( glm::vec4(abs(e1[0]), abs(e1[1]), abs(e1[2]), 0.0f) );
+        allPdds.push_back( glm::vec4(abs(e1.x), abs(e1.y), abs(e1.z), 0.0f) );
         allCoefs.push_back( glm::vec4(1.0f/(2.0f*lambdas.x), 1.0f/(2.0f*lambdas.y), 1.0f/(2.0f*lambdas.z), 1.0f) );
         allFAs.push_back( FA );
         allMDs.push_back( MD );
         allADs.push_back( AD );
         allRDs.push_back( RD );
-    }
+    } //*/
 
     // TODO: Remove normalization and add fixed boundaries for diffusivities
     normalize(allMDs);
@@ -368,15 +362,6 @@ void MTField::setSliceIndex(glm::vec3 prevIndices, glm::vec3 newIndices)
     }
 }
 
-void MTField::setNormalized(bool previous, bool isNormalized)
-{
-    if(previous != isNormalized)
-    {
-        unsigned int isNormalizedInt = isNormalized ? 1 : 0;
-        mSphereInfoData.Update(sizeof(unsigned int)*2, sizeof(unsigned int), &isNormalizedInt);
-    }
-}
-
 void MTField::setColorMapMode(int previous, int mode)
 {
     if(previous != mode)
@@ -392,15 +377,6 @@ void MTField::setColorMap(int previous, int mode)
         mSphereInfoData.Update(7*sizeof(unsigned int) + 2*sizeof(float), sizeof(unsigned int), &mode);       
     }
 }
-
-void MTField::setSH0Threshold(float previous, float threshold)
-{
-    if(previous != threshold)
-    {
-        mSphereInfoData.Update(4*sizeof(unsigned int), sizeof(float), &threshold);
-    }
-}
-
 
 void MTField::setSphereScaling(float previous, float scaling)
 {

@@ -58,7 +58,7 @@ void UIManager::DrawInterface()
     {
         drawSHOptionsWindow();
     }
-    if (mState->TImages[0].IsInit())
+    if (mState->TImages.IsInit())
     {
         drawMTOptionsWindow();
     }
@@ -93,7 +93,7 @@ void UIManager::drawMainMenuBar()
         {
             ImGui::MenuItem("SH Options", NULL, &mShowSHOptions);
         }
-        if (mState->TImages[0].IsInit())
+        if (mState->TImages.IsInit())
         {
             ImGui::MenuItem("MT Options", NULL, &mShowMTOptions);
         }
@@ -434,9 +434,8 @@ void UIManager::drawMTOptionsWindow()
     {
         for (int n = 0; n < IM_ARRAYSIZE(colorMaps); n++)
         {
-            // TODO: Add texture to this button
-            //ImGui::ColorButton("##image.colormap", ImVec4(1,0,0,1));
-            //ImGui::SameLine();
+            // TODO: Add a textured button
+            // TODO: Add an image to show the values of each gradient
             bool is_selected = (currentItem == colorMaps[n]); // You can store your selection however you want, outside or inside your objects
             if (ImGui::Selectable(colorMaps[n], is_selected))
             {
@@ -451,17 +450,6 @@ void UIManager::drawMTOptionsWindow()
 
         ImGui::EndCombo();
     }
-    
-    
-    /*
-    TODO: Implement a voxel-wise normalization for tensors using the PDD
-    if(ImGui::Checkbox("##sphere.normalized", &normalized))
-    {
-        normalizedParam.Update(normalized);
-    }
-    ImGui::SameLine();
-    ImGui::Text("Normalize");
-    ImGui::SameLine(); //*/
 
     if(ImGui::Checkbox("##sphere.fadeIfHidden", &fadeIfHidden))
     {

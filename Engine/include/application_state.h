@@ -213,18 +213,14 @@ public:
     /// Parameters pertaining to the 2D mode state.
     State::ViewMode ViewMode;
 
-    /// Number of tensor images
-    size_t nbTensors;
-
     /// Tensor coefficient format
-    std::string tensorFormat;
+    std::string TensorFormat;
 
     /// Parameter containing the fODF image object.
     ApplicationParameter<NiftiImageWrapper<float>> FODFImage;
 
-    //TODO: change this to std::vector
-    /// Parameter containing the tensor image object.
-    ApplicationParameter<NiftiImageWrapper<float>> TImages[3];
+    /// Parameter containing the tensor image objects.
+    ApplicationParameter<std::vector<NiftiImageWrapper<float>>> TImages;
 
     /// Parameter for MagnifyingMode mode control.
     ApplicationParameter<bool> MagnifyingMode;

@@ -1,4 +1,7 @@
-/*Color Maps*/
+/*
+Color Maps
+Taken from 'Color Map Advice for Scientific Visualization' -> kennethmoreland.com/color-advice/
+*/
 
 const vec3 smooth_cool_warm[32] = vec3[32]
 (
@@ -36,6 +39,7 @@ const vec3 smooth_cool_warm[32] = vec3[32]
     vec3(0.706000135911705,	0.015991824033981,	0.1500000719222)
 );
 
+// TODO: Remove this as it is almost the same as Smooth Cool Warm
 const vec3 bent_cool_warm[32] = vec3[32]
 (
     vec3(0.229999503869522,	0.298998934049376,	0.754000138575591),
