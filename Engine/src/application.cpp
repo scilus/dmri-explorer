@@ -195,13 +195,16 @@ void Application::initApplicationState(const ArgumentParser& parser)
     }
 
     const std::vector<std::string>& tensorsPaths = parser.GetTensorsPath();
-    std::vector<NiftiImageWrapper<float>> tensors(tensorsPaths.size());
-    for (int i=0; i < tensorsPaths.size(); i++)
+    if (tensorsPaths.size() > 0)
     {
-        tensors[i] = NiftiImageWrapper<float>(tensorsPaths[i]);
+        std::vector<NiftiImageWrapper<float>> tensors(tensorsPaths.size());
+        for (int i=0; i < tensorsPaths.size(); i++)
+        {
+            tensors[i] = NiftiImageWrapper<float>(tensorsPaths[i]);
+        }
+        mState->TImages.Update(tensors);
+        mState->TensorFormat = parser.GetTensorFormat();
     }
-    mState->TImages.Update(tensors);
-    mState->TensorFormat = parser.GetTensorFormat();
 
     mState->Sphere.Resolution.Update(parser.GetSphereResolution());
     mState->Sphere.IsNormalized.Update(false);

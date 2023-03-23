@@ -36,7 +36,6 @@ float transitionFunction(float x, float sigma, float minFading)
     return getNormalized(fx, 0.0f, 1.0f, minFading, 1.0f);
 }
 
-
 float GetFading()
 {
     // world coordinate of planes intersection

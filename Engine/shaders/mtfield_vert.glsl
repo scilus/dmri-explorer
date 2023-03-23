@@ -3,7 +3,6 @@
 
 #include "/include/camera_util.glsl"
 #include "/include/orthogrid_util.glsl"
-#include "/include/shfield_util.glsl"
 #include "/include/sphere_util.glsl"
 #include "/include/color_maps.glsl"
 #include "/include/vert_util.glsl"
