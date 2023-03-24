@@ -125,7 +125,8 @@ struct Sphere
     ,IsNormalized()
     ,Resolution()
     ,FadeIfHidden()
-    ,ColorMapMode(){};
+    ,ColorMapMode()
+    ,ColorMap(){};
 
     /// The scaling factor for the sphere glyphs.
     ApplicationParameter<float> Scaling;
@@ -146,6 +147,9 @@ struct Sphere
     //TODO: enum instead of int
     /// The color map mode for the glyphs.
     ApplicationParameter<int> ColorMapMode;
+
+    /// The color map for the glyphs.
+    ApplicationParameter<int> ColorMap;
 };
 
 /// Struct containing global parameters for window and inputs.
@@ -209,8 +213,14 @@ public:
     /// Parameters pertaining to the 2D mode state.
     State::ViewMode ViewMode;
 
+    /// Tensor coefficient format
+    std::string TensorFormat;
+
     /// Parameter containing the fODF image object.
     ApplicationParameter<NiftiImageWrapper<float>> FODFImage;
+
+    /// Parameter containing the tensor image objects.
+    ApplicationParameter<std::vector<NiftiImageWrapper<float>>> TImages;
 
     /// Parameter for MagnifyingMode mode control.
     ApplicationParameter<bool> MagnifyingMode;

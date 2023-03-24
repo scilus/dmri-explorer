@@ -1,6 +1,6 @@
 ![Banner logo](banner-logo.png)
 # dmri-explorer : A Diffusion MRI Visualization Application
-A real-time diffusion MRI slicing application for Linux and Windows using `OpenGL 4.6`. It can visualize spherical functions expressed as a series of spherical harmonics coefficients in DIPY's `descoteaux07` legacy real symmetric or full SH basis (See [this link](https://dipy.org/documentation/1.4.1./theory/sh_basis/) for more details.). The application also supports grayscale and color background images.
+A real-time diffusion MRI slicing application for Linux and Windows using `OpenGL 4.6`. It can visualize tensor and multi-tensor images in MRtrix, DIPY and FSL format as well as spherical functions expressed as a series of spherical harmonics coefficients in DIPY's `descoteaux07` legacy real symmetric or full SH basis (See [this link](https://dipy.org/documentation/1.4.1./theory/sh_basis/) for more details.). The application also supports grayscale and color background images. Several colormaps are available for tensor visualisation.
 
 
 ## Installation
@@ -56,23 +56,54 @@ export PATH='${absolute_path_to_project}/build/Engine':$PATH
 
 On Windows, this can be done manually from the `Control panel`.
 
-## Running the application
+## Usage
 The application can be launched using the command:
+
 ```
-dmriexplorer path/to/image.nii.gz
+dmriexplorer [options] image
 ```
-When working with a big image, you may encounter a "Window not responding" message at application startup. Don't worry, it will go away once the image is copied on the GPU.
+
+### Spherical Functions
+For visualizing spherical function images use the `-f` option
+
+Example:
+```
+dmriexplorer -f path/to/odf.nii.gz
+```
+
+### Tensors
+Ir order to visualize tensor images use the `-t` option
+
+Example:
+```
+dmriexplorer -t path/to/tensor.nii.gz
+```
+
+### Multi-Tensors
+Several tensor layers can be added for visualizing a multi-tensor image. Make sure that all layers have the same tensor format.
+
+Example:
+```
+dmriexplorer -t path/to/tensor_layer1.nii.gz -t path/to/tensor_layer2.nii.gz -t path/to/tensor_layer3.nii.gz
+```
+
+The default tensor formating follows the MRtrix format (https://mrtrix.readthedocs.io/en/dev/reference/commands/dwi2tensor.html).
+This behaviour can be altered using the `-o` option. All the supported formats are: `mrtrix`, `dipy` and `fsl`.
+
+When working with a big image or several layers, you may encounter a "Window not responding" message at application startup. Don't worry, it will go away once the image is copied on the GPU.
 
 To display all available command line arguments, use the flag `--help`.
 
 ## How to cite
 
-The software has been presented as part of the CDMRI'21 workshop. It has however evolved since then and will keep getting better over time. For the performances reported at the workshop, please refer to the release [v0.1](https://github.com/scilus/dmri-explorer/releases/tag/v0.1). However, **we highly encourage the user to use the latest version of the application** on the `main` branch, as efforts have been made to lower GPU and CPU memory usage.
+The software has been presented as part of the CDMRI'21 workshop and the ISMRM'22 diffusion workshop. It has however evolved since then and will keep getting better over time. For the performances reported at the CDMRI workshop, please refer to the release [v0.1](https://github.com/scilus/dmri-explorer/releases/tag/v0.1). However, **we highly encourage the user to use the latest version of the application** on the `main` branch, as efforts have been made to lower GPU and CPU memory usage.
 
 **If you enjoy this application, please consider citing the following work:**
 
 *Poirier C., Descoteaux M., Gilet G. (2021) Accelerating Geometry-Based Spherical Harmonics Glyphs Rendering for dMRI Using Modern OpenGL. In: Cetin-Karayumak S. et al. (eds) Computational Diffusion MRI. CDMRI 2021. Lecture Notes in Computer Science, vol 13006. Springer, Cham. https://doi.org/10.1007/978-3-030-87615-9_13*
 
+
+*Hernandez-Gutierrez E., Poirier C., Coronado-Leija R., Descoteaux M. (2022) Real-Time Rendering of Massive Multi-Tensor Fields Using Modern OpenGL. Proceedings of the International Society for Magnetic Resonance in Medicine.*
 
 ## Contributing
 Contributions are welcome and encouraged:

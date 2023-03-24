@@ -119,12 +119,21 @@ void Application::initialize()
     // Render frame without the model
     renderFrame();
 
-    // Add SH field once the UI is drawn
-    mScene->AddSHField();
+    // Add MTfield once the UI is drawn
+    if (mState->TImages.IsInit())
+    {
+        mScene->AddMTField();
+    }
 
+    // Add SHfield once the UI is drawn
+    if (mState->FODFImage.IsInit())
+    {
+        mScene->AddSHField();
+    }
+
+    // Add texture once the UI is drawn
     if(mState->BackgroundImage.IsInit())
     {
-        // Add texture once the UI is drawn
         mScene->AddTexture();
     }
 
@@ -174,10 +183,27 @@ void Application::setWindowIcon()
 
 void Application::initApplicationState(const ArgumentParser& parser)
 {
-    mState->FODFImage.Update(NiftiImageWrapper<float>(parser.GetImagePath()));
+    // TODO: Check that loaded images have the same size
+    if (!parser.GetImagePath().empty())
+    {
+        mState->FODFImage.Update(NiftiImageWrapper<float>(parser.GetImagePath()));
+    }
+
     if(!parser.GetBackgroundImagePath().empty())
     {
         mState->BackgroundImage.Update(NiftiImageWrapper<float>(parser.GetBackgroundImagePath()));
+    }
+
+    const std::vector<std::string>& tensorsPaths = parser.GetTensorsPath();
+    if (tensorsPaths.size() > 0)
+    {
+        std::vector<NiftiImageWrapper<float>> tensors(tensorsPaths.size());
+        for (int i=0; i < tensorsPaths.size(); i++)
+        {
+            tensors[i] = NiftiImageWrapper<float>(tensorsPaths[i]);
+        }
+        mState->TImages.Update(tensors);
+        mState->TensorFormat = parser.GetTensorFormat();
     }
 
     mState->Sphere.Resolution.Update(parser.GetSphereResolution());
@@ -186,8 +212,17 @@ void Application::initApplicationState(const ArgumentParser& parser)
     mState->Sphere.SH0Threshold.Update(0.0f);
     mState->Sphere.FadeIfHidden.Update(false);
     mState->Sphere.ColorMapMode.Update(0);
+    mState->Sphere.ColorMap.Update(0);
 
-    mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().GetDims());
+    if (tensorsPaths.size()==0)
+    {    
+        mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().GetDims());
+    }
+    else
+    {
+        mState->VoxelGrid.VolumeShape.Update(mState->TImages.Get()[0].GetDims());
+    }
+    
     mState->VoxelGrid.SliceIndices.Update(mState->VoxelGrid.VolumeShape.Get() / 2);
 
     mState->Window.Height.Update(WIN_HEIGHT);

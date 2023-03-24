@@ -8,12 +8,14 @@ namespace Slicer
 namespace
 {
 const int DEFAULT_SPHERE_RESOLUTION = 3;
+const std::string DEFAULT_TENSOR_FORMAT = "mrtrix";
 }
 
 ArgumentParser::ArgumentParser(int argc, char** argv)
 :mImagePath()
 ,mBackgroundImagePath()
 ,mSphereResolution(DEFAULT_SPHERE_RESOLUTION)
+,mTensorFormat(DEFAULT_TENSOR_FORMAT)
 {
     args::ArgumentParser parser("Those are the arguments available for dmriexplorer",
                                 "dmri-explorer - Real-time Diffusion MRI viewer.");
@@ -23,18 +25,29 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
                         "Display this help menu", 
                         {'h', "help"});
 
-    args::Positional<std::string> imagePath(parser, 
-                                            "image path", 
-                                            "First argument (mandatory): Path to the SH image in nifti file format.");
+    args::ValueFlag<std::string> imagePath(parser, 
+                                            "SH image path",
+                                            "Path to a SH image in nifti file format.",
+                                            {'f',"fodf"});
     args::ValueFlag<std::string> backgroundImagePath(parser, 
                                           "background image", 
-                                          "Specify the path to the background image", 
+                                          "Specify the path to the background image.", 
                                           {'b', "background"});
 
     args::ValueFlag<int> sphereResolution(parser, 
                                           "sphere resolution", 
                                           "Specify the sphere resolution used for SH projection. Default: 3.", 
                                           {'s', "sphere_resolution"});
+
+    args::ValueFlagList<std::string> tensorsPath(parser,
+                                                 "Tensor image path",
+                                                 "Path to a tensor image in nifti file format. Use the option several times for multi-tensor.",
+                                                 {'t', "tensor"});
+
+    args::ValueFlag<std::string> tensorFormat(parser,
+                                                "Format of tensor coefficients",
+                                                "Format of the coefficients in the tensor image: mrtrix (diagonal format), dipy (lower diagonal format), fsl (upper diagonal format). Default: mrtrix",
+                                                {'o', "tensor_format"});
 
     try
     {
@@ -69,6 +82,19 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
         // Optional argument, sphere resolution
         mSphereResolution = args::get(sphereResolution);
     }
+    if(tensorsPath)
+    {
+        for (const auto path : args::get(tensorsPath))
+        {
+            mTensorsPath.push_back( path );
+        }
+    }
+    if(tensorFormat)
+    {
+        // Optional argument, tensor ordering mode
+        mTensorFormat = args::get(tensorFormat);
+    }
+
     mIsValid = true;
 }
 

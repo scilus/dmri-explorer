@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 namespace Slicer
 {
@@ -27,19 +28,33 @@ public:
     /// \return Background Image path.
     inline std::string GetBackgroundImagePath() const { return mBackgroundImagePath; };
 
+    /// Tensor Images paths getter.
+    /// \return Tensor Images paths.
+    inline std::vector<std::string> GetTensorsPath() const { return mTensorsPath; };
+
     /// Sphere resolution getter.
     /// \return Sphere resolution.
-    inline int GetSphereResolution() const {return mSphereResolution; };
+    inline int GetSphereResolution() const { return mSphereResolution; };
+
+    /// Tensor coefficient format getter.
+    /// \return Tensor coefficient format string.
+    inline std::string GetTensorFormat() const { return mTensorFormat; };
 
 private:
-    /// Path to the image.
+    /// Path to the fodf image.
     std::string mImagePath;
 
-    /// Path to the background.
+    /// Path to the background image.
     std::string mBackgroundImagePath;
+
+    /// Path to the tensor images
+    std::vector<std::string> mTensorsPath;
 
     /// Sphere resolution for glyphs.
     int mSphereResolution;
+
+    /// Tensor coefficients ordering mode
+    std::string mTensorFormat;
 
     /// Are all arguments valid?
     bool mIsValid;

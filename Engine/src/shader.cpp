@@ -6,11 +6,15 @@
 
 namespace
 {
-const int NUM_SHADER_INCLUDES = 3;
+const int NUM_SHADER_INCLUDES = 7;
 const char* SHADER_INCLUDE_PATHS[NUM_SHADER_INCLUDES] = {
     "/include/camera_util.glsl",
     "/include/orthogrid_util.glsl",
-    "/include/shfield_util.glsl"
+    "/include/shfield_util.glsl",
+    "/include/sphere_util.glsl",
+    "/include/color_maps.glsl",
+    "/include/vert_util.glsl",
+    "/include/frag_util.glsl"
 };
 }
 

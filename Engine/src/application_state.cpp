@@ -7,7 +7,9 @@ ApplicationState::ApplicationState()
 ,Sphere()
 ,Window()
 ,ViewMode()
+,TensorFormat()
 ,FODFImage()
+,TImages()
 ,BackgroundImage()
 {
 }
