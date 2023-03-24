@@ -96,7 +96,7 @@ To display all available command line arguments, use the flag `--help`.
 
 ## How to cite
 
-The software has been presented as part of the CDMRI'21 workshop and the ISMRM'22 diffusion workshop. It has however evolved since then and will keep getting better over time. For the performances reported at the workshop, please refer to the release [v0.1](https://github.com/scilus/dmri-explorer/releases/tag/v0.1). However, **we highly encourage the user to use the latest version of the application** on the `main` branch, as efforts have been made to lower GPU and CPU memory usage.
+The software has been presented as part of the CDMRI'21 workshop and the ISMRM'22 diffusion workshop. It has however evolved since then and will keep getting better over time. For the performances reported at the CDMRI workshop, please refer to the release [v0.1](https://github.com/scilus/dmri-explorer/releases/tag/v0.1). However, **we highly encourage the user to use the latest version of the application** on the `main` branch, as efforts have been made to lower GPU and CPU memory usage.
 
 **If you enjoy this application, please consider citing the following work:**
 
