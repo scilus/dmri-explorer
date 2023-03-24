@@ -183,7 +183,7 @@ static inline std::tuple<glm::vec3, glm::vec3, glm::vec3> eigenvectors(glm::mat3
     glm::vec3 C = glm::vec3(D[2][2]) - lambdas;
 
     // check for diagonal tensors
-    if (D[0][1]<1e-5 && D[0][2]<1e-5 && D[1][2]<1e-5)
+    if (D[0][1]<1e-12 && D[0][2]<1e-12 && D[1][2]<1e-12)
     {
         if (D[0][0]>=D[1][1] && D[0][0]>=D[2][2])
         {
