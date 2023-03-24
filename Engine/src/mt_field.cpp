@@ -234,25 +234,33 @@ void MTField::initializeGPUData()
             glm::mat4 tensor = getTensorFromCoefficients(tensorData, offset, mState->TensorFormat);
 
             glm::vec3 lambdas = eigenvalues(glm::mat3(tensor));
+
+            if ( std::isnan(lambdas[0]) || std::isnan(lambdas[1]) || std::isnan(lambdas[2]) )
+            {
+                lambdas = glm::vec3(1.0f);
+            }
+
             auto [e1, e2, e3] = eigenvectors(glm::mat3(tensor));
+
+            if (std::isnan(e1.x) || std::isnan(e1.y) || std::isnan(e1.z))
+            {
+                e1 = glm::vec3(0.5f);
+            }
+
+            if (abs(e1.x)==std::numeric_limits<float>::infinity() || abs(e1.y)==std::numeric_limits<float>::infinity() || abs(e1.z)==std::numeric_limits<float>::infinity())
+            {
+                e1 = glm::vec3(0.5f);
+            }
 
             float FA = fractionalAnisotropy(lambdas);
             float MD = meanDiffusivity(lambdas);
             float AD = axialDiffusivity(lambdas);
             float RD = radialDiffusivity(lambdas);
 
-            if ( std::isnan(lambdas[0]) || std::isnan(lambdas[1]) || std::isnan(lambdas[2]) || FA<1e-2 )
-            {
-                lambdas = glm::vec3( 0.001 );
-                e1 = glm::vec3(0.5);
-                FA = 0.0;
-                MD = 0.0;
-                AD = 0.0;
-                RD = 0.0;
-            }
+            glm::vec4 coefs = glm::vec4(1.0f/(2.0f*lambdas[0]), 1.0f/(2.0f*lambdas[1]), 1.0f/(2.0f*lambdas[2]), 1.0f);
 
             allPdds.push_back( glm::vec4(abs(e1.x), abs(e1.y), abs(e1.z), 0.0f) );
-            allCoefs.push_back( glm::vec4(1.0f/(2.0f*lambdas[0]), 1.0f/(2.0f*lambdas[1]), 1.0f/(2.0f*lambdas[2]), 1.0f) );
+            allCoefs.push_back( coefs );
             allFAs.push_back( FA );
             allMDs.push_back( MD );
             allADs.push_back( AD );
@@ -277,34 +285,6 @@ void MTField::initializeGPUData()
             allTensors.push_back(tensor);
         }
     }
-
-    /*for (glm::mat4& tensor : allTensors)
-    {
-        glm::vec3 lambdas = eigenvalues(glm::mat3(tensor));
-        auto [e1, e2, e3] = eigenvectors(glm::mat3(tensor));
-
-        float FA = fractionalAnisotropy(lambdas);
-        float MD = meanDiffusivity(lambdas);
-        float AD = axialDiffusivity(lambdas);
-        float RD = radialDiffusivity(lambdas);
-
-        if ( std::isnan(lambdas[0]) || std::isnan(lambdas[1]) || std::isnan(lambdas[2]) || FA<1e-2 )
-        {
-            lambdas = glm::vec3( 0.001 );
-            e1 = glm::vec3(0.5);
-            FA = 0.0;
-            MD = 0.0;
-            AD = 0.0;
-            RD = 0.0;
-        }
-
-        allPdds.push_back( glm::vec4(abs(e1.x), abs(e1.y), abs(e1.z), 0.0f) );
-        allCoefs.push_back( glm::vec4(1.0f/(2.0f*lambdas.x), 1.0f/(2.0f*lambdas.y), 1.0f/(2.0f*lambdas.z), 1.0f) );
-        allFAs.push_back( FA );
-        allMDs.push_back( MD );
-        allADs.push_back( AD );
-        allRDs.push_back( RD );
-    } //*/
 
     // TODO: Remove normalization and add fixed boundaries for diffusivities
     normalize(allMDs);

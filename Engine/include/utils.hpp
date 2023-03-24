@@ -182,6 +182,23 @@ static inline std::tuple<glm::vec3, glm::vec3, glm::vec3> eigenvectors(glm::mat3
     glm::vec3 B = glm::vec3(D[1][1]) - lambdas;
     glm::vec3 C = glm::vec3(D[2][2]) - lambdas;
 
+    // check for diagonal tensors
+    if (D[0][1]<1e-5 && D[0][2]<1e-5 && D[1][2]<1e-5)
+    {
+        if (D[0][0]>=D[1][1] && D[0][0]>=D[2][2])
+        {
+            return std::make_tuple(glm::vec3(1,0,0), glm::vec3(0), glm::vec3(0));
+        }
+        else if (D[1][1]>=D[0][0] && D[1][1]>=D[2][2])
+        {
+            return std::make_tuple(glm::vec3(0,1,0), glm::vec3(0), glm::vec3(0));
+        }
+        else if (D[2][2]>=D[0][0] && D[2][2]>=D[1][1])
+        {
+            return std::make_tuple(glm::vec3(0,0,1), glm::vec3(0), glm::vec3(0));
+        }
+    }
+
     glm::vec3 e[3];
     for (int i=0; i<3; i++)
     {
@@ -191,9 +208,11 @@ static inline std::tuple<glm::vec3, glm::vec3, glm::vec3> eigenvectors(glm::mat3
             (D[0][2]*D[1][2] - C[i]*D[0][1])*(D[0][1]*D[0][2] - A[i]*D[1][2]),
             (D[0][1]*D[0][2] - A[i]*D[1][2])*(D[0][1]*D[1][2] - B[i]*D[0][2])
         );
+
+        e[i] = glm::normalize(e[i]);
     }
 
-    return std::make_tuple(glm::normalize(e[0]), glm::normalize(e[1]), glm::normalize(e[2]));
+    return std::make_tuple(e[0], e[1], e[2]);
 }
 
 // Returns fractional anisotropy (FA) of the 3D tensor D
