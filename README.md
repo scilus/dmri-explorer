@@ -16,6 +16,7 @@ Before installing the software, please make sure you meet the requirements below
 * You have an OpenGL implementation available on your system. On Ubuntu, it can be installed with `sudo apt install mesa-common-dev`. `mesa-common-dev` is an open-source implementation of OpenGL. See this [link from wikipedia](https://en.wikipedia.org/wiki/OpenGL#Implementations) for more information.
 * **If you are using Linux**, please note that the generator used by default is `GNU Make`.
 * **If you are a Windows user**, the expected generator is `Visual Studio 2019` and the application must be built for `x64` architecture. You can get the latest MSVC compiler toolset [here](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022).
+* The application is tested with NVIDIA GPU and is not garanteed to work on other hardware. In particular, **the application does not run on Intel integrated graphics card (CPU) on Windows**.
 
 ### Building the application
 The application is tested on both **Ubuntu 20.04** and **Windows 10**.
@@ -79,7 +80,7 @@ Example:
 dmriexplorer -t path/to/tensor.nii.gz
 ```
 
-### Multi-Tensors
+####  Multi-Tensors
 Several tensor layers can be added for visualizing a multi-tensor image. Make sure that all layers have the same tensor format.
 
 Example:
@@ -87,7 +88,7 @@ Example:
 dmriexplorer -t path/to/tensor_layer1.nii.gz -t path/to/tensor_layer2.nii.gz -t path/to/tensor_layer3.nii.gz
 ```
 
-The default tensor formating follows the MRtrix format (https://mrtrix.readthedocs.io/en/dev/reference/commands/dwi2tensor.html).
+The default tensor formating follows the MRtrix format ([link here](https://mrtrix.readthedocs.io/en/dev/reference/commands/dwi2tensor.html)).
 This behaviour can be altered using the `-o` option. All the supported formats are: `mrtrix`, `dipy` and `fsl`.
 
 When working with a big image or several layers, you may encounter a "Window not responding" message at application startup. Don't worry, it will go away once the image is copied on the GPU.
@@ -100,10 +101,11 @@ The software has been presented as part of the CDMRI'21 workshop and the ISMRM'2
 
 **If you enjoy this application, please consider citing the following work:**
 
-*Poirier C., Descoteaux M., Gilet G. (2021) Accelerating Geometry-Based Spherical Harmonics Glyphs Rendering for dMRI Using Modern OpenGL. In: Cetin-Karayumak S. et al. (eds) Computational Diffusion MRI. CDMRI 2021. Lecture Notes in Computer Science, vol 13006. Springer, Cham. https://doi.org/10.1007/978-3-030-87615-9_13*
+* Original SH visualisation method:
+    >Poirier C., Descoteaux M., Gilet G. (2021) Accelerating Geometry-Based Spherical Harmonics Glyphs Rendering for dMRI Using Modern OpenGL. In: Cetin-Karayumak S. et al. (eds) Computational Diffusion MRI. CDMRI 2021. Lecture Notes in Computer Science, vol 13006. Springer, Cham. https://doi.org/10.1007/978-3-030-87615-9_13*
 
-
-*Hernandez-Gutierrez E., Poirier C., Coronado-Leija R., Descoteaux M. (2022) Real-Time Rendering of Massive Multi-Tensor Fields Using Modern OpenGL. Proceedings of the International Society for Magnetic Resonance in Medicine.*
+* Multi-tensor support:
+    >Hernandez-Gutierrez E., Poirier C., Coronado-Leija R., Descoteaux M. (2022) Real-Time Rendering of Massive Multi-Tensor Fields Using Modern OpenGL. Proceedings of the International Society for Magnetic Resonance in Medicine.*
 
 ## Contributing
 Contributions are welcome and encouraged:
