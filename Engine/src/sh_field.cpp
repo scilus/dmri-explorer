@@ -1,6 +1,5 @@
 #include <sh_field.h>
 #include <glad/glad.h>
-#include <timer.h>
 
 namespace
 {

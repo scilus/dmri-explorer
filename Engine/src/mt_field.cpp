@@ -1,6 +1,5 @@
 #include <mt_field.h>
 #include <glad/glad.h>
-#include <timer.h>
 #include <cmath>
 #include <utils.hpp>
 

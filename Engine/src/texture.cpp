@@ -1,6 +1,5 @@
 #include <texture.h>
 #include <glad/glad.h>
-#include <timer.h>
 #include <math.h>
 
 namespace Slicer
