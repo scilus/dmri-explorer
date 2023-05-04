@@ -102,10 +102,10 @@ The software has been presented as part of the CDMRI'21 workshop and the ISMRM'2
 **If you enjoy this application, please consider citing the following work:**
 
 * Original SH visualisation method:
-    >Poirier C., Descoteaux M., Gilet G. (2021) Accelerating Geometry-Based Spherical Harmonics Glyphs Rendering for dMRI Using Modern OpenGL. In: Cetin-Karayumak S. et al. (eds) Computational Diffusion MRI. CDMRI 2021. Lecture Notes in Computer Science, vol 13006. Springer, Cham. https://doi.org/10.1007/978-3-030-87615-9_13*
+    >Poirier C., Descoteaux M., Gilet G. (2021) Accelerating Geometry-Based Spherical Harmonics Glyphs Rendering for dMRI Using Modern OpenGL. In: Cetin-Karayumak S. et al. (eds) Computational Diffusion MRI. CDMRI 2021. Lecture Notes in Computer Science, vol 13006. Springer, Cham. https://doi.org/10.1007/978-3-030-87615-9_13
 
 * Multi-tensor support:
-    >Hernandez-Gutierrez E., Poirier C., Coronado-Leija R., Descoteaux M. (2022) Real-Time Rendering of Massive Multi-Tensor Fields Using Modern OpenGL. Proceedings of the International Society for Magnetic Resonance in Medicine.*
+    >Hernandez-Gutierrez E., Poirier C., Coronado-Leija R., Descoteaux M. (2022) Real-Time Rendering of Massive Multi-Tensor Fields Using Modern OpenGL. Proceedings of the International Society for Magnetic Resonance in Medicine.
 
 ## Contributing
 Contributions are welcome and encouraged:
