@@ -24,12 +24,19 @@ public:
     /// \param[in] near Near clipping distance.
     /// \param[in] far Far clipping distance.
     /// \param[in] state Pointer to ApplicationState instance.
+    // TODO: Remove
     Camera(const glm::vec3& position,
            const glm::vec3& upVector,
            const glm::vec3& lookAt,
            const float& fov, const float& aspect,
            const float& near, const float& far,
            const std::shared_ptr<ApplicationState>& state);
+
+    Camera(const glm::vec3& position,
+           const glm::vec3& upVector,
+           const glm::vec3& lookAt,
+           const float& fov, const float& aspect,
+           const float& near, const float& far);
 
     /// Constructor.
     /// \param[in] camera The camera object used for instantiation.
@@ -63,9 +70,6 @@ private:
     /// \param[in] previous Previous value.
     /// \param[in] mode New value for fading behaviour.
     void setMode(State::CameraMode previous, State::CameraMode mode);
-
-    /// \see Model::registerStateCallbacks()
-    void registerStateCallbacks();
 
     /// Struct containing camera attributes to push on the GPU.
     struct CameraData

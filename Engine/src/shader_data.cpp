@@ -57,6 +57,7 @@ void ShaderData::Update(GLintptr offset, GLsizeiptr size, void* data)
     if(!mIsInit)
     {
         glNamedBufferData(mSSBO, size, data, mUsage);
+        ToGPU();
     }
     else
     {

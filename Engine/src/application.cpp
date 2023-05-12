@@ -79,7 +79,6 @@ void Application::initialize()
         return;
     }
 
-    // For debugging only.
     // Verify that the host supports ARB extensions used by the application
     if(glfwGetProcAddress("glNamedStringARB") == NULL
     || glfwGetProcAddress("glCompileShaderIncludeARB") == NULL)
@@ -215,18 +214,16 @@ void Application::initApplicationState(const ArgumentParser& parser)
     mState->Sphere.ColorMap.Update(0);
 
     if (tensorsPaths.size()==0)
-    {    
+    {
         mState->VoxelGrid.VolumeShape.Update(mState->FODFImage.Get().GetDims());
     }
     else
     {
         mState->VoxelGrid.VolumeShape.Update(mState->TImages.Get()[0].GetDims());
     }
-    
+
     mState->VoxelGrid.SliceIndices.Update(mState->VoxelGrid.VolumeShape.Get() / 2);
 
-    mState->Window.Height.Update(WIN_HEIGHT);
-    mState->Window.Width.Update(WIN_WIDTH);
     mState->Window.TranslationSpeed.Update(TRANSLATION_SPEED);
     mState->Window.RotationSpeed.Update(ROTATION_SPEED);
     mState->Window.ZoomSpeed.Update(ZOOM_SPEED);
@@ -390,12 +387,9 @@ void Application::onWindowResize(GLFWwindow* window, int width, int height)
 {
     const float aspect = static_cast<float>(width) / static_cast<float>(height);
     Application* app = (Application*)glfwGetWindowUserPointer(window);
-    const int scaleFactor = app->mState->Window.SecondaryViewportScale.Get();
 
     app->mCamera->Resize(aspect);
     app->mSecondaryCamera->Resize(aspect);
-    app->mState->Window.Width.Update(width);
-    app->mState->Window.Height.Update(height);
 }
 
 void Application::onPressSpace(GLFWwindow* window, int key, int scancode, int action, int mods)
