@@ -21,6 +21,10 @@ public:
     bool AddSHView();
     bool AddScalarView();
 
+    void UpdateGridModelGPUBuffer();
+
+    std::shared_ptr<SHView> GetSHView() const { return mSHView; };
+
     inline std::shared_ptr<Camera> GetCamera() const { return mCamera; };
 private:
     GLFWwindow* mGLFWwindow = nullptr;
@@ -30,10 +34,8 @@ private:
         glm::ivec4 GridDimensions;
         glm::ivec4 SliceIndice;
         glm::ivec4 IsSliceVisible;
-
-        // heritage; should go elsewhere
         unsigned int CurrentSlice;
-    } mGridModelGPUData;
+    };
 
     GPU::ShaderData mGridModelGPUDataBuffer;
 

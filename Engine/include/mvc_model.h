@@ -21,9 +21,8 @@ class MVCModel
 {
 public:
     MVCModel(int winWidth, int winHeight);
-    LoadRoutineStatus AddSHModel(const std::string& imageFilePath);
-    LoadRoutineStatus AddScalarModel(const std::shared_ptr<NiftiImageWrapper<float>>& niftiImage,
-                                     const LoadRoutineStatus& status);
+    bool AddSHModel(const std::shared_ptr<NiftiImageWrapper<float>>& niftiImage);
+    bool AddScalarModel(const std::shared_ptr<NiftiImageWrapper<float>>& niftiImage);
 
     inline std::shared_ptr<GridModel> GetGridModel() const { return mGridModel; };
 
@@ -33,6 +32,9 @@ public:
     inline int GetWindowWidth() const { return mWinWidth; };
     inline int GetWindowHeight() const { return mWinHeight; };
 private:
+    void addGridModel(const glm::ivec4& inDims);
+    bool validateImageDimensions(const glm::ivec4& inDims) const;
+
     int mWinWidth = 0;
     int mWinHeight = 0;
 

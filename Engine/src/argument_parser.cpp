@@ -20,22 +20,22 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
     args::ArgumentParser parser("Those are the arguments available for dmriexplorer",
                                 "dmri-explorer - Real-time Diffusion MRI viewer.");
 
-    args::HelpFlag help(parser, 
-                        "help", 
-                        "Display this help menu", 
+    args::HelpFlag help(parser,
+                        "help",
+                        "Display this help menu",
                         {'h', "help"});
 
-    args::ValueFlag<std::string> imagePath(parser, 
+    args::ValueFlag<std::string> imagePath(parser,
                                             "SH image path",
                                             "Path to a SH image in nifti file format.",
                                             {'f',"fodf"});
-    args::ValueFlag<std::string> backgroundImagePath(parser, 
-                                          "background image", 
-                                          "Specify the path to the background image.", 
+    args::ValueFlag<std::string> backgroundImagePath(parser,
+                                          "background image",
+                                          "Specify the path to the background image.",
                                           {'b', "background"});
 
     args::ValueFlag<int> sphereResolution(parser, 
-                                          "sphere resolution", 
+                                          "sphere resolution",
                                           "Specify the sphere resolution used for SH projection. Default: 3.", 
                                           {'s', "sphere_resolution"});
 
@@ -45,9 +45,9 @@ ArgumentParser::ArgumentParser(int argc, char** argv)
                                                  {'t', "tensor"});
 
     args::ValueFlag<std::string> tensorFormat(parser,
-                                                "Format of tensor coefficients",
-                                                "Format of the coefficients in the tensor image: mrtrix (diagonal format), dipy (lower diagonal format), fsl (upper diagonal format). Default: mrtrix",
-                                                {'o', "tensor_format"});
+                                              "Format of tensor coefficients",
+                                              "Format of the coefficients in the tensor image: mrtrix (diagonal format), dipy (lower diagonal format), fsl (upper diagonal format). Default: mrtrix",
+                                              {'o', "tensor_format"});
 
     try
     {

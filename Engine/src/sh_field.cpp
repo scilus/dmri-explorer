@@ -124,7 +124,7 @@ void SHField::initializeMembers()
     // Copy sphere indices and instantiate draw commands.
     std::vector<std::thread> threads;
     dispatchSubsetCommands(&SHField::initializeSubsetDrawCommand,
-                          nbSpheres, NB_THREADS_FOR_SPHERES, threads);
+                           nbSpheres, NB_THREADS_FOR_SPHERES, threads);
 
     // wait for all threads to finish
     for(auto& t : threads)

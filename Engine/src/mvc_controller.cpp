@@ -67,7 +67,6 @@ void MVCController::onMouseWheel(GLFWwindow* window, double offsetx, double offs
     {
         return;
     }
-    // std::cout << "wheel: " << offsetx << ", " << offsety << std::endl;
     controller->mView->GetCamera()->Zoom(offsety);
 }
 
@@ -93,63 +92,16 @@ void MVCController::onMouseMove(GLFWwindow* window, double xPos, double yPos)
         }
     }
     controller->mLastCursorPos = {xPos, yPos};
-
-    // std::cout << "mouse move" << std::endl;
 }
 
 void MVCController::onWindowResize(GLFWwindow* window, int width, int height)
 {
-    const float aspect = static_cast<float>(width) / static_cast<float>(height);
-    MVCController* controller = (MVCController*)glfwGetWindowUserPointer(window);
-
-    controller->mView->GetCamera()->Resize(aspect);
-}
-
-void MVCController::handleImageLoading(const std::string& imagePath, const ImageType& imageType)
-{
-    // loading logic goes here
-    if(mImageLoadingStatus != LoadRoutineStatus::IDLING)
+    if(width > 0 && height > 0)
     {
-        // TODO: We would need to disable event capture during image
-        // loading to make sure that nothing turns to shit
-        if(mTemporaryImageForLoading == nullptr)
-        {
-            mTemporaryImageForLoading.reset(new NiftiImageWrapper<float>(imagePath));
-        }
-        switch(imageType)
-        {
-            case ImageType::SCALAR_IMAGE:
-                mImageLoadingStatus = mModel->AddScalarModel(mTemporaryImageForLoading, mImageLoadingStatus);
-                break;
-            case ImageType::SH_IMAGE:
-            case ImageType::MT_IMAGE:
-                break;
-        }
+        const float aspect = static_cast<float>(width) / static_cast<float>(height);
+        MVCController* controller = (MVCController*)glfwGetWindowUserPointer(window);
 
-        if(mImageLoadingStatus == LoadRoutineStatus::HEADER_IS_INVALID ||
-            mImageLoadingStatus == LoadRoutineStatus::IMAGE_DATA_LOADED)
-        {
-            if(mImageLoadingStatus == LoadRoutineStatus::IMAGE_DATA_LOADED)
-            {
-                switch(imageType)
-                {
-                    case ImageType::SCALAR_IMAGE:
-                        mView->AddScalarView();
-                        break;
-                    case ImageType::SH_IMAGE:
-                    case ImageType::MT_IMAGE:
-                        break;
-                }
-                // open the slicing window on image loading
-                mShowSlicingWindow = true;
-            }
-            mDrawLoadingPopup = false;
-
-            mTemporaryImageForLoading.reset();
-
-            // back to idling -- skip image loading routine until status changes
-            mImageLoadingStatus = LoadRoutineStatus::IDLING;
-        }
+        controller->mView->GetCamera()->Resize(aspect);
     }
 }
 
@@ -163,23 +115,59 @@ void MVCController::RenderUserInterface()
     // draw frame
     drawMainMenu();
     std::string imageFilePath;
-    if(mLoadScalarImage)
+    if(mDrawLoadScalarMenu)
     {
-        mLoadScalarImage = drawFileDialog("Choose scalar image", imageFilePath);
+        if(drawFileDialog("Choose scalar image", imageFilePath, mDrawLoadScalarMenu))
+        {
+            mDrawSlicingWindow = AddScalarViewModel(imageFilePath);
+        }
+    }
+    if(mDrawLoadSHMenu)
+    {
+        if(drawFileDialog("Choose SH image", imageFilePath, mDrawLoadSHMenu))
+        {
+            mDrawSlicingWindow = AddSHViewModel(imageFilePath);
+        }
     }
 
-    drawLoadingPopup();
-
     drawSlicingWindow();
-    ImGui::ShowDemoWindow();
-
-    // handling image loading async
-    handleImageLoading(imageFilePath, ImageType::SCALAR_IMAGE);
 
     // finalize frame
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    ++mFrameID;
+}
+
+bool MVCController::AddSHViewModel(const std::string& imagePath)
+{
+    NiftiImageWrapper<float> niftiImage(imagePath);
+    if(mModel->AddSHModel(std::make_shared<NiftiImageWrapper<float>>(niftiImage)))
+    {
+        mView->AddSHView();
+        mModel->GetGridModel()->SetLastEditedSlice(0);
+        mView->UpdateGridModelGPUBuffer();
+        mView->GetSHView()->ScaleSpheres();
+
+        mModel->GetGridModel()->SetLastEditedSlice(1);
+        mView->UpdateGridModelGPUBuffer();
+        mView->GetSHView()->ScaleSpheres();
+
+        mModel->GetGridModel()->SetLastEditedSlice(2);
+        mView->UpdateGridModelGPUBuffer();
+        mView->GetSHView()->ScaleSpheres();
+        return true;
+    }
+    return false;
+}
+
+bool MVCController::AddScalarViewModel(const std::string& imagePath)
+{
+    NiftiImageWrapper<float> niftiImage(imagePath);
+    if(mModel->AddScalarModel(std::make_shared<NiftiImageWrapper<float>>(niftiImage)))
+    {
+        mView->AddScalarView(); // binds itself to model
+        return true;
+    }
+    return false;
 }
 
 void MVCController::drawMainMenu()
@@ -187,8 +175,8 @@ void MVCController::drawMainMenu()
     ImGui::BeginMainMenuBar();
     if(ImGui::BeginMenu("Load image"))
     {
-        ImGui::MenuItem("Load scalar image", NULL, &mLoadScalarImage);
-        ImGui::MenuItem("Load SH image", NULL);
+        ImGui::MenuItem("Load scalar image", NULL, &mDrawLoadScalarMenu);
+        ImGui::MenuItem("Load SH image", NULL, &mDrawLoadSHMenu);
 
         // TODO: load tensor image (can load more than one)
 
@@ -198,7 +186,7 @@ void MVCController::drawMainMenu()
     if(ImGui::BeginMenu("Slicing"))
     {
         bool enabled = mModel->GetGridModel() != nullptr;
-        ImGui::MenuItem("Show slicing window", NULL, &mShowSlicingWindow, enabled);
+        ImGui::MenuItem("Show slicing window", NULL, &mDrawSlicingWindow, enabled);
         ImGui::EndMenu();
     }
 
@@ -207,51 +195,34 @@ void MVCController::drawMainMenu()
     ImGui::EndMainMenuBar();
 }
 
-void MVCController::drawLoadingPopup()
-{
-    if(!mDrawLoadingPopup)
-    {
-        return;
-    }
-    ImGui::OpenPopup("Image loading");
-
-    // Always center this window when appearing
-    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
-    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
-
-    if (ImGui::BeginPopupModal("Image loading", NULL, ImGuiWindowFlags_AlwaysAutoResize))
-    {
-        ImGui::Text("Image loading in progress.\nPlease wait...\n\n");
-
-        ImGui::EndPopup();
-    }
-}
-
-bool MVCController::drawFileDialog(const std::string& windowTitle, std::string& imageFilePath)
+bool MVCController::drawFileDialog(const std::string& windowTitle,
+                                   std::string& imageFilePath,
+                                   bool& enabledFlag)
 {
     ImGui::SetNextWindowSize(ImVec2(800, 400), ImGuiCond_Once);
     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", windowTitle, ".gz,.nii",
                                             ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
 
+    bool statusFlag = false;
     // IF A FILE IS CHOSEN OR CANCEL IS PRESSED
     if(ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey"))
     {
         if (ImGuiFileDialog::Instance()->IsOk())
         {
             imageFilePath = ImGuiFileDialog::Instance()->GetFilePathName();
-            mImageLoadingStatus = LoadRoutineStatus::FILE_IS_CHOSEN;
-            mDrawLoadingPopup = true;
+            ImGuiFileDialog::Instance()->Close();
+            statusFlag = true;
         }
         // close the file dialog
         ImGuiFileDialog::Instance()->Close();
-        return false;
+        enabledFlag = false;
     }
-    return true;
+    return statusFlag;
 }
 
 void MVCController::drawSlicingWindow()
 {
-    if(!mShowSlicingWindow || mModel->GetGridModel() == nullptr)
+    if(!mDrawSlicingWindow || mModel->GetGridModel() == nullptr)
     {
         return;
     }
@@ -260,77 +231,92 @@ void MVCController::drawSlicingWindow()
     ImGui::SetNextWindowSize(ImVec2(395.f, 100.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
-    ImGui::Begin("Slices options", &mShowSlicingWindow);
+    ImGui::Begin("Slices options", &mDrawSlicingWindow);
 
     glm::ivec3 slice = mModel->GetGridModel()->GetSlicesLocation();
     glm::ivec3 shape = mModel->GetGridModel()->GetDimensions();
     glm::bvec3 isVisible = mModel->GetGridModel()->GetIsVisible();
 
-    ImGui::Text("X-Slice");
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(200.0f);
-    ImGui::SliderInt("##xslicer", &slice.x, 0, shape.x - 1);
-    ImGui::SameLine();
-    if(ImGui::ArrowButton("##xleft", ImGuiDir_Left))
+    unsigned int lastSlice = mModel->GetGridModel()->GetLastEditedSlice();
+    bool updateRequired = false;
+
+    if(drawSliders("X-slice", slice.x, shape.x - 1))
     {
-        slice.x = std::max(0, slice.x - 1);
-    }
-    ImGui::SameLine();
-    if(ImGui::ArrowButton("##xright", ImGuiDir_Right))
-    {
-        slice.x = std::min(shape.x - 1, slice.x + 1);
+        updateRequired = true;
+        mModel->GetGridModel()->SetSliceXLocation(slice.x);
     }
     ImGui::SameLine();
     if(ImGui::Checkbox("Show?##x", &isVisible.x))
     {
+        updateRequired = true;
         mModel->GetGridModel()->SetIsXVisible(isVisible.x);
     }
 
-    ImGui::Text("Y-Slice");
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(200.0f);
-    ImGui::SliderInt("##yslicer", &slice.y, 0, shape.y - 1);
-    ImGui::SameLine();
-    if(ImGui::ArrowButton("##yleft", ImGuiDir_Left))
+    if(drawSliders("Y-slice", slice.y, shape.y - 1))
     {
-        slice.y = std::max(0, slice.y - 1);
-    }
-    ImGui::SameLine();
-    if(ImGui::ArrowButton("##yright", ImGuiDir_Right))
-    {
-        slice.y = std::min(shape.y - 1, slice.y + 1);
+        updateRequired = true;
+        mModel->GetGridModel()->SetSliceXLocation(slice.y);
     }
     ImGui::SameLine();
     if(ImGui::Checkbox("Show?##y", &isVisible.y))
     {
+        updateRequired = true;
         mModel->GetGridModel()->SetIsYVisible(isVisible.y);
     }
 
-    ImGui::Text("Z-Slice");
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(200.0f);
-    ImGui::SliderInt("##zslicer", &slice.z, 0, shape.z - 1);
-    ImGui::SameLine();
-    if(ImGui::ArrowButton("##zleft", ImGuiDir_Left))
+    if(drawSliders("Z-slice", slice.z, shape.z - 1))
     {
-        slice.z = std::max(0, slice.z - 1);
-    }
-    ImGui::SameLine();
-    if(ImGui::ArrowButton("##zright", ImGuiDir_Right))
-    {
-        slice.z = std::min(shape.z - 1, slice.z + 1);
+        updateRequired = true;
+        mModel->GetGridModel()->SetSliceXLocation(slice.z);
     }
     ImGui::SameLine();
     if(ImGui::Checkbox("Show?##z", &isVisible.z))
     {
+        updateRequired = true;
         mModel->GetGridModel()->SetIsZVisible(isVisible.z);
     }
 
     // update slice position
-    mModel->GetGridModel()->SetSliceXLocation(slice.x);
-    mModel->GetGridModel()->SetSliceYLocation(slice.y);
-    mModel->GetGridModel()->SetSliceZLocation(slice.z);
+    // * grid model and any view that would require notification
+    if(updateRequired)
+    {
+        mView->UpdateGridModelGPUBuffer();
+        if(mView->GetSHView() != nullptr)
+        {
+            mView->GetSHView()->ScaleSpheres();
+        }
+    }
 
     ImGui::End();
+}
+
+bool MVCController::drawSliders(const std::string& label, int& currentIndex, const int& maxIndex)
+{
+    bool updateRequired = false;
+
+    const std::string sliderLabel = std::string("##") + label + std::string("slider");
+    const std::string arrowLeftLabel = std::string("##") + label + std::string("arrowLeft");
+    const std::string arrowRightLabel = std::string("##") + label + std::string("arrowRight");
+
+    ImGui::Text("%s", label.c_str());
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(200.0f);
+    if(ImGui::SliderInt(sliderLabel.c_str(), &currentIndex, 0, maxIndex))
+    {
+        updateRequired = true;
+    }
+    ImGui::SameLine();
+    if(ImGui::ArrowButton(arrowLeftLabel.c_str(), ImGuiDir_Left))
+    {
+        currentIndex = std::max(0, currentIndex - 1);
+        updateRequired = true;
+    }
+    ImGui::SameLine();
+    if(ImGui::ArrowButton(arrowRightLabel.c_str(), ImGuiDir_Right))
+    {
+        currentIndex = std::min(maxIndex, currentIndex + 1);
+        updateRequired = true;
+    }
+    return updateRequired;
 }
 } // namespace Slicer

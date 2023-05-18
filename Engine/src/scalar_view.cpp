@@ -15,9 +15,6 @@ ScalarView::ScalarView(const std::shared_ptr<MVCModel>& model)
 
     // 3. Initialize rendering primitives
     initRenderPrimitives();
-
-    // !. Information on grid dimensions and current slice indices
-    //    must come from somewhere.
 }
 
 template <typename T> GLuint genVBO(const std::vector<T>& data)
@@ -32,6 +29,8 @@ void ScalarView::initRenderPrimitives()
 {
     const auto& image = mModel->GetScalarModel()->GetImage();
     const auto dims = image->GetDims();
+
+    // TODO: Unreadable code. Cleanup required
 
     //Create 2 triangles to create a plan for texture
     //Plan XY
@@ -208,5 +207,4 @@ void ScalarView::uploadTransformToGPU()
     mTransformMatrixGPUBuffer.Update(0, sizeof(glm::mat4), &transform);
     mTransformMatrixGPUBuffer.ToGPU();
 }
-
 } // namespace Slicer

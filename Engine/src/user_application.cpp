@@ -1,14 +1,19 @@
 #include <user_application.h>
+#include <image.h>
 #include <iostream>
 #include <shader.h>
 
 namespace
 {
 const unsigned int WIN_WIDTH = 1024;
-const unsigned int WIN_HEIGHT = 1024;
+const unsigned int WIN_HEIGHT = 768;
 const int SECONDARY_VIEWPORT_BORDER_WIDTH = 2;
 const int SECONDARY_VIEWPORT_SCALE = 3;
 const std::string WIN_TITLE = "dmri-explorer";
+const std::string ICON16_FNAME = "/icons/icon16.png";
+const std::string ICON32_FNAME = "/icons/icon32.png";
+const std::string ICON48_FNAME = "/icons/icon48.png";
+const std::string ICON64_FNAME = "/icons/icon64.png";
 }
 
 namespace Slicer
@@ -28,6 +33,24 @@ UserApplication::UserApplication(const ArgumentParser& parser)
 
     mGLFWwindow = glfwCreateWindow(WIN_WIDTH, WIN_HEIGHT, WIN_TITLE.c_str(), NULL, NULL);
     glfwMakeContextCurrent(mGLFWwindow);
+
+    // window icon
+    const int nbImages = 4;
+    Image2D images[nbImages];
+    images[0].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON16_FNAME, 4);
+    images[1].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON32_FNAME, 4);
+    images[2].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON48_FNAME, 4);
+    images[3].ReadImage(DMRI_EXPLORER_BINARY_DIR + ICON64_FNAME, 4);
+
+    GLFWimage glfwImages[nbImages];
+    for(int i = 0; i < nbImages; ++i)
+    {
+        glfwImages[i].width = images[i].GetWidth();
+        glfwImages[i].height = images[i].GetHeight();
+        glfwImages[i].pixels = images[i].GetData().get();
+    }
+    glfwSetWindowIcon(mGLFWwindow, nbImages, glfwImages);
+
 
     // OpenGL context is initialized here.
     if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))

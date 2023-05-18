@@ -30,7 +30,12 @@ bool MVCView::AddSHView()
     {
         return false;
     }
-    mSHView.reset(new SHView(mModel->GetSHModel()));
+
+    mSHView.reset(new SHView(mModel));
+
+    // makes sure that the grid properties are
+    // pushed on the GPU
+    UpdateGridModelGPUBuffer();
     return true;
 }
 
@@ -40,42 +45,48 @@ bool MVCView::AddScalarView()
     {
         return false;
     }
+
     mScalarView.reset(new ScalarView(mModel));
+
+    // ensures that the grid properties are up to date
+    UpdateGridModelGPUBuffer();
     return true;
+}
+
+void MVCView::UpdateGridModelGPUBuffer()
+{
+    // update and push global grid parameters to the GPU
+    GridModelGPUData gridModelGPUData;
+    gridModelGPUData.GridDimensions =
+        glm::ivec4(mModel->GetGridModel()->GetDimensions(), 0);
+    gridModelGPUData.SliceIndice = 
+        glm::ivec4(mModel->GetGridModel()->GetSlicesLocation(), 0);
+    
+    const glm::bvec3 isSliceVisible = mModel->GetGridModel()->GetIsVisible();
+    gridModelGPUData.IsSliceVisible = glm::ivec4(isSliceVisible.x ? 1 : 0,
+                                                    isSliceVisible.y ? 1 : 0,
+                                                    isSliceVisible.z ? 1 : 0,
+                                                    0);
+    // the index of the last slice that was modified
+    gridModelGPUData.CurrentSlice = mModel->GetGridModel()->GetLastEditedSlice();
+
+    mGridModelGPUDataBuffer.Update(0, sizeof(GridModelGPUData), &gridModelGPUData);
 }
 
 void MVCView::RenderModel()
 {
-    if(mModel->GetGridModel() != nullptr)
+    int w, h;
+    glfwGetWindowSize(mGLFWwindow, &w, &h);
+    glViewport(0, 0, w, h);
+    mCamera->UpdateGPU();
+
+    if(mSHView != nullptr)
     {
-        int w, h;
-        glfwGetWindowSize(mGLFWwindow, &w, &h);
-        glViewport(0, 0, w, h);
-        mCamera->UpdateGPU();
-
-        // update and push global grid parameters to the GPU
-        mGridModelGPUData.GridDimensions =
-            glm::ivec4(mModel->GetGridModel()->GetDimensions(), 0);
-        mGridModelGPUData.SliceIndice = 
-            glm::ivec4(mModel->GetGridModel()->GetSlicesLocation(), 0);
-        
-        const glm::bvec3 isSliceVisible = mModel->GetGridModel()->GetIsVisible();
-        mGridModelGPUData.IsSliceVisible = glm::ivec4(isSliceVisible.x ? 1 : 0,
-                                                      isSliceVisible.y ? 1 : 0,
-                                                      isSliceVisible.z ? 1 : 0,
-                                                      0);
-
-        mGridModelGPUDataBuffer.Update(0, sizeof(GridModelGPUData),
-                                       &mGridModelGPUData);
-
-        if(mSHView != nullptr)
-        {
-            mSHView->Render();
-        }
-        if(mScalarView != nullptr)
-        {
-            mScalarView->Render();
-        }
-    } // else no grid means nothing to render
+        mSHView->Render();
+    }
+    if(mScalarView != nullptr)
+    {
+        mScalarView->Render();
+    }
 }
 } // namespace Slicer

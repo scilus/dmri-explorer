@@ -1,4 +1,5 @@
 #include <mvc_model.h>
+#include <utils.hpp>
 #include <iostream>
 
 namespace Slicer
@@ -9,61 +10,53 @@ MVCModel::MVCModel(int width, int height)
 {
 }
 
-LoadRoutineStatus MVCModel::AddSHModel(const std::string& imageFilePath)
+bool MVCModel::AddSHModel(const std::shared_ptr<NiftiImageWrapper<float>>& niftiImage)
 {
-    // mSHModel.reset(new SHModel(imageFilePath));
-    std::cout << "SH model added to scene." << std::endl;
-    return LoadRoutineStatus::HEADER_IS_INVALID;
+    const auto inDims = niftiImage->GetDims();
+    bool fullBasis = false;
+    if(getOrderFromNbCoeffs(inDims.w, fullBasis) >= 0 && validateImageDimensions(inDims))
+    {
+        mSHModel.reset(new SHModel(niftiImage));
+        addGridModel(inDims);
+        return true;
+    }
+    return false;
 }
 
-LoadRoutineStatus MVCModel::AddScalarModel(const std::shared_ptr<NiftiImageWrapper<float>>& niftiImage,
-                                           const LoadRoutineStatus& status)
+bool MVCModel::AddScalarModel(const std::shared_ptr<NiftiImageWrapper<float>>& niftiImage)
 {
-    if(status == LoadRoutineStatus::FILE_IS_CHOSEN)
+    // validate that the header is ok.
+    const auto inDims = niftiImage->GetDims();
+    if(validateImageDimensions(inDims) && (niftiImage->GetDims().w == 1 || niftiImage->GetDims().w == 3))
     {
-        std::cout << "entering add model" << std::endl;
-        return LoadRoutineStatus::SKIPPED_ONCE;
+        mScalarModel.reset(new ScalarModel(niftiImage));
+        addGridModel(inDims);
+        return true;
     }
-    else if(status == LoadRoutineStatus::SKIPPED_ONCE)
+    return false;
+}
+
+bool MVCModel::validateImageDimensions(const glm::ivec4& inDims) const
+{
+    if(mGridModel != nullptr)
     {
-        // validate that the header is ok.
-        if(niftiImage->GetDims().w == 1 || niftiImage->GetDims().w == 3)
-        {
-            if(mGridModel != nullptr)
-            {
-                const auto newDimensions = niftiImage->GetDims();
-                const auto previousDimensions = mGridModel->GetDimensions();
-                if(newDimensions.x != previousDimensions.x ||
-                    newDimensions.y != previousDimensions.y ||
-                    newDimensions.z != previousDimensions.z)
-                {
-                    std::cout << "header invalid" << std::endl;
-                    return LoadRoutineStatus::HEADER_IS_INVALID;
-                }
-            }
-            std::cout << "header valid" << std::endl;
-            return LoadRoutineStatus::HEADER_IS_VALID;
-        }
-        else
+        const auto prevDims = mGridModel->GetDimensions();
+        if(inDims.x != prevDims.x ||
+           inDims.y != prevDims.y ||
+           inDims.z != prevDims.z)
         {
             std::cout << "header invalid" << std::endl;
-            return LoadRoutineStatus::HEADER_IS_INVALID;
+            return false;
         }
+    }
+    return true;
+}
 
-    }
-    else if(status == LoadRoutineStatus::HEADER_IS_VALID)
+void MVCModel::addGridModel(const glm::ivec4& inDims)
+{
+    if(mGridModel == nullptr)
     {
-        // actual image loading happens at this step
-        mScalarModel.reset(new ScalarModel(niftiImage));
-        if(mGridModel == nullptr)
-        {
-            const auto dims = mScalarModel->GetImage()->GetDims();
-            mGridModel.reset(new GridModel(dims.x, dims.y, dims.z));
-        }
-        std::cout << "image data loading" << std::endl;
-        return LoadRoutineStatus::IMAGE_DATA_LOADED;
+        mGridModel.reset(new GridModel(inDims.x, inDims.y, inDims.z));
     }
-    std::cout << "idling" << std::endl;
-    return LoadRoutineStatus::IDLING;
 }
 } // namespace Slicer
