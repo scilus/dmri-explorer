@@ -32,6 +32,16 @@ public:
     SHView() = delete;
     SHView(const std::shared_ptr<MVCModel>& model);
 
+    inline void SetAreGlyphsNormalized(bool norm) { mAreGlyphsNormalized = norm; };
+    inline void SetGlyphsScaling(const float scaling) { mGlyphScaling = scaling; };
+    inline void SetSH0Threshold(const float threshold) { mSH0Threshold = threshold; };
+
+    inline bool GetAreGlyphsNormalized() const { return mAreGlyphsNormalized; };
+    inline float GetGlyphsScaling() const { return mGlyphScaling; };
+    inline float GetSH0Threshold() const { return mSH0Threshold; };
+
+    void UpdateSpherePropertiesGPUBuffer();
+
     void ScaleSpheres();
     void Render();
 private:
@@ -92,6 +102,10 @@ private:
     GPU::ShaderData mAllGlyphNormalsGPUBuffer;
 
     GPU::ShaderData mAllOrdersGPUBuffer; // pretty sure this one is useless
+
+    float mGlyphScaling = 1.0f;
+    float mSH0Threshold = 0.0f;
+    bool mAreGlyphsNormalized = false;
 
     // DrawElementsIndirectCommand array.
     // /!\ prolly not useful once it is pushed to GPU

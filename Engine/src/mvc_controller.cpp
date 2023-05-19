@@ -127,10 +127,12 @@ void MVCController::RenderUserInterface()
         if(drawFileDialog("Choose SH image", imageFilePath, mDrawLoadSHMenu))
         {
             mDrawSlicingWindow = AddSHViewModel(imageFilePath);
+            mDrawSHOptionsWindow = mDrawSlicingWindow;
         }
     }
 
     drawSlicingWindow();
+    drawSHOptionsWindow();
 
     // finalize frame
     ImGui::Render();
@@ -183,13 +185,14 @@ void MVCController::drawMainMenu()
         ImGui::EndMenu();
     }
     ImGui::Separator();
-    if(ImGui::BeginMenu("Slicing"))
+    if(ImGui::BeginMenu("Interact"))
     {
-        bool enabled = mModel->GetGridModel() != nullptr;
-        ImGui::MenuItem("Show slicing window", NULL, &mDrawSlicingWindow, enabled);
+        ImGui::MenuItem("Show slicing window", NULL, &mDrawSlicingWindow,
+                        mModel->GetGridModel() != nullptr);
+        ImGui::MenuItem("Show SH options", NULL, &mDrawSHOptionsWindow,
+                        mModel->GetSHModel() != nullptr);
         ImGui::EndMenu();
     }
-
     ImGui::Separator();
     ImGui::Text("%.1f FPS", mImGuiIO->Framerate);
     ImGui::EndMainMenuBar();
@@ -255,7 +258,7 @@ void MVCController::drawSlicingWindow()
     if(drawSliders("Y-slice", slice.y, shape.y - 1))
     {
         updateRequired = true;
-        mModel->GetGridModel()->SetSliceXLocation(slice.y);
+        mModel->GetGridModel()->SetSliceYLocation(slice.y);
     }
     ImGui::SameLine();
     if(ImGui::Checkbox("Show?##y", &isVisible.y))
@@ -267,7 +270,7 @@ void MVCController::drawSlicingWindow()
     if(drawSliders("Z-slice", slice.z, shape.z - 1))
     {
         updateRequired = true;
-        mModel->GetGridModel()->SetSliceXLocation(slice.z);
+        mModel->GetGridModel()->SetSliceZLocation(slice.z);
     }
     ImGui::SameLine();
     if(ImGui::Checkbox("Show?##z", &isVisible.z))
@@ -288,6 +291,51 @@ void MVCController::drawSlicingWindow()
     }
 
     ImGui::End();
+}
+
+void MVCController::drawSHOptionsWindow()
+{
+    if(!mDrawSHOptionsWindow || mModel->GetSHModel() == nullptr)
+    {
+        return;
+    }
+
+    ImGui::SetNextWindowPos(ImVec2(5.f, 150.f), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(250.f, 105.f), ImGuiCond_FirstUseEver);
+
+    ImGui::Begin("SH options", &mDrawSHOptionsWindow);
+
+    const auto& shView = mView->GetSHView();
+    float scaling = shView->GetGlyphsScaling();
+    float threshold = shView->GetSH0Threshold();
+    bool normalized = shView->GetAreGlyphsNormalized();
+
+    bool updateRequired = false;
+    ImGui::SetNextItemWidth(120.0f);
+    if(ImGui::InputFloat("Glyphs scaling##SH", &scaling, 0.001f, 0.5f))
+    {
+        shView->SetGlyphsScaling(scaling);
+        updateRequired = true;
+    }
+    ImGui::SetNextItemWidth(120.0f);
+    if(ImGui::InputFloat("SH0 threshold##SH", &threshold, 0.001f, 0.5f))
+    {
+        shView->SetSH0Threshold(threshold);
+        updateRequired = true;
+    }
+    ImGui::Spacing();
+    if(ImGui::Checkbox("Normalize per voxel?##SH", &normalized))
+    {
+        shView->SetAreGlyphsNormalized(normalized);
+        updateRequired = true;
+    }
+
+    ImGui::End();
+
+    if(updateRequired)
+    {
+        shView->UpdateSpherePropertiesGPUBuffer();
+    }
 }
 
 bool MVCController::drawSliders(const std::string& label, int& currentIndex, const int& maxIndex)

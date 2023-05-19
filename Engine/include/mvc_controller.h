@@ -27,12 +27,10 @@ private:
     static void onWindowResize(GLFWwindow* window, int width, int height);
 
     void drawMainMenu();
-
     bool drawFileDialog(const std::string& windowTitle, std::string& imageFilePath, bool& enabledFlag);
-
     void drawSlicingWindow();
-
     bool drawSliders(const std::string& label, int& currentIndex, const int& maxIndex);
+    void drawSHOptionsWindow();
 
     std::shared_ptr<MVCModel> mModel = nullptr;
 
@@ -45,6 +43,7 @@ private:
     bool mDrawSlicingWindow = false;
     bool mDrawLoadScalarMenu = false;
     bool mDrawLoadSHMenu = false;
+    bool mDrawSHOptionsWindow = false;
 
     glm::vec2 mLastCursorPos;
 

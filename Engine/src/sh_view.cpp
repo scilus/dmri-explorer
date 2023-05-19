@@ -132,16 +132,7 @@ void SHView::initGPUBuffers()
     std::vector<float> allOrders = sphere->GetOrdersList();
 
     // Sphere data GPU buffer
-    SphereProperties sphereProperties;
-    sphereProperties.NumVertices = static_cast<unsigned int>(sphere->GetPoints().size());
-    sphereProperties.NumIndices = static_cast<unsigned int>(sphere->GetIndices().size());
-    sphereProperties.IsNormalized = 0;
-    sphereProperties.MaxOrder = sphere->GetMaxSHOrder();
-    sphereProperties.SH0threshold = 0;
-    sphereProperties.Scaling = 1.0f;
-    sphereProperties.NbCoeffs = shModel->GetImage()->GetDims().w;
-    sphereProperties.FadeIfHidden = 0;
-    sphereProperties.ColorMapMode = 0;
+    UpdateSpherePropertiesGPUBuffer();
 
     mSphHarmCoeffsGPUBuffer.Update(0, sizeof(float)*shModel->GetImage()->GetVoxelData().size(), shModel->GetImage()->GetVoxelData().data());
     mAllGlyphNormalsGPUBuffer.Update(0, sizeof(glm::vec4)*allNormals.size(), allNormals.data());
@@ -151,7 +142,6 @@ void SHView::initGPUBuffers()
     mAllOrdersGPUBuffer.Update(0, sizeof(float)*allOrders.size(), allOrders.data());
     mSphereVerticesGPUBuffer.Update(0, sizeof(glm::vec4)*sphere->GetPoints().size(), sphere->GetPoints().data());
     mSphereTrianglesIndicesGPUBuffer.Update(0, sizeof(unsigned int)*sphere->GetIndices().size(), sphere->GetIndices().data());
-    mSpherePropertiesGPUBuffer.Update(0, sizeof(SphereProperties), &sphereProperties);
 }
 
 void SHView::uploadTransformToGPU()
@@ -160,6 +150,24 @@ void SHView::uploadTransformToGPU()
 
     mTransformMatrixGPUBuffer.Update(0, sizeof(glm::mat4), &transform);
     mTransformMatrixGPUBuffer.ToGPU();
+}
+
+void SHView::UpdateSpherePropertiesGPUBuffer()
+{
+    const auto& shModel = mModel->GetSHModel();
+    const auto& sphere = shModel->GetSphere(); 
+    SphereProperties sphereProperties;
+    sphereProperties.NumVertices = static_cast<unsigned int>(sphere->GetPoints().size());
+    sphereProperties.NumIndices = static_cast<unsigned int>(sphere->GetIndices().size());
+    sphereProperties.IsNormalized = mAreGlyphsNormalized ? 1 : 0;
+    sphereProperties.MaxOrder = sphere->GetMaxSHOrder();
+    sphereProperties.SH0threshold = mSH0Threshold;
+    sphereProperties.Scaling = mGlyphScaling;
+    sphereProperties.NbCoeffs = shModel->GetImage()->GetDims().w;
+    sphereProperties.FadeIfHidden = 0;
+    sphereProperties.ColorMapMode = 0;
+
+    mSpherePropertiesGPUBuffer.Update(0, sizeof(SphereProperties), &sphereProperties);
 }
 
 void SHView::ScaleSpheres()
