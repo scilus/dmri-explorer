@@ -241,52 +241,56 @@ void MVCController::drawSlicingWindow()
     glm::bvec3 isVisible = mModel->GetGridModel()->GetIsVisible();
 
     unsigned int lastSlice = mModel->GetGridModel()->GetLastEditedSlice();
-    bool updateRequired = false;
+    bool updateViewRequired = false;
+    bool updateGridRequired = false;
 
     if(drawSliders("X-slice", slice.x, shape.x - 1))
     {
-        updateRequired = true;
+        updateViewRequired = true;
         mModel->GetGridModel()->SetSliceXLocation(slice.x);
     }
     ImGui::SameLine();
     if(ImGui::Checkbox("Show?##x", &isVisible.x))
     {
-        updateRequired = true;
+        updateGridRequired = true;
         mModel->GetGridModel()->SetIsXVisible(isVisible.x);
     }
 
     if(drawSliders("Y-slice", slice.y, shape.y - 1))
     {
-        updateRequired = true;
+        updateViewRequired = true;
         mModel->GetGridModel()->SetSliceYLocation(slice.y);
     }
     ImGui::SameLine();
     if(ImGui::Checkbox("Show?##y", &isVisible.y))
     {
-        updateRequired = true;
+        updateGridRequired = true;
         mModel->GetGridModel()->SetIsYVisible(isVisible.y);
     }
 
     if(drawSliders("Z-slice", slice.z, shape.z - 1))
     {
-        updateRequired = true;
+        updateViewRequired = true;
         mModel->GetGridModel()->SetSliceZLocation(slice.z);
     }
     ImGui::SameLine();
     if(ImGui::Checkbox("Show?##z", &isVisible.z))
     {
-        updateRequired = true;
+        updateGridRequired = true;
         mModel->GetGridModel()->SetIsZVisible(isVisible.z);
     }
 
     // update slice position
     // * grid model and any view that would require notification
-    if(updateRequired)
+    if(updateGridRequired || updateViewRequired)
     {
         mView->UpdateGridModelGPUBuffer();
-        if(mView->GetSHView() != nullptr)
+        if(updateViewRequired)
         {
-            mView->GetSHView()->ScaleSpheres();
+            if(mView->GetSHView() != nullptr)
+            {
+                mView->GetSHView()->ScaleSpheres();
+            }
         }
     }
 

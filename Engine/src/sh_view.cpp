@@ -26,6 +26,10 @@ SHView::SHView(const std::shared_ptr<MVCModel>& model)
     initGPUBuffers();
 }
 
+SHView::~SHView()
+{
+}
+
 void SHView::initShaders()
 {
     const std::string vsPath = DMRI_EXPLORER_BINARY_DIR + std::string("/shaders/shfield_vert.glsl");

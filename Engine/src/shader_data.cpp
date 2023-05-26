@@ -1,4 +1,5 @@
 #include <shader_data.h>
+#include <iostream>
 
 namespace Slicer
 {
@@ -49,6 +50,10 @@ ShaderData::ShaderData(Binding binding)
 ,mUsage(GL_DYNAMIC_DRAW)
 {
     glCreateBuffers(1, &mSSBO);
+}
+
+ShaderData::~ShaderData()
+{
 }
 
 void ShaderData::Update(GLintptr offset, GLsizeiptr size, void* data)

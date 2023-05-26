@@ -10,7 +10,7 @@
 #include <shader.h>
 #include <mutex>
 #include <model.h>
-#include <sh_field.h>
+#include <draw_elements_indirect_command.h>
 
 namespace Slicer
 {

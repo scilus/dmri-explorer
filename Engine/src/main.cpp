@@ -1,4 +1,3 @@
-#include <application.h>
 #include <user_application.h>
 #include <argument_parser.h>
 

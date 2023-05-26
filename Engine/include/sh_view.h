@@ -3,34 +3,16 @@
 #include <shader.h>
 #include <coordinate_system.h>
 #include <thread>
+#include <draw_elements_indirect_command.h>
 
 namespace Slicer
 {
-/// Struct for glMultiDrawElementsIndirect command.
-struct DrawElementsIndirectCommand
-{
-    /// Number of elements to be rendered.
-    unsigned int count;
-
-    /// Number of instances of the indexed geometry to draw.
-    unsigned int instanceCount;
-
-    /// Offset to the beginning of elements.
-    unsigned int firstIndex;
-
-    /// Constant that should be added to each element of indices.
-    unsigned int baseVertex;
-
-    /// Base instance for use in fetching instanced vertex attributes.
-    unsigned int baseInstance;
-};
-
-
 class SHView
 {
 public:
     SHView() = delete;
     SHView(const std::shared_ptr<MVCModel>& model);
+    ~SHView();
 
     inline void SetAreGlyphsNormalized(bool norm) { mAreGlyphsNormalized = norm; };
     inline void SetGlyphsScaling(const float scaling) { mGlyphScaling = scaling; };
