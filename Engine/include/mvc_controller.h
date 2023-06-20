@@ -17,8 +17,6 @@ public:
                   const std::shared_ptr<MVCView>& view);
 
     void RenderUserInterface();
-    bool AddSHViewModel(const std::string& imagePath);
-    bool AddScalarViewModel(const std::string& imagePath);
 
 private:
     static void onMouseButton(GLFWwindow* window, int button, int action, int mod);
@@ -32,6 +30,10 @@ private:
     bool drawSliders(const std::string& label, int& currentIndex, const int& maxIndex);
     void drawSHOptionsWindow();
 
+    bool addSHViewModel(const std::string& imagePath);
+    bool addScalarViewModel(const std::string& imagePath);
+    bool addTensorViewModel(const std::string& imagePath);
+
     std::shared_ptr<MVCModel> mModel = nullptr;
 
     std::shared_ptr<MVCView> mView = nullptr;
@@ -43,7 +45,15 @@ private:
     bool mDrawSlicingWindow = false;
     bool mDrawLoadScalarMenu = false;
     bool mDrawLoadSHMenu = false;
+    bool mDrawLoadTensorMenu = false;
     bool mDrawSHOptionsWindow = false;
+
+    enum class TensorOrder
+    {
+        FSL,
+        MRTRIX,
+        DIPY
+    } mTensorOrder;
 
     glm::vec2 mLastCursorPos;
 

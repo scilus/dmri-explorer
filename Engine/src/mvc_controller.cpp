@@ -119,27 +119,35 @@ void MVCController::RenderUserInterface()
     {
         if(drawFileDialog("Choose scalar image", imageFilePath, mDrawLoadScalarMenu))
         {
-            mDrawSlicingWindow = AddScalarViewModel(imageFilePath);
+            mDrawSlicingWindow = addScalarViewModel(imageFilePath);
         }
     }
     if(mDrawLoadSHMenu)
     {
         if(drawFileDialog("Choose SH image", imageFilePath, mDrawLoadSHMenu))
         {
-            mDrawSlicingWindow = AddSHViewModel(imageFilePath);
+            mDrawSlicingWindow = addSHViewModel(imageFilePath);
             mDrawSHOptionsWindow = mDrawSlicingWindow;
+        }
+    }
+    if(mDrawLoadTensorMenu)
+    {
+        if(drawFileDialog("Choose tensor image", imageFilePath, mDrawLoadTensorMenu))
+        {
+            mDrawLoadScalarMenu = false;
         }
     }
 
     drawSlicingWindow();
     drawSHOptionsWindow();
+    // ImGui::ShowDemoWindow();
 
     // finalize frame
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-bool MVCController::AddSHViewModel(const std::string& imagePath)
+bool MVCController::addSHViewModel(const std::string& imagePath)
 {
     NiftiImageWrapper<float> niftiImage(imagePath);
     if(mModel->AddSHModel(std::make_shared<NiftiImageWrapper<float>>(niftiImage)))
@@ -161,7 +169,13 @@ bool MVCController::AddSHViewModel(const std::string& imagePath)
     return false;
 }
 
-bool MVCController::AddScalarViewModel(const std::string& imagePath)
+bool MVCController::addTensorViewModel(const std::string& imagePath)
+{
+
+    return false;
+}
+
+bool MVCController::addScalarViewModel(const std::string& imagePath)
 {
     NiftiImageWrapper<float> niftiImage(imagePath);
     if(mModel->AddScalarModel(std::make_shared<NiftiImageWrapper<float>>(niftiImage)))
@@ -181,7 +195,22 @@ void MVCController::drawMainMenu()
         ImGui::MenuItem("Load SH image", NULL, &mDrawLoadSHMenu);
 
         // TODO: load tensor image (can load more than one)
-
+        if(ImGui::BeginMenu("Load tensor image"))
+        {
+            if(ImGui::MenuItem("MRtrix format", NULL, &mDrawLoadTensorMenu))
+            {
+                mTensorOrder = TensorOrder::MRTRIX;
+            }
+            if(ImGui::MenuItem("DIPY format", NULL, &mDrawLoadTensorMenu))
+            {
+                mTensorOrder = TensorOrder::DIPY;
+            }
+            if(ImGui::MenuItem("FSL format", NULL, &mDrawLoadTensorMenu))
+            {
+                mTensorOrder = TensorOrder::FSL;
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndMenu();
     }
     ImGui::Separator();
