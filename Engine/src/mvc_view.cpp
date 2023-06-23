@@ -45,10 +45,20 @@ bool MVCView::AddScalarView()
     {
         return false;
     }
-
     mScalarView.reset(new ScalarView(mModel));
 
     // ensures that the grid properties are up to date
+    UpdateGridModelGPUBuffer();
+    return true;
+}
+
+bool MVCView::AddTensorView()
+{
+    if(mModel->GetTensorModel() == nullptr)
+    {
+        return false;
+    }
+    mTensorView.reset(new TensorView(mModel));
     UpdateGridModelGPUBuffer();
     return true;
 }
@@ -64,9 +74,9 @@ void MVCView::UpdateGridModelGPUBuffer()
     
     const glm::bvec3 isSliceVisible = mModel->GetGridModel()->GetIsVisible();
     gridModelGPUData.IsSliceVisible = glm::ivec4(isSliceVisible.x ? 1 : 0,
-                                                    isSliceVisible.y ? 1 : 0,
-                                                    isSliceVisible.z ? 1 : 0,
-                                                    0);
+                                                 isSliceVisible.y ? 1 : 0,
+                                                 isSliceVisible.z ? 1 : 0,
+                                                 0);
     // the index of the last slice that was modified
     gridModelGPUData.CurrentSlice = mModel->GetGridModel()->GetLastEditedSlice();
 
@@ -87,6 +97,10 @@ void MVCView::RenderModel()
     if(mScalarView != nullptr)
     {
         mScalarView->Render();
+    }
+    if(mTensorView != nullptr)
+    {
+        mTensorView->Render();
     }
 }
 } // namespace Slicer

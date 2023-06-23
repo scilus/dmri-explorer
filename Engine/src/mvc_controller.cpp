@@ -114,25 +114,27 @@ void MVCController::RenderUserInterface()
 
     // draw frame
     drawMainMenu();
-    std::string imageFilePath;
+    std::map<std::string, std::string> imageFilePath;
     if(mDrawLoadScalarMenu)
     {
-        if(drawFileDialog("Choose scalar image", imageFilePath, mDrawLoadScalarMenu))
+        if(drawFileDialog("Choose scalar image", imageFilePath, 1, mDrawLoadScalarMenu))
         {
-            mDrawSlicingWindow = addScalarViewModel(imageFilePath);
+            const auto path = (*imageFilePath.begin()).second;
+            mDrawSlicingWindow = addScalarViewModel(path);
         }
     }
-    if(mDrawLoadSHMenu)
+    else if(mDrawLoadSHMenu)
     {
-        if(drawFileDialog("Choose SH image", imageFilePath, mDrawLoadSHMenu))
+        if(drawFileDialog("Choose SH image", imageFilePath, 1, mDrawLoadSHMenu))
         {
-            mDrawSlicingWindow = addSHViewModel(imageFilePath);
+            const auto path = (*imageFilePath.begin()).second;
+            mDrawSlicingWindow = addSHViewModel(path);
             mDrawSHOptionsWindow = mDrawSlicingWindow;
         }
     }
-    if(mDrawLoadTensorMenu)
+    else if(mDrawLoadTensorMenu)
     {
-        if(drawFileDialog("Choose tensor image", imageFilePath, mDrawLoadTensorMenu))
+        if(drawFileDialog("Choose tensor image", imageFilePath, 5, mDrawLoadTensorMenu))
         {
             mDrawLoadScalarMenu = false;
         }
@@ -169,9 +171,19 @@ bool MVCController::addSHViewModel(const std::string& imagePath)
     return false;
 }
 
-bool MVCController::addTensorViewModel(const std::string& imagePath)
+bool MVCController::addTensorViewModel(const std::map<std::string, std::string>& imagePaths)
 {
-
+    std::vector<NiftiImageWrapper<float>> images;
+    for(auto it = imagePaths.begin(); it != imagePaths.end(); ++it)
+    {
+        NiftiImageWrapper<float> image((*it).second);
+        images.push_back(image);
+    }
+    if(mModel->AddTensorModel(std::make_shared<std::vector<NiftiImageWrapper<float>>>(images)))
+    {
+        mView->AddTensorView();
+        return true;
+    }
     return false;
 }
 
@@ -228,12 +240,13 @@ void MVCController::drawMainMenu()
 }
 
 bool MVCController::drawFileDialog(const std::string& windowTitle,
-                                   std::string& imageFilePath,
+                                   std::map<std::string, std::string>& imageFilePath,
+                                   const int& maxItems,
                                    bool& enabledFlag)
 {
     ImGui::SetNextWindowSize(ImVec2(800, 400), ImGuiCond_Once);
     ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", windowTitle, ".gz,.nii",
-                                            ".", 1, nullptr, ImGuiFileDialogFlags_Modal);
+                                            ".", maxItems, nullptr, ImGuiFileDialogFlags_Modal);
 
     bool statusFlag = false;
     // IF A FILE IS CHOSEN OR CANCEL IS PRESSED
@@ -241,7 +254,7 @@ bool MVCController::drawFileDialog(const std::string& windowTitle,
     {
         if (ImGuiFileDialog::Instance()->IsOk())
         {
-            imageFilePath = ImGuiFileDialog::Instance()->GetFilePathName();
+            imageFilePath = ImGuiFileDialog::Instance()->GetSelection();
             ImGuiFileDialog::Instance()->Close();
             statusFlag = true;
         }

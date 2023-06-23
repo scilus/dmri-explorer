@@ -6,6 +6,7 @@
 #include <mvc_model.h>
 #include <sh_view.h>
 #include <scalar_view.h>
+#include <tensor_view.h>
 #include <camera.h>
 
 #include <memory>
@@ -20,6 +21,7 @@ public:
     void RenderModel();
     bool AddSHView();
     bool AddScalarView();
+    bool AddTensorView();
 
     void UpdateGridModelGPUBuffer();
 
@@ -46,5 +48,6 @@ private:
     // Actual rendered objects
     std::shared_ptr<SHView> mSHView = nullptr;
     std::shared_ptr<ScalarView> mScalarView = nullptr;
+    std::shared_ptr<TensorView> mTensorView = nullptr;
 };
 } // namespace Slicer

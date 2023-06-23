@@ -4,7 +4,7 @@
 #include <mvc_view.h>
 #include <GLFW/glfw3.h>
 #include <memory>
-#include <queue>
+#include <map>
 #include <functional>
 
 namespace Slicer
@@ -25,14 +25,14 @@ private:
     static void onWindowResize(GLFWwindow* window, int width, int height);
 
     void drawMainMenu();
-    bool drawFileDialog(const std::string& windowTitle, std::string& imageFilePath, bool& enabledFlag);
+    bool drawFileDialog(const std::string& windowTitle, std::map<std::string, std::string>& imageFilePath, const int& maxItems, bool& enabledFlag);
     void drawSlicingWindow();
     bool drawSliders(const std::string& label, int& currentIndex, const int& maxIndex);
     void drawSHOptionsWindow();
 
     bool addSHViewModel(const std::string& imagePath);
     bool addScalarViewModel(const std::string& imagePath);
-    bool addTensorViewModel(const std::string& imagePath);
+    bool addTensorViewModel(const std::map<std::string, std::string>& imagePaths);
 
     std::shared_ptr<MVCModel> mModel = nullptr;
 
