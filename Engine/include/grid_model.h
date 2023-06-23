@@ -14,6 +14,8 @@ public:
     inline glm::bvec3 GetIsVisible() const { return glm::bvec3(mIsVisibleX, mIsVisibleY, mIsVisibleZ); };
     inline unsigned int GetLastEditedSlice() const { return mLastEditedSlice; };
 
+    // TODO: Nb voxels per plane could be members of this class instead of TensorModel/SHModel
+
     inline void SetIsXVisible(bool isVisible) { mIsVisibleX = isVisible; };
     inline void SetIsYVisible(bool isVisible) { mIsVisibleY = isVisible; };
     inline void SetIsZVisible(bool isVisible) { mIsVisibleZ = isVisible; };

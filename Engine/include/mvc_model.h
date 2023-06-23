@@ -24,7 +24,8 @@ public:
     MVCModel(int winWidth, int winHeight);
     bool AddSHModel(const std::shared_ptr<NiftiImageWrapper<float>>& niftiImage);
     bool AddScalarModel(const std::shared_ptr<NiftiImageWrapper<float>>& niftiImage);
-    bool AddTensorModel(const std::shared_ptr<std::vector<NiftiImageWrapper<float>>>& niftiImages);
+    bool AddTensorModel(const std::shared_ptr<std::vector<NiftiImageWrapper<float>>>& niftiImages,
+                        const std::string& tensorFormat);
 
     inline std::shared_ptr<GridModel> GetGridModel() const { return mGridModel; };
 

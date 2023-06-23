@@ -12,7 +12,9 @@ class TensorView
 public:
     TensorView() = delete;
     TensorView(const std::shared_ptr<MVCModel>& model);
+    ~TensorView();
 
+    void UpdateSpherePropertiesGPUBuffer();
     void Render();
 
 private:
@@ -44,6 +46,11 @@ private:
 
     void uploadTransformToGPU();
 
+    void precomputeTensorProperties(std::vector<glm::vec4>& allCoefs, std::vector<glm::mat4>& allTensors,
+                                    std::vector<glm::vec4>& allPdds, std::vector<float>& allFAs,
+                                    std::vector<float>& allMDs, std::vector<float>& allADs,
+                                    std::vector<float>& allRDs);
+
     std::shared_ptr<MVCModel> mModel = nullptr;
 
     // Probably not needed once data is init
@@ -59,6 +66,11 @@ private:
 
     GPU::ShaderData mTensorMatricesGPUBuffer;
     GPU::ShaderData mTensorCoeffsGPUBuffer;
+    GPU::ShaderData mPDDsGPUBuffer;
+    GPU::ShaderData mFAsGPUBuffer;
+    GPU::ShaderData mMDsGPUBuffer;
+    GPU::ShaderData mADsGPUBuffer;
+    GPU::ShaderData mRDsGPUBuffer;
     GPU::ShaderData mSphereVerticesGPUBuffer;
     GPU::ShaderData mSphereTrianglesIndicesGPUBuffer; // used to estimate normals
     GPU::ShaderData mSpherePropertiesGPUBuffer;
@@ -70,8 +82,6 @@ private:
     GPU::ShaderData mAllGlyphNormalsGPUBuffer;
 
     float mGlyphScaling = 1.0f;
-    float mSH0Threshold = 0.0f;
-    bool mAreGlyphsNormalized = false;
 
     // DrawElementsIndirectCommand array.
     // /!\ prolly not useful once it is pushed to GPU

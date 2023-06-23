@@ -136,7 +136,21 @@ void MVCController::RenderUserInterface()
     {
         if(drawFileDialog("Choose tensor image", imageFilePath, 5, mDrawLoadTensorMenu))
         {
-            mDrawLoadScalarMenu = false;
+            std::string tensorFormat;
+            switch(mTensorOrder)
+            {
+            case TensorOrder::FSL:
+                tensorFormat = "fsl";
+                break;
+            case TensorOrder::MRTRIX:
+                tensorFormat = "mrtrix";
+                break;
+            case TensorOrder::DIPY:
+                tensorFormat = "dipy";
+                break;
+            }
+            mDrawSlicingWindow = addTensorViewModel(imageFilePath, tensorFormat);
+            mDrawLoadTensorMenu = false;
         }
     }
 
@@ -171,7 +185,8 @@ bool MVCController::addSHViewModel(const std::string& imagePath)
     return false;
 }
 
-bool MVCController::addTensorViewModel(const std::map<std::string, std::string>& imagePaths)
+bool MVCController::addTensorViewModel(const std::map<std::string, std::string>& imagePaths,
+                                       const std::string& tensorFormat)
 {
     std::vector<NiftiImageWrapper<float>> images;
     for(auto it = imagePaths.begin(); it != imagePaths.end(); ++it)
@@ -179,7 +194,7 @@ bool MVCController::addTensorViewModel(const std::map<std::string, std::string>&
         NiftiImageWrapper<float> image((*it).second);
         images.push_back(image);
     }
-    if(mModel->AddTensorModel(std::make_shared<std::vector<NiftiImageWrapper<float>>>(images)))
+    if(mModel->AddTensorModel(std::make_shared<std::vector<NiftiImageWrapper<float>>>(images), tensorFormat))
     {
         mView->AddTensorView();
         return true;

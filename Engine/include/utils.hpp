@@ -83,6 +83,15 @@ static inline void assertShaderCompilationSuccess(const GLint shader, const std:
     }
 }
 
+template <typename T>
+static inline GLuint genVBO(const std::vector<T>& data)
+{
+    GLuint vbo;
+    glCreateBuffers(1, &vbo);
+    glNamedBufferData(vbo, data.size() * sizeof(T), &data[0], GL_STATIC_DRAW);
+    return vbo;
+}
+
 static inline void assertProgramLinkingSuccess(const GLint program)
 {
     GLint success = 0;

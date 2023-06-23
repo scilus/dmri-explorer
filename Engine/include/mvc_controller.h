@@ -32,7 +32,7 @@ private:
 
     bool addSHViewModel(const std::string& imagePath);
     bool addScalarViewModel(const std::string& imagePath);
-    bool addTensorViewModel(const std::map<std::string, std::string>& imagePaths);
+    bool addTensorViewModel(const std::map<std::string, std::string>& imagePaths, const std::string& tensorFormat);
 
     std::shared_ptr<MVCModel> mModel = nullptr;
 

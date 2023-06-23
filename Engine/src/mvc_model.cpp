@@ -41,7 +41,8 @@ bool MVCModel::AddScalarModel(const std::shared_ptr<NiftiImageWrapper<float>>& n
     return false;
 }
 
-bool MVCModel::AddTensorModel(const std::shared_ptr<std::vector<NiftiImageWrapper<float>>>& niftiImages)
+bool MVCModel::AddTensorModel(const std::shared_ptr<std::vector<NiftiImageWrapper<float>>>& niftiImages,
+                              const std::string& tensorFormat)
 {
     // first, test that all input images share a same size
     const auto& inDims = (*niftiImages)[0].GetDims();
@@ -60,7 +61,7 @@ bool MVCModel::AddTensorModel(const std::shared_ptr<std::vector<NiftiImageWrappe
     // of the other loaded images
     if(validateImageDimensions(inDims))
     {
-        mTensorModel.reset(new TensorModel(niftiImages));
+        mTensorModel.reset(new TensorModel(niftiImages, tensorFormat));
         addGridModel(inDims);
         return true;
     }
