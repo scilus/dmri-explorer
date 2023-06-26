@@ -21,9 +21,9 @@ TensorView::TensorView(const std::shared_ptr<MVCModel>& model)
 ,mSphereVerticesGPUBuffer(GPU::Binding::sphereVertices)
 ,mSphereTrianglesIndicesGPUBuffer(GPU::Binding::sphereIndices)
 ,mSpherePropertiesGPUBuffer(GPU::Binding::sphereInfo)
-,mAllRadiisGPUBuffer(GPU::Binding::allRadiis)
-,mAllGlyphNormalsGPUBuffer(GPU::Binding::allSpheresNormals)
-,mAllMaxRadiisGPUBuffer(GPU::Binding::allMaxAmplitude)
+//,mAllRadiisGPUBuffer(GPU::Binding::allRadiis)
+//,mAllGlyphNormalsGPUBuffer(GPU::Binding::allSpheresNormals)
+//,mAllMaxRadiisGPUBuffer(GPU::Binding::allMaxAmplitude)
 {
     initShaders();
     initRenderPrimitives();
@@ -55,23 +55,17 @@ void TensorView::initRenderPrimitives()
     const int nbSpheres = tensorModel->GetMaxNbSpheres();
     const int nbTensors = static_cast<int>(tensorModel->GetNbTensorImages());
 
-    // TODO: Not sure indices need to be duplicated for each sphere
-    mMeshIndices.resize(nbSpheres * nbIndices);
-    mIndirectCmd.resize(nbSpheres * nbTensors);
-
-    // Copy sphere indices and instantiate draw commands.
-    std::vector<std::thread> threads;
-    dispatchSubsetCommands(&TensorView::initializeSubsetDrawCommand,
-                          nbSpheres, NB_THREADS_FOR_SPHERES, threads);
-
-    // TODO: Move in subset command
-    // Copy draw calls for all tensor images
-    for (int i=0; i < nbSpheres; i++){
-        for (int j=1; j < nbTensors; j++)
-        {
-            mIndirectCmd[j*nbSpheres + i] = mIndirectCmd[i];
-        }
+    mMeshIndices.resize(nbIndices);
+    const auto& indices = sphere->GetIndices();
+    for(size_t j = 0; j < nbIndices; ++j)
+    {
+        mMeshIndices[j] = indices[j];
     }
+
+    // Instantiate draw commands.
+    mIndirectCmd.resize(nbSpheres * nbTensors);
+    dispatchSubsetCommands(&TensorView::initializeSubsetDrawCommand,
+                           nbSpheres * nbTensors, NB_THREADS_FOR_SPHERES);
 
     // Bind primitives to GPU
     glCreateVertexArrays(1, &mVertexArrayObject);
@@ -110,13 +104,10 @@ void TensorView::precomputeTensorProperties(std::vector<glm::vec4>& allCoefs, st
             auto [e1, e2, e3] = eigenvectors(glm::mat3(tensor));
 
             // "hack" for isotropic tensor
-            if(std::isnan(e1.x) || std::isnan(e1.y) || std::isnan(e1.z))
-            {
-                e1 = glm::vec3(0.5f);
-            }
-            else if(abs(e1.x) == std::numeric_limits<float>::infinity()
-                 || abs(e1.y) == std::numeric_limits<float>::infinity()
-                 || abs(e1.z) == std::numeric_limits<float>::infinity())
+            if(std::isnan(e1.x) || std::isnan(e1.y) || std::isnan(e1.z) ||
+               abs(e1.x) == std::numeric_limits<float>::infinity() ||
+               abs(e1.y) == std::numeric_limits<float>::infinity() ||
+               abs(e1.z) == std::numeric_limits<float>::infinity())
             {
                 e1 = glm::vec3(0.5f);
             }
@@ -201,18 +192,18 @@ void TensorView::initGPUBuffers()
     mRDsGPUBuffer.Update(0, sizeof(float) * allRDs.size(), allRDs.data());
 
     // TODO: I don't think we need sphere normals for tensors, because they are computed on the fly
-    mAllGlyphNormalsGPUBuffer.Update(0, sizeof(glm::vec4) * allVertices.size(), allVertices.data());
+    // mAllGlyphNormalsGPUBuffer.Update(0, sizeof(glm::vec4) * allVertices.size(), allVertices.data());
     mSphereVerticesGPUBuffer.Update(0, sizeof(glm::vec4) * sphere->GetPoints().size(), sphere->GetPoints().data());
     mSphereTrianglesIndicesGPUBuffer.Update(0, sizeof(unsigned int) * sphere->GetIndices().size(), sphere->GetIndices().data());
 
     UpdateSpherePropertiesGPUBuffer();
-    // mSpherePropertiesGPUBuffer = GPU::ShaderData(&sphereData, GPU::Binding::sphereInfo, sizeof(SphereProperties));
 }
 
 // TODO: Make utility function
-void TensorView::dispatchSubsetCommands(void(TensorView::*fn)(size_t, size_t), size_t nbElements,
-                                        size_t nbThreads, std::vector<std::thread>& threads)
+void TensorView::dispatchSubsetCommands(void(TensorView::*fn)(size_t, size_t),
+                                        size_t nbElements, size_t nbThreads)
 {
+    std::vector<std::thread> threads;
     const size_t nbElementsPerThread = nbElements / nbThreads;
     size_t startIndex = 0;
     size_t stopIndex = nbElementsPerThread;
@@ -238,17 +229,10 @@ void TensorView::initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex
     const unsigned int numIndices = static_cast<unsigned int>(indices.size());
     const unsigned int numVertices = static_cast<unsigned int>(sphere->GetPoints().size());
 
-    unsigned int i, j;
-    for(i = firstIndex; i < lastIndex; ++i)
+    for(size_t i = firstIndex; i < lastIndex; ++i)
     {
-        // Add sphere faces
-        for(j = 0; j < numIndices; ++j)
-        {
-            mMeshIndices[i*numIndices+j] = indices[j];
-        }
-
         // Add indirect draw command for current sphere
-        mIndirectCmd[i] = {numIndices, 1, 0, i * numVertices, 0};
+        mIndirectCmd[i] = {numIndices, 1, 0, 0, 0};
     }
 }
 

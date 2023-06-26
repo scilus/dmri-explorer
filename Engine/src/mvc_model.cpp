@@ -55,16 +55,17 @@ bool MVCModel::AddTensorModel(const std::shared_ptr<std::vector<NiftiImageWrappe
                 return false;
             }
         }
-    }
 
-    // then, check that this dimension respects the dimension
-    // of the other loaded images
-    if(validateImageDimensions(inDims))
-    {
-        mTensorModel.reset(new TensorModel(niftiImages, tensorFormat));
-        addGridModel(inDims);
-        return true;
+        // then, check that this dimension respects the dimension
+        // of the other loaded images
+        if(validateImageDimensions(inDims))
+        {
+            mTensorModel.reset(new TensorModel(niftiImages, tensorFormat));
+            addGridModel(inDims);
+            return true;
+        }
     }
+    // else we return false
     return false;
 }
 

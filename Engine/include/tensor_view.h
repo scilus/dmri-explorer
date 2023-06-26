@@ -41,8 +41,7 @@ private:
     void initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex);
 
     void dispatchSubsetCommands(void(TensorView::*fn)(size_t, size_t),
-                               size_t nbElements, size_t nbThreads,
-                               std::vector<std::thread>& threads);
+                               size_t nbElements, size_t nbThreads);
 
     void uploadTransformToGPU();
 
@@ -74,12 +73,6 @@ private:
     GPU::ShaderData mSphereVerticesGPUBuffer;
     GPU::ShaderData mSphereTrianglesIndicesGPUBuffer; // used to estimate normals
     GPU::ShaderData mSpherePropertiesGPUBuffer;
-
-    // Compute shader outputs
-    // TODO: /!\ I don't think I need these
-    GPU::ShaderData mAllRadiisGPUBuffer;
-    GPU::ShaderData mAllMaxRadiisGPUBuffer;
-    GPU::ShaderData mAllGlyphNormalsGPUBuffer;
 
     float mGlyphScaling = 1.0f;
 
