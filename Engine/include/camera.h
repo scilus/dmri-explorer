@@ -4,33 +4,23 @@
 #include <shader_data.h>
 #include <memory>
 #include <coordinate_system.h>
-#include <application_state.h>
 
 namespace Slicer
 {
+enum class CameraMode
+{
+    X_VIEW_2D = 0,
+    Y_VIEW_2D = 1,
+    Z_VIEW_2D = 2,
+    FREE_3D = 3
+};
+
 /// Class for camera object.
 class Camera
 {
 public:
     /// Default constructor.
     Camera() = default;
-
-    /// Constructor.
-    /// \param[in] position Starting position in world coordinates.
-    /// \param[in] upVector Up vector in world coordinates.
-    /// \param[in] lookAt Point at center of view.
-    /// \param[in] fov Field of view in radians.
-    /// \param[in] aspect Aspect ratio of window (width / height).
-    /// \param[in] near Near clipping distance.
-    /// \param[in] far Far clipping distance.
-    /// \param[in] state Pointer to ApplicationState instance.
-    // TODO: Remove
-    Camera(const glm::vec3& position,
-           const glm::vec3& upVector,
-           const glm::vec3& lookAt,
-           const float& fov, const float& aspect,
-           const float& near, const float& far,
-           const std::shared_ptr<ApplicationState>& state);
 
     Camera(const glm::vec3& position,
            const glm::vec3& upVector,
@@ -65,12 +55,14 @@ public:
     /// Update camera attributes on the GPU.
     void UpdateGPU();
 
-private:
     /// Set the state for the camera mode
     /// \param[in] previous Previous value.
     /// \param[in] mode New value for fading behaviour.
-    void setMode(State::CameraMode previous, State::CameraMode mode);
+    void SetMode(CameraMode mode);
 
+    inline CameraMode GetMode() const { return mMode; };
+
+private:
     /// Struct containing camera attributes to push on the GPU.
     struct CameraData
     {
@@ -105,13 +97,12 @@ private:
     /// View matrix.
     glm::mat4 mViewMatrix;
 
-    /// Pointer to the ApplicationState, containing global parameters.
-    std::shared_ptr<ApplicationState> mState;
-
     /// Shader data for camera attributes.
     GPU::ShaderData mCamParamsData;
 
     //Boolean to block the rotation of the scene
     bool mBlockRotation;
+
+    CameraMode mMode = CameraMode::FREE_3D;
 };
 } // namespace Slicer

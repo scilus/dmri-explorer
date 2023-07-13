@@ -85,7 +85,7 @@ private:
 
     GPU::ShaderData mAllOrdersGPUBuffer; // pretty sure this one is useless
 
-    float mGlyphScaling = 1.0f;
+    float mGlyphScaling = 0.5f;
     float mSH0Threshold = 0.0f;
     bool mAreGlyphsNormalized = false;
 

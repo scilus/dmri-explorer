@@ -250,6 +250,42 @@ void MVCController::drawMainMenu()
         ImGui::EndMenu();
     }
     ImGui::Separator();
+    if(ImGui::BeginMenu("Camera"))
+    {
+        const auto& cMode = mView->GetCamera()->GetMode();
+        if(ImGui::MenuItem("X_VIEW_2D", NULL, cMode == CameraMode::X_VIEW_2D))
+        {
+            mView->GetCamera()->SetMode(CameraMode::X_VIEW_2D);
+            // TODO: Create GridModel::SetVisible(slice) to simplify code here.
+            mModel->GetGridModel()->SetIsXVisible(true);
+            mModel->GetGridModel()->SetIsYVisible(false);
+            mModel->GetGridModel()->SetIsZVisible(false);
+            mView->UpdateGridModelGPUBuffer();
+        }
+        if(ImGui::MenuItem("Y_VIEW_2D", NULL, cMode == CameraMode::Y_VIEW_2D))
+        {
+            mView->GetCamera()->SetMode(CameraMode::Y_VIEW_2D);
+            mModel->GetGridModel()->SetIsXVisible(false);
+            mModel->GetGridModel()->SetIsYVisible(true);
+            mModel->GetGridModel()->SetIsZVisible(false);
+            mView->UpdateGridModelGPUBuffer();
+        }
+        if(ImGui::MenuItem("Z_VIEW_2D", NULL, cMode == CameraMode::Z_VIEW_2D))
+        {
+            mView->GetCamera()->SetMode(CameraMode::Z_VIEW_2D);
+            mModel->GetGridModel()->SetIsXVisible(false);
+            mModel->GetGridModel()->SetIsYVisible(false);
+            mModel->GetGridModel()->SetIsZVisible(true);
+            mView->UpdateGridModelGPUBuffer();
+        }
+        if(ImGui::MenuItem("FREE_3D", NULL, cMode == CameraMode::FREE_3D))
+        {
+            mView->GetCamera()->SetMode(CameraMode::FREE_3D);
+        }
+        ImGui::EndMenu();
+    }
+
+    ImGui::Separator();
     ImGui::Text("%.1f FPS", mImGuiIO->Framerate);
     ImGui::EndMainMenuBar();
 }
