@@ -6,6 +6,7 @@ target_link_libraries(dmriexplorer PRIVATE GLAD)
 target_link_libraries(dmriexplorer PRIVATE glfw)
 target_link_libraries(dmriexplorer PRIVATE NIFTI_LIB)
 target_link_libraries(dmriexplorer PRIVATE IMGUI)
+target_link_libraries(dmriexplorer PRIVATE IMGUI_FILE_DIA)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 

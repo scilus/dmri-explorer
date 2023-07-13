@@ -1,6 +1,5 @@
 #include <mt_field.h>
 #include <glad/glad.h>
-#include <timer.h>
 #include <cmath>
 #include <utils.hpp>
 
@@ -177,12 +176,13 @@ void MTField::initializeSubsetDrawCommand(size_t firstIndex, size_t lastIndex)
 
         // Add indirect draw command for current sphere
         mIndirectCmd[i] =
-            DrawElementsIndirectCommand(
-                numIndices, // num of elements to draw per drawID
+            {
+                static_cast<unsigned int>(numIndices), // num of elements to draw per drawID
                 1, // number of identical instances
                 0, // offset in VBO
-                i * numVertices, // offset in element buffer array
-                0);
+                static_cast<unsigned int>(i * numVertices), // offset in element buffer array
+                0
+            };
     }
 }
 

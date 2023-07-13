@@ -11,12 +11,12 @@ UIManager::UIManager()
 :mWindow(nullptr)
 ,mIO(nullptr)
 ,mState(nullptr)
-,mShowDemoWindow(false)
 ,mShowMagnifyingMode(false)
 ,mShowSlicers(false)
 ,mShowSHOptions(false)
 ,mShowMTOptions(false)
 ,mShowPreferences(false)
+,mWindowFlags(ImGuiWindowFlags_None)
 {
 }
 
@@ -24,13 +24,13 @@ UIManager::UIManager(GLFWwindow* window, const std::string& glslVersion,
                      const std::shared_ptr<ApplicationState>& state)
 :mWindow(window)
 ,mIO(nullptr)
-,mShowDemoWindow(false)
 ,mShowMagnifyingMode(false)
 ,mShowSlicers(false)
 ,mShowSHOptions(false)
 ,mShowMTOptions(false)
 ,mShowPreferences(false)
 ,mState(state)
+,mWindowFlags(ImGuiWindowFlags_None)
 {
     // Initialize imgui
     IMGUI_CHECKVERSION();
@@ -44,6 +44,9 @@ UIManager::UIManager(GLFWwindow* window, const std::string& glslVersion,
     ImGui_ImplOpenGL3_Init(glslVersion.c_str());
 
     mIO = &ImGui::GetIO();
+
+    // disable .ini saving
+    mIO->IniFilename = NULL;
 }
 
 void UIManager::DrawInterface()
@@ -52,7 +55,6 @@ void UIManager::DrawInterface()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
     drawMainMenuBar();
-    drawDemoWindow();
     drawSlicersWindow();
     if (mState->FODFImage.IsInit())
     {
@@ -99,8 +101,6 @@ void UIManager::drawMainMenuBar()
         }
         ImGui::MenuItem("Magnifying Mode", NULL, &mShowMagnifyingMode);
         ImGui::MenuItem("Preferences", NULL, &mShowPreferences);
-        ImGui::Separator();
-        ImGui::MenuItem("Show demo window", NULL, &mShowDemoWindow);
         ImGui::EndMenu();
     }
     // Render info
@@ -122,7 +122,7 @@ void UIManager::drawMagnifyingModeWindow()
     int scaleFactor = mState->Window.SecondaryViewportScale.Get();
     bool show = mState->MagnifyingMode.Get();
     static int scaling = scaleFactor;
-    ImGui::Begin("Magnifying mode", &mShowMagnifyingMode);
+    ImGui::Begin("Magnifying mode", &mShowMagnifyingMode, mWindowFlags);
     ImGui::SameLine();
     if(ImGui::Checkbox("Enable magnifying mode (press space)", &show))
     {
@@ -161,7 +161,7 @@ void UIManager::drawPreferencesWindow()
     ImGui::SetNextWindowSize(ImVec2(406.f, 108.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
-    ImGui::Begin("Preferences", &mShowPreferences);
+    ImGui::Begin("Preferences", &mShowPreferences, mWindowFlags);
     float rotationSpeed = mState->Window.RotationSpeed.Get();
     float translationSpeed = mState->Window.TranslationSpeed.Get();
     float zoomSpeed = mState->Window.ZoomSpeed.Get();
@@ -197,7 +197,7 @@ void UIManager::drawSlicersWindow()
     ImGui::SetNextWindowSize(ImVec2(417.f, 250.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
-    ImGui::Begin("Slices options", &mShowSlicers);
+    ImGui::Begin("Slices options", &mShowSlicers, mWindowFlags);
 
     bool updateSliceIndex = false;
     glm::ivec3 slice = sliceParam.Get();
@@ -300,7 +300,7 @@ void UIManager::drawSHOptionsWindow()
     ImGui::SetNextWindowSize(ImVec2(417.f, 250.f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
-    ImGui::Begin("SH Options", &mShowSHOptions);
+    ImGui::Begin("SH Options", &mShowSHOptions, mWindowFlags);
 
     auto& scalingParam = mState->Sphere.Scaling;
     auto& thresholdParam = mState->Sphere.SH0Threshold;
@@ -370,7 +370,7 @@ void UIManager::drawMTOptionsWindow()
     ImGui::SetNextWindowSize(ImVec2(200.0f, 200.0f), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowCollapsed(false, ImGuiCond_FirstUseEver);
 
-    ImGui::Begin("MT Options", &mShowMTOptions);
+    ImGui::Begin("MT Options", &mShowMTOptions, mWindowFlags);
 
     auto& scalingParam = mState->Sphere.Scaling;
     auto& normalizedParam = mState->Sphere.IsNormalized;
@@ -459,13 +459,5 @@ void UIManager::drawMTOptionsWindow()
     ImGui::Text("Fade if hidden");
 
     ImGui::End();
-}
-
-void UIManager::drawDemoWindow()
-{
-    if(!mShowDemoWindow)
-        return;
-
-    ImGui::ShowDemoWindow(&mShowDemoWindow);
 }
 } // namespace Slicer

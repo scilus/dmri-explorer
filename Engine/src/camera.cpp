@@ -3,7 +3,12 @@
 #include <glm/gtx/norm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <math.h>
-#include <application_state.h>
+
+namespace
+{
+const float TRANSLATION_SPEED = 0.02f;
+const float ROTATION_SPEED = 0.005f;
+}
 
 namespace Slicer
 {
@@ -11,8 +16,7 @@ Camera::Camera(const glm::vec3& position,
                const glm::vec3& upVector,
                const glm::vec3& lookAt,
                const float& fov, const float& aspect,
-               const float& near, const float& far,
-               const std::shared_ptr<ApplicationState>& state)
+               const float& near, const float& far)
 :mLookAt(lookAt)
 ,mPosition(position)
 ,mUpVector(upVector)
@@ -21,13 +25,12 @@ Camera::Camera(const glm::vec3& position,
 ,mFar(far)
 ,mAspect(aspect)
 ,mCamParamsData(GPU::Binding::camera)
-,mState(state)
 {
-    registerStateCallbacks();
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
     mBlockRotation = false;
 }
+
 
 Camera::Camera(const Camera& camera)
 :mLookAt(camera.mLookAt)
@@ -38,57 +41,43 @@ Camera::Camera(const Camera& camera)
 ,mFar(camera.mFar)
 ,mAspect(camera.mAspect)
 ,mCamParamsData(camera.mCamParamsData)
-,mState(camera.mState)
 ,mBlockRotation(camera.mBlockRotation)
 {
-    registerStateCallbacks();
     mProjectionMatrix = glm::perspective(mFov, mAspect, mNear, mFar);
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
 
-void Camera::registerStateCallbacks()
+void Camera::SetMode(CameraMode mode)
 {
-    mState->ViewMode.Mode.RegisterCallback(
-        [this](State::CameraMode p, State::CameraMode n)
-        {
-            this->setMode(p, n);
-        }
-    );
-}
-
-void Camera::setMode(State::CameraMode previous, State::CameraMode mode)
-{
-    if(previous != mode)
+    mMode = mode;
+    if(mode == CameraMode::FREE_3D)
     {
-        if(mode == State::CameraMode::projective3D)
-        {
-            mBlockRotation=false;
-            return;
-        }
-
-        mBlockRotation = true;
-        const float distToOrigin = length(mPosition);
-        const float distToLookAt = distance(mLookAt, mPosition);
-
-        if(mode == State::CameraMode::projectiveX)
-        {
-            mPosition = glm::vec3(distToOrigin, 0.0f, 0.0f);
-            mUpVector = glm::vec3(0.0f, 0.0f, 1.0f);
-        }
-        else if(mode == State::CameraMode::projectiveY)
-        {
-            mPosition = glm::vec3(0.0f, distToOrigin, 0.0f);
-            mUpVector = glm::vec3(0.0f, 0.0f, 1.0f);
-        }
-        else if(mode == State::CameraMode::projectiveZ)
-        {
-            mPosition = glm::vec3(0.0f, 0.0f, distToOrigin);
-            mUpVector = glm::vec3(0.0f, 1.0f, 0.0f);
-        }
-        const glm::vec3 posToOrigin = glm::normalize(- mPosition);
-        mLookAt = mPosition + distToLookAt * posToOrigin;
-        mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
+        mBlockRotation=false;
+        return;
     }
+
+    mBlockRotation = true;
+    const float distToOrigin = length(mPosition);
+    const float distToLookAt = distance(mLookAt, mPosition);
+
+    if(mode == CameraMode::X_VIEW_2D)
+    {
+        mPosition = glm::vec3(distToOrigin, 0.0f, 0.0f);
+        mUpVector = glm::vec3(0.0f, 0.0f, 1.0f);
+    }
+    else if(mode == CameraMode::Y_VIEW_2D)
+    {
+        mPosition = glm::vec3(0.0f, distToOrigin, 0.0f);
+        mUpVector = glm::vec3(0.0f, 0.0f, 1.0f);
+    }
+    else if(mode == CameraMode::Z_VIEW_2D)
+    {
+        mPosition = glm::vec3(0.0f, 0.0f, distToOrigin);
+        mUpVector = glm::vec3(0.0f, 1.0f, 0.0f);
+    }
+    const glm::vec3 posToOrigin = glm::normalize(- mPosition);
+    mLookAt = mPosition + distToLookAt * posToOrigin;
+    mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);
 }
 
 void Camera::ResetViewFromOther(const Camera& camera)
@@ -113,7 +102,6 @@ void Camera::UpdateGPU()
     cameraData.projectionMatrix = mProjectionMatrix;
 
     mCamParamsData.Update(0, sizeof(CameraData), &cameraData);
-    mCamParamsData.ToGPU();
 }
 
 void Camera::Resize(const float& aspect)
@@ -129,9 +117,8 @@ void Camera::RotateCS(const glm::vec2& vec)
         return;
     }
 
-    const float& rotationSpeed = mState->Window.RotationSpeed.Get();
-    const float dx = vec.x * rotationSpeed;
-    const float dy = -vec.y * rotationSpeed;
+    const float dx = vec.x * ROTATION_SPEED;
+    const float dy = -vec.y * ROTATION_SPEED;
 
     // Compute the rotation axis.
     const glm::vec3 leftAxis = glm::normalize(glm::cross(mUpVector, -mPosition));
@@ -148,9 +135,8 @@ void Camera::RotateCS(const glm::vec2& vec)
 
 void Camera::TranslateCS(const glm::vec2& vec)
 {
-    const float& translationSpeed = mState->Window.TranslationSpeed.Get();
-    const float dx = -vec.x * translationSpeed;
-    const float dy = -vec.y * translationSpeed;
+    const float dx = -vec.x * TRANSLATION_SPEED;
+    const float dy = -vec.y * TRANSLATION_SPEED;
     glm::vec3 lookAt = mLookAt - mPosition;
 
     // Compute the translation axis.
@@ -167,8 +153,7 @@ void Camera::TranslateCS(const glm::vec2& vec)
 
 void Camera::Zoom(double delta)
 {
-    const float& speed = mState->Window.ZoomSpeed.Get();
-    const glm::vec3 direction = speed * glm::normalize(mLookAt - mPosition);
+    const glm::vec3 direction = glm::normalize(mLookAt - mPosition);
     mPosition = mPosition + direction * (float)delta;
     mLookAt = mLookAt + direction * (float)delta;
     mViewMatrix = glm::lookAt(mPosition, mLookAt, mUpVector);

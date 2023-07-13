@@ -52,21 +52,18 @@ private:
     /// Draw the preferences window.
     void drawPreferencesWindow();
 
-    /// Draw ImGUI demo window.
-    void drawDemoWindow();
-
     /// Pointer to GLFW window.
     GLFWwindow* mWindow;
 
     /// Pointer to ImGuiIO object.
     ImGuiIO* mIO;
 
+    // Window flags for imgui windows
+    ImGuiWindowFlags mWindowFlags;
+
     /// Reference to ApplicationState.
     std::shared_ptr<ApplicationState> mState;
 
-    /// True to show demo window.
-    bool mShowDemoWindow;
-    
     /// True to show magnifiying mode.
     bool mShowMagnifyingMode;
 

@@ -34,11 +34,17 @@ add_subdirectory("deps/nifti")
 include_directories("deps/nifti/include/")
 
 # imgui include
-file(GLOB IMGUI_SRC "deps/imgui/src/*.cpp")
+file(GLOB IMGUI_SRC "deps/imgui-1.89/src/*.cpp")
 add_library(IMGUI ${IMGUI_SRC})
 target_link_libraries(IMGUI PRIVATE glfw GLAD)
-include_directories("deps/imgui/include/")
+include_directories("deps/imgui-1.89/include/")
 add_compile_definitions(IMGUI_IMPL_OPENGL_LOADER_GLAD)
+
+# file dialog include
+add_library(IMGUI_FILE_DIA "deps/ImGuiFileDialog-Lib_Only/ImGuiFileDialog.cpp")
+target_link_libraries(IMGUI_FILE_DIA PRIVATE IMGUI)
+include_directories("deps/ImGuiFileDialog-Lib_Only/dirent/" "deps/ImGuiFileDialog-Lib_Only/")
+add_compile_definitions(USE_STD_FILESYSTEM)
 
 # std image loader include
 include_directories("deps/stb/include/")

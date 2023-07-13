@@ -1,6 +1,5 @@
 #pragma once
 #include <glm/glm.hpp>
-#include <glad/glad.h>
 #include <vector>
 
 #include <spherical_harmonic.h>
@@ -33,7 +32,7 @@ public:
 
     /// Get indices array describing the sphere triangulation.
     /// \return Vector of indices.
-    inline std::vector<GLuint> GetIndices() const { return mIndices; };
+    inline std::vector<unsigned int> GetIndices() const { return mIndices; };
 
     /// Get the sphere points.
     /// \return Vector of points on the sphere.
@@ -80,7 +79,7 @@ private:
     std::vector<glm::vec4> mPoints;
 
     /// Sphere indices for triangulation.
-    std::vector<GLuint> mIndices;
+    std::vector<unsigned int> mIndices;
 
     /// SH functions at each point in mPoints.
     std::vector<float> mSphHarmFunc;

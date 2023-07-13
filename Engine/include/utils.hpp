@@ -83,6 +83,15 @@ static inline void assertShaderCompilationSuccess(const GLint shader, const std:
     }
 }
 
+template <typename T>
+static inline GLuint genVBO(const std::vector<T>& data)
+{
+    GLuint vbo;
+    glCreateBuffers(1, &vbo);
+    glNamedBufferData(vbo, data.size() * sizeof(T), &data[0], GL_STATIC_DRAW);
+    return vbo;
+}
+
 static inline void assertProgramLinkingSuccess(const GLint program)
 {
     GLint success = 0;
@@ -333,4 +342,24 @@ static inline glm::mat4 getTensorFromCoefficients(const std::vector<float>& coef
     }
 
     return tensor;
+}
+
+static inline int getOrderFromNbCoeffs(unsigned int nbCoeffs, bool& fullBasis)
+{
+    const float& floatEpsilon = std::numeric_limits<float>::epsilon();
+    const float symOrder = static_cast<float>((-3.0 + sqrt(1.0 + 8.0 * nbCoeffs)) / 2.0);
+    if((std::trunc(symOrder) >= (symOrder - floatEpsilon)) &&
+       (std::trunc(symOrder) <= (symOrder + floatEpsilon)))
+    {
+        fullBasis = false;
+        return static_cast<int>(symOrder);
+    }
+    const float fullOrder = sqrtf((float)nbCoeffs) - 1.0f;
+    if((std::trunc(fullOrder) >= (fullOrder - floatEpsilon)) &&
+       (std::trunc(fullOrder) <= (fullOrder + floatEpsilon)))
+    {
+        fullBasis = true;
+        return static_cast<int>(fullOrder);
+    }
+    return -1;
 }

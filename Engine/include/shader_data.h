@@ -18,6 +18,8 @@ public:
     /// Default constructor.
     ShaderData();
 
+    ~ShaderData();
+
     /// Constructor.
     /// \param[in] data Pointer to array to data to copy on the GPU.
     /// \param[in] binding GPU binding for data.

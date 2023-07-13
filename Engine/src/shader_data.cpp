@@ -1,4 +1,5 @@
 #include <shader_data.h>
+#include <iostream>
 
 namespace Slicer
 {
@@ -51,12 +52,17 @@ ShaderData::ShaderData(Binding binding)
     glCreateBuffers(1, &mSSBO);
 }
 
+ShaderData::~ShaderData()
+{
+}
+
 void ShaderData::Update(GLintptr offset, GLsizeiptr size, void* data)
 {
     mIsDirty = true;
     if(!mIsInit)
     {
         glNamedBufferData(mSSBO, size, data, mUsage);
+        ToGPU();
     }
     else
     {
