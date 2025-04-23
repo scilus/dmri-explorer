@@ -36,6 +36,12 @@ Alternatively, a helper script containing the four commands shown above is made 
 ```
 The above script creates the build directory, runs `Cmake` and `make`. The executable file will be in the folder `${project_root}/build/Engine`.
 
+##### Troubleshooting
+Libraries `libxrandr-dev`, `libxinerama-dev`, `libxcursor-dev`, `libxi-dev` may be missing when generating the CMake project. These can be installed by running:
+```
+sudo apt install libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
+```
+
 #### On Windows
 The Windows build is also done using `cmake`. The build has been tested with `msbuild` version 16.9. Using the **Developer Command Prompt for VS**, the program can be built with:
 ```
