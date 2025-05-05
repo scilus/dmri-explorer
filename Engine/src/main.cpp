@@ -1,4 +1,4 @@
-#include <application.h>
+#include <user_application.h>
 #include <argument_parser.h>
 
 #ifndef DMRI_EXPLORER_BINARY_DIR
@@ -10,7 +10,7 @@ int main(int argc, char** argv)
     const Slicer::ArgumentParser parser(argc, argv);
     if(parser.OK())
     {
-        Slicer::Application app(parser);
+        Slicer::UserApplication app(parser);
         app.Run();
         return 0;
     }

@@ -38,28 +38,32 @@ template <typename T> class NiftiImageWrapper
 public:
     /// Default constructor.
     NiftiImageWrapper()
-    :mHeader()
-    ,mImage()
+    :mImage()
     ,mVoxelData()
+    ,mImagePath()
     {
     };
 
     /// Constructor
     /// \param[in] path Path to file.
     NiftiImageWrapper(const std::string& path)
+    :mImagePath(path)
+    ,mVoxelData()
     {
-        nifti_1_header* header = nifti_read_header(path.c_str(), nullptr, true);
-        mHeader.reset(header);
+        // load header
         mImage.reset(nifti_image_read(path.c_str(), false));
-
-        // copy image data
-        nifti_image* image = nifti_image_read(path.c_str(), true);
-        copyImageVoxels(image);
-        nifti_image_free(image);
     };
 
     /// Destructor.
     ~NiftiImageWrapper() {};
+
+    /// Load image voxels (cast to T).
+    void LoadImageVoxels()
+    {
+        nifti_image* image = nifti_image_read(mImagePath.c_str(), true);
+        copyImageVoxels(image);
+        nifti_image_free(image);
+    }
 
     /// Get the data vector.
     /// \return Vector of voxel data.
@@ -83,6 +87,7 @@ public:
     /// Get dimensions of image.
     /// \return Dimensions of image.
     /// \note Does not support images with more than 4D.
+    // TODO: Support ND images
     inline glm::ivec4 GetDims() const
     {
         return glm::ivec4(mImage->nx, mImage->ny,
@@ -249,11 +254,10 @@ private:
         }
     };
 
-    /// Nifti image header.
-    std::shared_ptr<nifti_1_header> mHeader;
-
     /// Reference to the loaded image.
     std::shared_ptr<nifti_image> mImage;
+
+    std::string mImagePath;
 
     /// Voxel data.
     std::vector<T> mVoxelData;
